@@ -1,5 +1,5 @@
 <template>
-  <q-page class="constrain q-pa-lg">
+  <q-page class="constrain q-pa-lg" style="border:0px;margin-right:0;margin-left:0;max-width:100%;">
     <div class="row">
       <div class="col-12">
         <q-btn-group push spread>
@@ -40,20 +40,39 @@
 
     <!-- Editor de codigo -->
     
-    <div class="row justify-content-center q-mt-md">
+    <div class="row justify-content-center q-ma-lg">
       <div class="col-12">
-        <q-card class="my-card1">
-          <q-bar class="bg-black text-white">
-            <q-btn push label="Ejecutar" icon="play_arrow" @click="ejecutar" />
-            <q-btn push label="AST" @click="darkDialog = true" />
-            <q-space />
-            <q-btn push label="Limpiar" icon="cleaning_services" @click="limpiar" />
-          </q-bar>
-          
-              <codemirror v-model="code" :options="cmOptions" @input="codigoEditado" />
-           
-        </q-card>
-        
+        <div class="row">
+          <div class="col-md-12" style="width:100%">
+          <q-card class="editorXML" style="width:auto">
+            <q-bar class="bg-black text-white" style="width:auto">
+              <q-btn push label="Ejecutar" icon="play_arrow"/>
+            </q-bar>              
+            <codemirror v-model="codeXP" :options="cmOptionsXP" />              
+          </q-card>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6" style="width:50%">
+            <q-card class="editorXML" style="width:auto">
+              <q-bar class="bg-black text-white" style="width:auto">
+                <q-btn push label="Ejecutar" icon="play_arrow" @click="ejecutar" />
+                <q-btn push label="AST" @click="darkDialog = true" />
+                <q-space />
+                <q-btn push label="Limpiar" icon="cleaning_services" @click="limpiar" />
+              </q-bar>              
+              <codemirror v-model="code" :options="cmOptions" @input="codigoEditado" />              
+            </q-card>
+          </div>
+          <div class="col-md-6" style="width:50%">
+            <q-card class="salidaXML" style="width:auto">
+              <q-bar class="text-white" style="background-color: #008803; width:auto">           
+                <q-btn push label="Salida" icon="thumb_up_alt"/>
+              </q-bar>              
+              <codemirror v-model="codeS" :options="cmOptionsS" />              
+            </q-card>
+          </div>
+        </div>
         <q-card class="my-card2">
           <q-splitter
             v-model="splitterModel"
@@ -138,18 +157,18 @@ import { codemirror } from "vue-codemirror";
 import "codemirror/lib/codemirror.css";
 // import theme style
 import "codemirror/theme/abcdef.css";
+import "codemirror/theme/the-matrix.css";
+import "codemirror/theme/paraiso-dark.css";
 // import language js
-import "codemirror/mode/javascript/javascript.js";
+import "codemirror/mode/xml/xml.js";
+import "codemirror/mode/xquery/xquery.js";
 // Analizador
-import AnalizadorTraduccion from "../analizador/gramatica_traduccion";
+import AXml from '../analizador/gramaticas/GramAscXML';
+//import AXpath from '../analizador/gramaticas/gramatica_ASC_XPATH';
 //Traduccion
-import { Traduccion } from "../traduccion/traduccion";
-import { Variable } from "../traduccion/variable";
-import { Ejecucion } from "../ejecucion/ejecucion";
-import { Errores } from "../arbol/errores";
-import { Error as InstanciaError } from "../arbol/error";
-import { Entornos } from "../ejecucion/entornos";
-import { EntornoAux } from '../ejecucion/entorno_aux';
+import { Errores } from "../analizador/arbol/errores";
+import { Error as InstanciaError } from "../analizador/arbol/error";
+//import { Entornos } from "../ejecucion/entornos";
 
 export default {
   components: {
@@ -163,19 +182,44 @@ export default {
       insideModel: 50,
       darkDialog: false,
       maximizedToggle: true,
-      code: "",
-      cmOptions: {
+      codeXP: "",
+      cmOptionsXP: {
         tabSize: 4,
         matchBrackets: true,
         styleActiveLine: true,
-        mode: "text/javascript",
-        theme: "abcdef",
+        mode: "xquery",
+        theme: "paraiso-dark",
         lineNumbers: true,
         line: false,
         indentWithTabs: true,
         lineWrapping: true,
         fixedGutter: true,
-        
+      },
+      code: "",
+      cmOptions: {
+        tabSize: 4,
+        matchBrackets: true,
+        styleActiveLine: true,
+        mode: "text/xml",
+        theme: "abcdef",
+        lineNumbers: true,
+        line: false,
+        indentWithTabs: true,
+        lineWrapping: true,
+        fixedGutter: true,     
+      },
+      codeS: "",
+      cmOptionsS: {
+        tabSize: 4,
+        matchBrackets: true,
+        styleActiveLine: true,
+        mode: "text/xml",
+        theme: "the-matrix",
+        lineNumbers: true,
+        line: false,
+        indentWithTabs: true,
+        lineWrapping: true,
+        fixedGutter: false,
       },
       output: "salida de ejemplo",
       tab: "editor",
@@ -201,7 +245,6 @@ export default {
         message: message,
         color: variant,
         multiLine: true,
-        avatar: "https://cdn.quasar.dev/img/boy-avatar.png",
         actions: [
           {
             label: "Aceptar",
@@ -213,70 +256,43 @@ export default {
         ],
       });
     },
-    traducir() {
-      if (this.code.trim() == "") {
-        this.notificar("primary", `Ingrese algo de código, por favor`);
-        return;
-      }
-      this.inicializarValores();
-      try {
-        const raizTraduccion = AnalizadorTraduccion.parse(this.code);
-        //Validación de raiz
-        if (raizTraduccion == null) {
-          this.notificar(
-            "negative",
-            "No fue posible obtener la raíz de la traducción"
-          );
-          return;
-        }
-        let traduccion = new Traduccion(raizTraduccion);
-        this.dot = traduccion.getDot();
-        const codigoNuevo = traduccion.traducir();
-        Entornos.getInstance().clear();
-        // this.code = codigoNuevo;
-        this.code = beautify_js(codigoNuevo, { indent_size: 2 });
-        this.notificar("primary", "Traducción realizada con éxito");
-      } catch (error) {
-        this.notificar("negative", JSON.stringify(error));
-      }
-      this.errores = Errores.getInstance().lista;
-    },
     ejecutar() {
       if (this.code.trim() == "") {
-        this.notificar("primary", `Ingrese algo de código, por favor`);
+        this.notificar("primary", `El editor está vacío, escriba algo.`);
         return;
       }
       this.inicializarValores();
       try {
-        const raiz = AnalizadorTraduccion.parse(this.code);
+        const raiz = AXml.parse(this.code);
         //Validacion de raiz
         if (raiz == null) {
           this.notificar(
             "negative",
-            "No fue posible obtener la raíz de la ejecución"
+            "No se pudo ejecutar"
           );
           return;
         }
-        let ejecucion = new Ejecucion(raiz);
-        this.dot = ejecucion.getDot();
+        //let ejecucion = new Ejecucion(raiz);
+        //this.dot = ejecucion.getDot();
         //Valido si puedo ejecutar (no deben existir funciones anidadas)
-        if(!ejecucion.puedoEjecutar(raiz)){
+        /*if(!ejecucion.puedoEjecutar(raiz)){
           this.notificar("primary", "No se puede realizar una ejecución con funciones anidadas");
           return;
-        }
-        ejecucion.ejecutar();
+        }*/
+        //ejecucion.ejecutar();
         // ejecucion.imprimirErrores();
-        this.salida = ejecucion.getSalida();
+        //this.salida = ejecucion.getSalida();
+        console.log(raiz);
         this.notificar("primary", "Ejecución realizada con éxito");
       } catch (error) {
         this.validarError(error);
       }
       this.errores = Errores.getInstance().lista;
-      this.entornos = Entornos.getInstance().lista;
+      //this.entornos = Entornos.getInstance().lista;
     },
     inicializarValores() {
       Errores.getInstance().clear();
-      Entornos.getInstance().clear();
+      //Entornos.getInstance().clear();
       this.errores = [];
       this.entornos = [];
       this.salida = [];
@@ -286,7 +302,7 @@ export default {
       const json = JSON.stringify(error);
       this.notificar(
         "negative",
-        `No fue posible recuperarse de un error :(\nNo me pongan 0 por favor`
+        `Se encontraron errores sintácticos, revise el apartado de errores.`
       );
       const objeto = JSON.parse(json);
 
@@ -297,9 +313,9 @@ export default {
       ) {
         Errores.getInstance().push(
           new InstanciaError({
-            tipo: "sintactico",
+            tipo: "sintáctico",
             linea: objeto.hash.loc.first_line,
-            descripcion: `No se esperaba el token: "${objeto.hash.token}" en la columna ${objeto.hash.loc.last_column}, se esperaba uno de los siguientes: ${objeto.hash.expected}`,
+            descripcion: `Se encontró el token ${objeto.hash.token} en lugar de ${objeto.hash.expected} en la columna ${objeto.hash.loc.last_column}.`,
           })
         );
       }
@@ -317,7 +333,6 @@ export default {
 
 <style lang="css">
 .CodeMirror {
-  height: 500px;
+  height: auto;
 }
 </style>
-
