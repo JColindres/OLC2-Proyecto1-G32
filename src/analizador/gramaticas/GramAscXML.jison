@@ -9,6 +9,8 @@
 /*********Área de reglas léxicas*********/
 
 /***ER***/ 
+//<!--(([^-])|(-([^-])))*-->      return 'COMENTARIO';
+//<!--(.*?)-->                    return 'COMENTARIO';
 <comment>[<]!--[\s\S\n]*?-->      return 'COMENTARIO';
 
 
@@ -28,16 +30,16 @@
 /***Otras ER***/ 
 [a-zA-Z_][a-zA-ZñÑ0-9_]*	return 'IDENTIFICADOR';
 ["][^\"]*["]                return 'CADENA';
-[^><\"\'&]*                 return 'TEXTO';
+//[^><\"\'&]*                 return 'TEXTO';
 
 [ \r\t]+                    {/*Ignorar espacios en blanco*/}
 \n                          {/*Ignorar espacios en blanco*/}
 
 
-.					{
+. {
   const er = new errorGram.Error({ tipo: 'léxico', linea: `${yylineno + 1}`, descripcion: `El lexema "${yytext}" en la columna: ${yylloc.first_column + 1} no es válido.` });
   tablaErrores.Errores.getInstance().push(er);
-  }
+}
 
 <<EOF>>				        return 'EOF';
 
@@ -48,8 +50,9 @@
 %{
     const errorGram = require("../arbol/error");
     const tablaErrores = require("../arbol/errores");
-    const Objeto = require("../abstractas/objeto");
-    const Atributo = require("../abstractas/atributo");
+    const {Objeto} = require("../abstractas/objeto");
+    const {Atributo} = require("../abstractas/atributo");
+    const {Prologo} = require("../abstractas/prologo");
 %}
 
 /*********Asociación de operadores y precedencias*********/
@@ -62,11 +65,11 @@
 /*********Área de producciones*********/
 
 INIT
-    : PROLOGO NODORAICES EOF                { $$ = $1; return $$; }  
+    : PROLOGO NODORAICES EOF                { $$ = $2; return { prologo: $1, cuerpo: $$}; }  
 ;
 
 PROLOGO
-    : ETABRE INTERR IDENTIFICADOR IDENTIFICADOR ASIGN CADENA IDENTIFICADOR ASIGN CADENA INTERR ETCIERRE       { $$ = $5; $$ = $8; }
+    : ETABRE INTERR IDENTIFICADOR IDENTIFICADOR ASIGN CADENA IDENTIFICADOR ASIGN CADENA INTERR ETCIERRE       { $$ = new Prologo($6,$9); }
 ;  
 
 NODORAICES

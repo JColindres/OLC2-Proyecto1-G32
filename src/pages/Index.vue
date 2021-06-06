@@ -46,7 +46,7 @@
           <div class="col-md-12" style="width:100%">
           <q-card class="editorXML" style="width:auto">
             <q-bar class="bg-black text-white" style="width:auto">
-              <q-btn push label="Ejecutar" icon="play_arrow"/>
+              <q-btn push label="Ejecutar" icon="play_arrow" @click="ejecutarXPath"/>
             </q-bar>              
             <codemirror v-model="codeXP" :options="cmOptionsXP" />              
           </q-card>
@@ -86,7 +86,6 @@
                 class="bg-black text-white"
                 align="justify"
               >
-                <q-tab label="Consola" name="consola" />
                 <q-tab label="Errores" name="errores" />
                 <q-tab
                   label="Tabla de Símbolos"
@@ -104,18 +103,6 @@
                 transition-prev="jump-up"
                 transition-next="jump-up"
               >
-                <q-tab-panel name="consola" class="bg-grey-10 text-white">
-                  <q-list dark bordered separator dense>
-                    <q-item
-                      clickable
-                      v-ripple
-                      v-for="(item, index) in salida"
-                      :key="index"
-                    >
-                      <q-item-section>{{ item }}</q-item-section>
-                    </q-item>
-                  </q-list>
-                </q-tab-panel>
 
                 <q-tab-panel name="errores" v-if="errores != null && errores.length > 0">
                   <div class="q-pa-md">
@@ -164,11 +151,11 @@ import "codemirror/mode/xml/xml.js";
 import "codemirror/mode/xquery/xquery.js";
 // Analizador
 import AXml from '../analizador/gramaticas/GramAscXML';
-//import AXpath from '../analizador/gramaticas/gramatica_ASC_XPATH';
-//Traduccion
+import AXpath from '../analizador/gramaticas/gramatica_ASC_XPATH';
+//Ejecucion
 import { Errores } from "../analizador/arbol/errores";
 import { Error as InstanciaError } from "../analizador/arbol/error";
-//import { Entornos } from "../ejecucion/entornos";
+import { Ejecucion } from "../analizador/ejecucion";
 
 export default {
   components: {
@@ -272,16 +259,32 @@ export default {
           );
           return;
         }
-        //let ejecucion = new Ejecucion(raiz);
-        //this.dot = ejecucion.getDot();
-        //Valido si puedo ejecutar (no deben existir funciones anidadas)
-        /*if(!ejecucion.puedoEjecutar(raiz)){
-          this.notificar("primary", "No se puede realizar una ejecución con funciones anidadas");
+        let ejecucion = new Ejecucion(raiz.prologo, raiz.cuerpo, this.code);
+        ejecucion.verObjetos();
+        //console.log(raiz);
+        this.notificar("primary", "Ejecución realizada con éxito");
+      } catch (error) {
+        this.validarError(error);
+      }
+      this.errores = Errores.getInstance().lista;
+      //this.entornos = Entornos.getInstance().lista;
+    },
+    ejecutarXPath() {
+      if (this.codeXP.trim() == "") {
+        this.notificar("primary", `El editor está vacío, escriba algo.`);
+        return;
+      }
+      this.inicializarValores();
+      try {
+        const raiz = AXpath.parse(this.codeXP);
+        //Validacion de raiz
+        if (raiz == null) {
+          this.notificar(
+            "negative",
+            "No se pudo ejecutar"
+          );
           return;
-        }*/
-        //ejecucion.ejecutar();
-        // ejecucion.imprimirErrores();
-        //this.salida = ejecucion.getSalida();
+        }
         console.log(raiz);
         this.notificar("primary", "Ejecución realizada con éxito");
       } catch (error) {

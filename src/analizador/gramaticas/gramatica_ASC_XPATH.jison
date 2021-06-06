@@ -65,7 +65,8 @@
 
 //error lexico
 . {
-
+  const er = new errorGram.Error({ tipo: 'léxico', linea: `${yylineno + 1}`, descripcion: `El lexema "${yytext}" en la columna: ${yylloc.first_column + 1} no es válido.` });
+  tablaErrores.Errores.getInstance().push(er);
 }
 
 //Fin del archivo
@@ -75,7 +76,8 @@
 
 //seccion de Imports
 %{
-
+    const errorGram = require("../arbol/error");
+    const tablaErrores = require("../arbol/errores");
 %}
 
 //Definir precedencia
