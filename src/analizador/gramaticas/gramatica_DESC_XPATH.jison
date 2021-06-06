@@ -99,15 +99,16 @@
 
 %%
 
-//Gramatica 
-
 S : INSTRUCCIONES EOF  ;
 
-INSTRUCCIONES : INSTRUCCIONES INSTRUCCION
-              | INSTRUCCION  ;
+INSTRUCCIONES : INSTRUCCION INSTRUCCIONES ; 
 
-INSTRUCCION : INSTRUCCION o RUTA FILTROS
-            | RUTA FILTROS; 
+INSTRUCCIONES : ; 
+
+INSTRUCCION : RUTA FILTROS OPC_I;
+
+OPC_I :  
+        | o INSTRUCCION ; 
 
 RUTA :    ATRIBUTO_DESCENDIENTES
             | DESCENDIENTES_NODO
@@ -120,7 +121,7 @@ RUTA :    ATRIBUTO_DESCENDIENTES
             | PADRE_NODO
             | ANY 
             | id 
-            | EJES OPC_EJES ; // FILTROS ; 
+            | EJES OPC_EJES ; // FILTROS ;
 
 ATRIBUTO_DESCENDIENTES : diagonal_diagonal_arroba_ast OPC;
 
@@ -140,7 +141,7 @@ NODO_ACTUAL : punto;
 
 PADRE_NODO : dos_pts ;
 
-ANY : mul ; 
+ANY : mul ;
 
 EJES : ancestor bi_pto
       | ancestor menos or menos self bi_pto
@@ -174,11 +175,11 @@ ANY_ATRIBUTO : any_atributo ;
 
 ATRIBUTO : arroba id;
 
-FILTROS : 
-        | LISTA_PREDICADO ; 
+FILTROS : LISTA_PREDICADO ; 
 
-LISTA_PREDICADO : LISTA_PREDICADO PREDICADO
-                | PREDICADO;
+LISTA_PREDICADO :  PREDICADO LISTA_PREDICADO;
+
+LISTA_PREDICADO : ;
 
 PREDICADO: cor_izq  EXPR  cor_der;
 
@@ -193,7 +194,8 @@ EXPR : ATRIBUTO_PREDICADO
      | PREDICADO
      | NODO_FUNCION;
 
-PATH : EXPR doble_diagonal EXPR
+
+     PATH : EXPR doble_diagonal EXPR
         | EXPR diagonal EXPR
         | doble_diagonal OPC_PATH EXPR
         | diagonal OPC_PATH EXPR

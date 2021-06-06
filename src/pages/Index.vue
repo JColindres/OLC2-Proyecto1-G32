@@ -46,7 +46,8 @@
           <div class="col-md-12" style="width:100%">
           <q-card class="editorXML" style="width:auto">
             <q-bar class="bg-black text-white" style="width:auto">
-              <q-btn push label="Ejecutar" icon="play_arrow" @click="ejecutarXPath"/>
+              <q-btn push label="Ejecutar_ASC" icon="play_arrow" @click="ejecutarXPath"/>
+              <q-btn push label="Ejecutar_DESC" icon="play_arrow" @click="ejecutarXPath_DESC"/>
             </q-bar>              
             <codemirror v-model="codeXP" :options="cmOptionsXP" />              
           </q-card>
@@ -152,6 +153,7 @@ import "codemirror/mode/xquery/xquery.js";
 // Analizador
 import AXml from '../analizador/gramaticas/GramAscXML';
 import AXpath from '../analizador/gramaticas/gramatica_ASC_XPATH';
+import DXpath from '../analizador/gramaticas/gramatica_DESC_XPATH';
 //Ejecucion
 import { Errores } from "../analizador/arbol/errores";
 import { Error as InstanciaError } from "../analizador/arbol/error";
@@ -277,6 +279,30 @@ export default {
       this.inicializarValores();
       try {
         const raiz = AXpath.parse(this.codeXP);
+        //Validacion de raiz
+        if (raiz == null) {
+          this.notificar(
+            "negative",
+            "No se pudo ejecutar"
+          );
+          return;
+        }
+        console.log(raiz);
+        this.notificar("primary", "Ejecución realizada con éxito");
+      } catch (error) {
+        this.validarError(error);
+      }
+      this.errores = Errores.getInstance().lista;
+      //this.entornos = Entornos.getInstance().lista;
+    },
+    ejecutarXPath_DESC() {
+      if (this.codeXP.trim() == "") {
+        this.notificar("primary", `El editor está vacío, escriba algo.`);
+        return;
+      }
+      this.inicializarValores();
+      try {
+        const raiz = DXpath.parse(this.codeXP);
         //Validacion de raiz
         if (raiz == null) {
           this.notificar(
