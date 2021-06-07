@@ -15,22 +15,25 @@
 
 
 /***Palabras reservadas***/ 
-//"Print"                        return 'RPRINT';
+/*  < > & ' "  */
+"&lt;"                      return 'LT'
+"&gt;"                      return 'GT'
+"&amp;"                     return 'AMP'
+"&apos;"                    return 'APOS'
+"&quot;"                    return 'QUOT'
 
 /***Caracteres del lenguaje***/
-
 "="                         return 'ASIGN';
-";"                         return 'PTCOMA';
 "/"                         return 'BARRA';
 "<"                         return 'ETABRE';
 ">"                         return 'ETCIERRE';
-"&"                         return 'AMPERSAND';
 "?"                         return 'INTERR'
 
 /***Otras ER***/ 
-[a-zA-Z_][a-zA-ZñÑ0-9_]*	return 'IDENTIFICADOR';
-["][^\"]*["]                return 'CADENA';
-//[^><\"\'&]*                 return 'TEXTO';
+([a-zA-Z_])[a-zA-ZñÑ0-9_-]*	    return 'IDENTIFICADOR';
+["][^\"]*["]                    return 'CADENA';
+([^ \r\t\na-zA-ZñÑ0-9_><\"\'&]) return 'TEXTO';
+[0-9]                           return 'DIGITO'
 
 [ \r\t]+                    {/*Ignorar espacios en blanco*/}
 \n                          {/*Ignorar espacios en blanco*/}
@@ -108,5 +111,23 @@ ATRIBUTO
 
 LISTA_IDS
     : LISTA_IDS IDENTIFICADOR           { $1.push($2); $$ = $1; }
+    | LISTA_IDS TEXTO                   {  }
+    | LISTA_IDS HREF                    {  }
+    | LISTA_IDS DIGITO                  {  }
+    | LISTA_IDS INTERR                  {  }
+    | LISTA_IDS BARRA                   {  }
     | IDENTIFICADOR                     { $$ = [$1]; }
+    | TEXTO                             {  }
+    | HREF                              {  }
+    | DIGITO                            {  }
+    | INTERR                            {  }
+    | BARRA                             {  }
+;
+
+HREF
+    : LT          { }
+    | GT          { }
+    | AMP         { }
+    | APOS        { }
+    | QUOT        { }
 ;
