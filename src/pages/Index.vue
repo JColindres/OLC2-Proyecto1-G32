@@ -121,8 +121,20 @@
                   </div>
                 </q-tab-panel>
 
-                <q-tab-panel name="tabla_de_simbolos" v-if="entornos != null && entornos.length > 0">
-                  <tabla-simbolos :entornos="entornos" />
+                <q-tab-panel name="tabla_de_simbolos" v-if="simbolos != null && simbolos.length > 0">
+                  <div class="q-pa-md">
+                    <q-table
+                      title="Tabla de Simbolos"
+                      :data="simbolos"
+                      :columns="columnsTS"
+                      row-key="name"
+                      dark
+                      color="amber"
+                      dense
+                      :pagination="{ rowsPerPage: 0 }"
+                      rows-per-page-label="Simbolos por página"
+                    />
+                  </div>
                 </q-tab-panel>
                 
               </q-tab-panels>
@@ -226,6 +238,15 @@ export default {
         },
       ],
       entornos: [],
+      simbolos: [],
+      columnsTS: [
+        { name: "identificador", label: "Identificador", field: "identificador", align: "left" },
+        { name: "valor", label: "Valor", field: "valor", align: "left" },
+        { name: "ambito", label: "Ambito", field: "ambito", align: "left" },
+        { name: "tipo", label: "Tipo", field: "tipo", align: "left" },
+        { name: "linea", label: "Linea", field: "linea", align: "left" },
+        { name: "columna", label: "Columna", field: "columna", align: "left" },
+      ],
     };
   },
   methods: {
@@ -263,13 +284,14 @@ export default {
         }
         let ejecucion = new Ejecucion(raiz.prologo, raiz.cuerpo, this.code);
         ejecucion.verObjetos();
-        //console.log(raiz);
+        this.dataTS(ejecucion.ts.tabla);
         this.notificar("primary", "Ejecución realizada con éxito");
       } catch (error) {
         this.validarError(error);
       }
       this.errores = Errores.getInstance().lista;
-      //this.entornos = Entornos.getInstance().lista;
+      //this.simbolos = ejecucion.verObjetos();
+      //console.log(this.simbolos);
     },
     ejecutarXPath() {
       if (this.codeXP.trim() == "") {
@@ -355,6 +377,18 @@ export default {
     limpiar(){
       this.code = '';
       this.inicializarValores();
+    },
+    dataTS(arreglo){
+      arreglo.forEach(element => {
+        let a = ""
+        if(element[1].length > 13){
+          a = element[1].toString().substr(0, 13)+"...";
+        }
+        else{
+          a = element[1];
+        }
+        this.simbolos.push({identificador: element[0], valor: a, ambito: element[2], tipo: element[3], linea: element[4], columna: element[5]});
+      });
     }
   },
 };

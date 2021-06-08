@@ -89,35 +89,29 @@ break;
 case 2:
  this.$ = new Prologo($$[$0-5],$$[$0-2]); 
 break;
-case 3: case 9: case 13: case 16:
+case 3: case 9: case 13: case 16: case 17: case 18: case 19: case 20: case 21:
  $$[$0-1].push($$[$0]); this.$ = $$[$0-1]; 
 break;
-case 4: case 10: case 14: case 22:
+case 4: case 10: case 14: case 22: case 23: case 24: case 25: case 26: case 27:
  this.$ = [$$[$0]]; 
 break;
-case 5: case 11:
+case 5: case 11: case 28: case 29: case 30: case 31: case 32:
  this.$ = $$[$0]; 
 break;
 case 6:
- this.$ = new Objeto($$[$0-7],'',_$[$0-8].first_line, _$[$0-8].first_column,$$[$0-6],$$[$0-4]); 
+ this.$ = new Objeto($$[$0-7],'',_$[$0-8].first_line, _$[$0-8].first_column,$$[$0-6],$$[$0-4],true); 
 break;
 case 7:
- this.$ = new Objeto($$[$0-7],$$[$0-4],_$[$0-8].first_line, _$[$0-8].first_column,$$[$0-6],[]); 
+ this.$ = new Objeto($$[$0-7],$$[$0-4],_$[$0-8].first_line, _$[$0-8].first_column,$$[$0-6],[],true); 
 break;
 case 8:
- this.$ = new Objeto($$[$0-3],'',_$[$0-4].first_line, _$[$0-4].first_column,$$[$0-2],[]); 
+ this.$ = new Objeto($$[$0-3],'',_$[$0-4].first_line, _$[$0-4].first_column,$$[$0-2],[],false); 
 break;
 case 12:
  this.$ = []; 
 break;
 case 15:
  this.$ = new Atributo($$[$0-2], $$[$0], _$[$0-2].first_line, _$[$0-2].first_column); 
-break;
-case 17: case 18: case 19: case 20: case 21: case 23: case 24: case 25: case 26: case 27:
-  
-break;
-case 28: case 29: case 30: case 31: case 32:
- 
 break;
 }
 },

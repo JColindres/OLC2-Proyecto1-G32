@@ -7,13 +7,15 @@ export class Objeto{
     listaObjetos: Array<Objeto>;
     linea: number;
     columna: number;
+    doble:boolean;
 
-    constructor(id:string, texto:string, linea:number, columna:number, listaAtributos:Array<Atributo>, listaO:Array<Objeto>){
+    constructor(id:string, texto:string, linea:number, columna:number, listaAtributos:Array<Atributo>, listaO:Array<Objeto>, doble:boolean){
         this.identificador = id;
         this.texto = texto;
         this.linea = linea;
         this.columna = columna;
         this.listaAtributos = listaAtributos;
         this.listaObjetos = listaO;
+        this.doble = doble;
     }
 }

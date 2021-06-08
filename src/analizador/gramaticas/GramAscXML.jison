@@ -85,9 +85,9 @@ NODORAIZ
 ;
 
 OBJETO
-    : ETABRE IDENTIFICADOR LISTAATRIBUTOS ETCIERRE OBJETOS ETABRE BARRA IDENTIFICADOR ETCIERRE              { $$ = new Objeto($2,'',@1.first_line, @1.first_column,$3,$5); }
-    | ETABRE IDENTIFICADOR LISTAATRIBUTOS ETCIERRE LISTA_IDS ETABRE BARRA IDENTIFICADOR ETCIERRE            { $$ = new Objeto($2,$5,@1.first_line, @1.first_column,$3,[]); }
-    | ETABRE IDENTIFICADOR LISTAATRIBUTOS BARRA ETCIERRE                                                    { $$ = new Objeto($2,'',@1.first_line, @1.first_column,$3,[]); }
+    : ETABRE IDENTIFICADOR LISTAATRIBUTOS ETCIERRE OBJETOS ETABRE BARRA IDENTIFICADOR ETCIERRE              { $$ = new Objeto($2,'',@1.first_line, @1.first_column,$3,$5,true); }
+    | ETABRE IDENTIFICADOR LISTAATRIBUTOS ETCIERRE LISTA_IDS ETABRE BARRA IDENTIFICADOR ETCIERRE            { $$ = new Objeto($2,$5,@1.first_line, @1.first_column,$3,[],true); }
+    | ETABRE IDENTIFICADOR LISTAATRIBUTOS BARRA ETCIERRE                                                    { $$ = new Objeto($2,'',@1.first_line, @1.first_column,$3,[],false); }
 ;
 
 OBJETOS
@@ -111,23 +111,23 @@ ATRIBUTO
 
 LISTA_IDS
     : LISTA_IDS IDENTIFICADOR           { $1.push($2); $$ = $1; }
-    | LISTA_IDS TEXTO                   {  }
-    | LISTA_IDS HREF                    {  }
-    | LISTA_IDS DIGITO                  {  }
-    | LISTA_IDS INTERR                  {  }
-    | LISTA_IDS BARRA                   {  }
+    | LISTA_IDS TEXTO                   { $1.push($2); $$ = $1; }
+    | LISTA_IDS HREF                    { $1.push($2); $$ = $1; }
+    | LISTA_IDS DIGITO                  { $1.push($2); $$ = $1; }
+    | LISTA_IDS INTERR                  { $1.push($2); $$ = $1; }
+    | LISTA_IDS BARRA                   { $1.push($2); $$ = $1; }
     | IDENTIFICADOR                     { $$ = [$1]; }
-    | TEXTO                             {  }
-    | HREF                              {  }
-    | DIGITO                            {  }
-    | INTERR                            {  }
-    | BARRA                             {  }
+    | TEXTO                             { $$ = [$1]; }
+    | HREF                              { $$ = [$1]; }
+    | DIGITO                            { $$ = [$1]; }
+    | INTERR                            { $$ = [$1]; }
+    | BARRA                             { $$ = [$1]; }
 ;
 
 HREF
-    : LT          { }
-    | GT          { }
-    | AMP         { }
-    | APOS        { }
-    | QUOT        { }
+    : LT          { $$ = $1; }
+    | GT          { $$ = $1; }
+    | AMP         { $$ = $1; }
+    | APOS        { $$ = $1; }
+    | QUOT        { $$ = $1; }
 ;
