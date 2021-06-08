@@ -28,7 +28,7 @@
                 <q-tooltip content-class="bg-white text-primary">Close</q-tooltip>
               </q-btn>
             </q-bar>
-
+            
             <q-card-section class="q-pt-none">
               <ast :dot="dot" />
             </q-card-section>
@@ -37,6 +37,8 @@
 
       </div>
     </div>
+
+    
 
     <!-- Editor de codigo -->
     
@@ -309,6 +311,8 @@ export default {
           );
           return;
         }
+        let ejecucion = new Ejecucion(raiz.prologo, raiz.cuerpo, this.code,raiz);
+        this.dot = ejecucion.getDot();
         console.log(raiz);
         this.notificar("primary", "Ejecución realizada con éxito");
       } catch (error) {

@@ -48,7 +48,7 @@ export default {
           element.lastIndexOf(">") + 1
         );
         codigo = codigo.replace(/width=\"([0-9]*pt)\"/, 'width="800pt"');
-        codigo = codigo.replace(/height=\"([0-9]*pt)\"/, 'height="500pt"');
+        codigo = codigo.replace(/height=\"([0-9]*pt)\"/, 'height="800pt"');
         this.grafica = codigo;
       })
       .catch((error) => {

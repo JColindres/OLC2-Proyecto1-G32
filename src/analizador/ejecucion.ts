@@ -13,10 +13,15 @@ export class Ejecucion {
 
     tildes: Array<String> = ['á','é','í','ó','ú'];
 
-    constructor(prologo: JSON, cuerpo:Array<Objeto>, cadena: string){
+    raiz: Object;
+    contador: number;
+    dot: string;
+
+    constructor(prologo: JSON, cuerpo:Array<Objeto>, cadena: string , raiz: Object){
         this.prologoXml = prologo;
         this.cuerpoXml = cuerpo;
         this.cadena = cadena;
+        Object.assign(this, { raiz, contador: 0, dot: '' });
     }
 
     verObjetos(){
@@ -68,4 +73,39 @@ export class Ejecucion {
             }
         });
     }
+
+    getDot(): string {
+        this.contador = 0;
+        this.dot = "digraph G {\n";
+        if (this.raiz != null) {
+          this.generacionDot(this.raiz);
+        }
+        this.dot += "\n}";
+        return this.dot;
+      }
+    
+      generacionDot(nodo: any): void {
+        if (nodo instanceof Object) {
+          let idPadre = this.contador;
+          this.dot += `node${idPadre}[label="${this.getStringValue(nodo.label)}"];\n`;
+          if (nodo.hasOwnProperty("hijos")) {
+            nodo.hijos.forEach((nodoHijo: any) => {
+              let idHijo = ++this.contador;
+              this.dot += `node${idPadre} -> node${idHijo};\n`;
+              if (nodoHijo instanceof Object) {
+                this.generacionDot(nodoHijo);
+              } else {
+                this.dot += `node${idHijo}[label="${this.getStringValue(nodoHijo)}"];`;
+              }
+            });
+          }
+        }
+      }
+    
+      getStringValue(label: string): string {
+        if (label.startsWith("\"") || label.startsWith("'") || label.startsWith("`")) {
+          return label.substr(1, label.length - 2);
+        }
+        return label;
+      }
 }
