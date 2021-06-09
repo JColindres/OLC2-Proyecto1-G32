@@ -94,6 +94,7 @@
                   label="Tabla de Símbolos"
                   name="tabla_de_simbolos"
                 />
+                <q-tab label="Reporte Gramatical" name="rep_gram" @click="impconsola"></q-tab>
               </q-tabs>
             </template>
 
@@ -138,6 +139,22 @@
                     />
                   </div>
                 </q-tab-panel>
+
+                <q-tab-panel name="rep_gram" v-if="repgramascxml != null && repgramascxml.length > 0">
+                  <div class="q-pa-md">
+                    <q-table
+                      title="Reporte Gramatical XML Ascendente"
+                      :data="repgramascxml"
+                      :columns="colascxml"
+                      row-key="name"
+                      dark
+                      color="amber"
+                      dense
+                      :pagination="{ rowsPerPage: 0 }"
+                      rows-per-page-label="Reporte gramatical por página"
+                    />
+                  </div>
+                </q-tab-panel>
                 
               </q-tab-panels>
             </template>
@@ -172,6 +189,7 @@ import DXpath from '../analizador/gramaticas/gramatica_DESC_XPATH';
 import { Errores } from "../analizador/arbol/errores";
 import { Error as InstanciaError } from "../analizador/arbol/error";
 import { Ejecucion } from "../analizador/ejecucion";
+import { RepGramAscXML } from '../analizador/Reportes/RepGramAscXML';
 
 export default {
   components: {
@@ -249,6 +267,11 @@ export default {
         { name: "linea", label: "Linea", field: "linea", align: "left" },
         { name: "columna", label: "Columna", field: "columna", align: "left" },
       ],
+      repgramascxml: [],
+      colascxml: [
+        { name: "produccion", label: "Producción", field: "produccion", align: "left"},
+        { name: "reglas", label: "Reglas", field: "reglas", align: "left" },
+      ]
     };
   },
   methods: {
@@ -292,6 +315,7 @@ export default {
         this.validarError(error);
       }
       this.errores = Errores.getInstance().lista;
+      this.repgramascxml = RepGramAscXML.getInstance().lista;
       //this.simbolos = ejecucion.verObjetos();
       //console.log(this.simbolos);
     },
@@ -348,10 +372,12 @@ export default {
     inicializarValores() {
       Errores.getInstance().clear();
       //Entornos.getInstance().clear();
+      RepGramAscXML.getInstance().clear();
       this.errores = [];
       this.entornos = [];
       this.salida = [];
       this.dot = '';
+      this.repgramascxml = [];
     },
     validarError(error) {
       const json = JSON.stringify(error);
@@ -393,6 +419,10 @@ export default {
         }
         this.simbolos.push({identificador: element[0], valor: a, ambito: element[2], tipo: element[3], linea: element[4], columna: element[5]});
       });
+    },
+    impconsola()
+    {
+      console.log(this.columnsTS);
     }
   },
 };
