@@ -87,40 +87,40 @@ case 1:
  return new NodoAST({label: 'S', hijos: [$$[$0-1]], linea: yylineno}); 
 break;
 case 2:
- this.$ = new NodoAST({label: 'INSTRUCCIONES', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'INSTRUCCIONES', hijos: [...$$[$0-1].hijos, ...$$[$0].hijos], linea: yylineno}); 
 break;
 case 3:
- this.$ = new NodoAST({label: 'INSTRUCCIONES', hijos: [$$[$0]], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'INSTRUCCIONES', hijos: [...$$[$0].hijos], linea: yylineno}); 
 break;
 case 4:
- this.$ = new NodoAST({label: 'INSTRUCCION', hijos: [$$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'INSTRUCCION', hijos: [...$$[$0-3].hijos, $$[$0-2], ...$$[$0-1].hijos, ...$$[$0].hijos], linea: yylineno}); 
 break;
 case 5:
- this.$ = new NodoAST({label: 'INSTRUCCION', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'INSTRUCCION', hijos: [...$$[$0-1].hijos, ...$$[$0].hijos], linea: yylineno}); 
 break;
 case 6: case 7: case 8: case 9: case 10: case 11: case 12: case 13: case 14: case 15: case 16:
  this.$ = new NodoAST({label: 'RUTA', hijos: [$$[$0]], linea: yylineno}); 
 break;
 case 17:
- this.$ = new NodoAST({label: 'RUTA', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'RUTA', hijos: [$$[$0-1], ...$$[$0].hijos], linea: yylineno}); 
 break;
 case 18:
- this.$ = new NodoAST({label: 'ATRIBUTO_DESCENDIENTES', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'ATRIBUTO_DESCENDIENTES', hijos: [$$[$0-1], ...$$[$0].hijos], linea: yylineno}); 
 break;
 case 19: case 20:
- this.$ = new NodoAST({label: 'DESCENDIENTES_NODO', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'DESCENDIENTES_NODO', hijos: [$$[$0-1], ...$$[$0].hijos], linea: yylineno}); 
 break;
 case 21:
- this.$ = new NodoAST({label: 'PADRE', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'PADRE', hijos: [$$[$0-1], ...$$[$0].hijos], linea: yylineno}); 
 break;
 case 22:
- this.$ = new NodoAST({label: 'ATRIBUTO_NODO', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'ATRIBUTO_NODO', hijos: [$$[$0-1], ...$$[$0].hijos], linea: yylineno}); 
 break;
 case 23:
- this.$ = new NodoAST({label: 'HIJOS', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'HIJOS', hijos: [$$[$0-1], ...$$[$0].hijos], linea: yylineno}); 
 break;
 case 24:
- this.$ = new NodoAST({label: 'RAIZ', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'RAIZ', hijos: [$$[$0-1], ...$$[$0].hijos], linea: yylineno}); 
 break;
 case 25:
  this.$ = new NodoAST({label: 'NODO_ACTUAL', hijos: [$$[$0]], linea: yylineno}); 
@@ -150,13 +150,13 @@ case 44: case 45:
  this.$ = new NodoAST({label: 'NODO_FUNCION', hijos: [$$[$0-2],$$[$0-1],$$[$0]], linea: yylineno}); 
 break;
 case 46:
- this.$ = new NodoAST({label: 'OPC', hijos: ['[]'], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'OPC', hijos: [], linea: yylineno}); 
 break;
 case 47: case 48:
- this.$ = new NodoAST({label: 'OPC', hijos: [$$[$0]], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'OPC', hijos: [...$$[$0].hijos], linea: yylineno}); 
 break;
 case 49: case 50:
- this.$ = new NodoAST({label: 'PASOS', hijos: [$$[$0]], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'PASOS', hijos: [...$$[$0].hijos], linea: yylineno}); 
 break;
 case 51:
  this.$ = new NodoAST({label: 'ANY_ATRIBUTO', hijos: [$$[$0]], linea: yylineno}); 
@@ -165,31 +165,37 @@ case 52:
  this.$ = new NodoAST({label: 'ATRIBUTO', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
 break;
 case 53:
- this.$ = new NodoAST({label: 'FILTROS', hijos: ['[]'], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'FILTROS', hijos: [], linea: yylineno}); 
 break;
 case 54:
- this.$ = new NodoAST({label: 'FILTROS', hijos: [$$[$0]], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'FILTROS', hijos: [...$$[$0].hijos], linea: yylineno}); 
 break;
 case 55:
- this.$ = new NodoAST({label: 'LISTA_PREDICADO', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'LISTA_PREDICADO', hijos: [...$$[$0-1].hijos, ...$$[$0].hijos], linea: yylineno}); 
 break;
 case 56:
- this.$ = new NodoAST({label: 'LISTA_PREDICADO', hijos: [$$[$0]], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'LISTA_PREDICADO', hijos: [...$$[$0].hijos], linea: yylineno}); 
 break;
 case 57:
- this.$ = new NodoAST({label: 'PREDICADO', hijos: [$$[$0-2], $$[$0-1], $$[$0]], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'PREDICADO', hijos: [$$[$0-2], ...$$[$0-1].hijos, $$[$0]], linea: yylineno}); 
 break;
-case 58: case 59: case 60: case 61: case 62: case 63: case 65: case 66: case 67:
+case 58: case 59: case 60: case 61: case 62: case 65: case 66: case 67:
  this.$ = new NodoAST({label: 'EXPR', hijos: [$$[$0]], linea: yylineno}); 
 break;
-case 64:
- this.$ = new NodoAST({label: 'EXPR', hijos: [$$[$0-1],$$[$0]], linea: yylineno}); 
+case 63:
+ this.$ = new NodoAST({label: 'EXPR', hijos: [...$$[$0].hijos], linea: yylineno}); 
 break;
-case 68: case 69: case 70: case 71:
- this.$ = new NodoAST({label: 'PATH', hijos: [$$[$0-2],$$[$0-1],$$[$0]], linea: yylineno}); 
+case 64:
+ this.$ = new NodoAST({label: 'EXPR', hijos: [$$[$0-1],...$$[$0].hijos], linea: yylineno}); 
+break;
+case 68: case 69:
+ this.$ = new NodoAST({label: 'PATH', hijos: [...$$[$0-2].hijos,$$[$0-1],...$$[$0].hijos], linea: yylineno}); 
+break;
+case 70: case 71:
+ this.$ = new NodoAST({label: 'PATH', hijos: [$$[$0-2],...$$[$0-1].hijos,...$$[$0].hijos], linea: yylineno}); 
 break;
 case 72:
- this.$ = new NodoAST({label: 'PATH', hijos: [$$[$0-1],$$[$0],$$[$01]], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'PATH', hijos: [...$$[$0-1].hijos,$$[$0],$$[$01]], linea: yylineno}); 
 break;
 case 73:
  this.$ = new NodoAST({label: 'PATH', hijos: [$$[$0]], linea: yylineno}); 
@@ -204,19 +210,22 @@ case 76: case 77:
  this.$ = new NodoAST({label: 'ORDEN', hijos: [$$[$0-2],$$[$0-1],$$[$0]], linea: yylineno}); 
 break;
 case 78: case 79: case 80: case 81: case 82:
- this.$ = new NodoAST({label: 'ARITMETICAS', hijos: [$$[$0-2],$$[$0-1],$$[$0]], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'ARITMETICAS', hijos: [...$$[$0-2].hijos,$$[$0-1],...$$[$0].hijos], linea: yylineno}); 
 break;
 case 83: case 84: case 85: case 86: case 87: case 88:
- this.$ = new NodoAST({label: 'RELACIONALES', hijos: [$$[$0-2],$$[$0-1],$$[$0]], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'RELACIONALES', hijos: [...$$[$0-2].hijos,$$[$0-1],...$$[$0].hijos], linea: yylineno}); 
 break;
 case 89: case 90:
- this.$ = new NodoAST({label: 'LOGICAS', hijos: [$$[$0-2],$$[$0-1],$$[$0]], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'LOGICAS', hijos: [...$$[$0-2].hijos,$$[$0-1],...$$[$0].hijos], linea: yylineno}); 
 break;
-case 91: case 93:
- this.$ = new NodoAST({label: 'ATRIBUTO_PREDICADO', hijos: [$$[$0-1],$$[$0]], linea: yylineno}); 
+case 91:
+ this.$ = new NodoAST({label: 'ATRIBUTO_PREDICADO', hijos: [$$[$0-1],...$$[$0].hijos], linea: yylineno}); 
 break;
 case 92:
  this.$ = new NodoAST({label: 'ATRIBUTO_PREDICADO', hijos: [$$[$0]], linea: yylineno}); 
+break;
+case 93:
+ this.$ = new NodoAST({label: 'ATRIBUTO_PREDICADO', hijos: [$$[$0-1],$$[$0]], linea: yylineno}); 
 break;
 case 94: case 95: case 96: case 97: case 98: case 99:
  this.$ = new NodoAST({label: 'VALORES', hijos: [$$[$0]], linea: yylineno}); 
