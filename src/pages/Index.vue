@@ -271,7 +271,8 @@ export default {
       colascxml: [
         { name: "produccion", label: "Producción", field: "produccion", align: "left"},
         { name: "reglas", label: "Reglas", field: "reglas", align: "left" },
-      ]
+      ],
+      xmlXP: null,
     };
   },
   methods: {
@@ -307,7 +308,8 @@ export default {
           );
           return;
         }
-        let ejecucion = new Ejecucion(raiz.prologo, raiz.cuerpo, this.code);
+        this.xmlXP = raiz;
+        let ejecucion = new Ejecucion(this.xmlXP.prologo, this.xmlXP.cuerpo, this.code);
         ejecucion.verObjetos();
         this.dataTS(ejecucion.ts.tabla);
         this.notificar("primary", "Ejecución realizada con éxito");
@@ -335,8 +337,9 @@ export default {
           );
           return;
         }
-        let ejecucion = new Ejecucion(raiz.prologo, raiz.cuerpo, this.code,raiz);
+        let ejecucion = new Ejecucion(this.xmlXP.prologo, this.xmlXP.cuerpo, this.code, raiz);
         this.dot = ejecucion.getDot();
+        this.codeS = ejecucion.recorrer();
         console.log(raiz);
         this.notificar("primary", "Ejecución realizada con éxito");
       } catch (error) {
