@@ -309,6 +309,7 @@ export default {
           return;
         }
         this.xmlXP = raiz;
+        console.log(raiz.cuerpo);
         let ejecucion = new Ejecucion(this.xmlXP.prologo, this.xmlXP.cuerpo, this.code);
         ejecucion.verObjetos();
         this.dataTS(ejecucion.ts.tabla);

@@ -31,21 +31,19 @@ export class Ejecucion {
   verObjetos() {
     this.ts = new XmlTS();
 
-    this.cuerpoXml.forEach((element, index) => {
-      if (index % 2 === 0) {
-        let etiqueta = "doble";
-        if (!element.doble) {
-          etiqueta = "única"
-        }
-        this.ts.agregar(element.identificador, element.texto, "Raiz", "Etiqueta " + etiqueta, element.linea, element.columna);
-        if (element.listaAtributos.length > 0) {
-          element.listaAtributos.forEach(atributos => {
-            this.ts.agregar(atributos.identificador, atributos.valor, element.identificador, "Atributo", atributos.linea, atributos.columna);
-          });
-        }
-        if (element.listaObjetos.length > 0) {
-          this.tablaRecursiva(element.listaObjetos, element.identificador);
-        }
+    this.cuerpoXml.forEach(element => {
+      let etiqueta = "doble";
+      if (!element.doble) {
+        etiqueta = "única"
+      }
+      this.ts.agregar(element.identificador, element.texto, "Raiz", "Etiqueta " + etiqueta, element.linea, element.columna);
+      if (element.listaAtributos.length > 0) {
+        element.listaAtributos.forEach(atributos => {
+          this.ts.agregar(atributos.identificador, atributos.valor, element.identificador, "Atributo", atributos.linea, atributos.columna);
+        });
+      }
+      if (element.listaObjetos.length > 0) {
+        this.tablaRecursiva(element.listaObjetos, element.identificador);
       }
     });
   }
@@ -197,11 +195,9 @@ export class Ejecucion {
       cons = [];
       if (!this.descendiente) {
         if (this.esRaiz) {
-          consulta.forEach((element, index) => {
-            if (index % 2 === 0) {
-              if (element.identificador === etiqueta) {
-                cons.push(element);
-              }
+          consulta.forEach(element => {
+            if (element.identificador === etiqueta) {
+              cons.push(element);
             }
           });
           this.esRaiz = false;
@@ -221,14 +217,12 @@ export class Ejecucion {
         }
       }
       else {
-        consulta.forEach((element, index) => {
-          if (index % 2 === 0) {
-            if (element.identificador === etiqueta) {
-              cons.push(element);
-            }
-            if (element.listaObjetos.length > 0) {
-              cons = cons.concat(this.recDescen(element.listaObjetos, etiqueta));
-            }
+        consulta.forEach(element => {
+          if (element.identificador === etiqueta) {
+            cons.push(element);
+          }
+          if (element.listaObjetos.length > 0) {
+            cons = cons.concat(this.recDescen(element.listaObjetos, etiqueta));
           }
         });
         return cons;
@@ -253,24 +247,22 @@ export class Ejecucion {
   traducir(): string {
     let cadena: string = '';
 
-    this.consultaXML.forEach((element, index) => {
-      if (index % 2 === 0) {
-        let etiqueta = "doble";
-        if (!element.doble) {
-          etiqueta = "única"
-        }
-        cadena += '<' + element.identificador;
-        if (element.listaAtributos.length > 0) {
-          element.listaAtributos.forEach(atributos => {
-            cadena += ' ' + atributos.identificador + '=' + atributos.valor;
-          });
-        }
-        cadena += '>\n';
-        if (element.listaObjetos.length > 0) {
-          cadena += this.traducirRecursiva(element.listaObjetos);
-        }
-        cadena += '</'+ element.identificador + '>\n';
+    this.consultaXML.forEach(element => {
+      let etiqueta = "doble";
+      if (!element.doble) {
+        etiqueta = "única"
       }
+      cadena += '<' + element.identificador;
+      if (element.listaAtributos.length > 0) {
+        element.listaAtributos.forEach(atributos => {
+          cadena += ' ' + atributos.identificador + '=' + atributos.valor;
+        });
+      }
+      cadena += '>\n';
+      if (element.listaObjetos.length > 0) {
+        cadena += this.traducirRecursiva(element.listaObjetos);
+      }
+      cadena += '</' + element.identificador + '>\n';
     });
     return cadena;
   }
@@ -306,7 +298,7 @@ export class Ejecucion {
       if (element.listaObjetos.length > 0) {
         cadena += this.traducirRecursiva(element.listaObjetos);
       }
-      cadena += '</'+ element.identificador + '>\n';
+      cadena += '</' + element.identificador + '>\n';
     });
     return cadena;
   }
