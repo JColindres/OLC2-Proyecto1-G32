@@ -365,6 +365,8 @@ export default {
           );
           return;
         }
+        let ejecucion = new Ejecucion(this.xmlXP.prologo, this.xmlXP.cuerpo, this.code, raiz);
+        this.dot = ejecucion.getDot();
         console.log(raiz);
         this.notificar("primary", "Ejecución realizada con éxito");
       } catch (error) {
