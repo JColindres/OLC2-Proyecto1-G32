@@ -111,11 +111,21 @@ break;
 case 6:
  RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'OBJETO -> ETABRE IDENTIFICADOR LISTAATRIBUTOS ETCIERRE OBJETOS ETABRE BARRA IDENTIFICADOR ETCIERRE', 
                                                                                                     reglas:'OBJETO.Objeto = new Objeto(IDENTIFICADOR.val, \' \', LISTAATRIBUTOS.lista, OBJETOS.lista, true);'}));
+                                                                                                    /*Validación de etiqueta de apertura y de cierre iguales*/
+                                                                                                    if($$[$0-7] != $$[$0-1])
+                                                                                                    {                                                                                                        
+                                                                                                        tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Semántico', linea: `${yylineno + 1}`, descripcion: `Etiqueta de apertura "${$$[$0-7]}" y de cierre "${$$[$0-1]}" no coinciden. Columna: ${this._$.first_column + 1}.`}));
+                                                                                                    };
                                                                                                     this.$ = new Objeto($$[$0-7],'',_$[$0-8].first_line, _$[$0-8].first_column,$$[$0-6],$$[$0-4],true); 
 break;
 case 7:
  RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'OBJETO -> ETABRE IDENTIFICADOR LISTAATRIBUTOS ETCIERRE LISTA_IDS ETABRE BARRA IDENTIFICADOR ETCIERRE', 
                                                                                                     reglas:'OBJETO.Objeto = new Objeto(IDENTIFICADOR.val, LISTA_IDS.lista, LISTAATRIBUTOS.lista, [], true);'}));
+                                                                                                    /*Validación de etiqueta de apertura y de cierre iguales*/
+                                                                                                    if($$[$0-7] != $$[$0-1])
+                                                                                                    {                                                                                                        
+                                                                                                        tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Semántico', linea: `${yylineno + 1}`, descripcion: `Etiqueta de apertura "${$$[$0-7]}" y de cierre "${$$[$0-1]}" no coinciden. Columna: ${this._$.first_column + 1}.`}));
+                                                                                                    };
                                                                                                     this.$ = new Objeto($$[$0-7],$$[$0-4],_$[$0-8].first_line, _$[$0-8].first_column,$$[$0-6],[],true); 
 break;
 case 8:
@@ -755,7 +765,7 @@ break;
 case 16:/*Ignorar espacios en blanco*/
 break;
 case 17:
-  const er = new errorGram.Error({ tipo: 'léxico', linea: `${yy_.yylineno + 1}`, descripcion: `El lexema "${yy_.yytext}" en la columna: ${yy_.yylloc.first_column + 1} no es válido.` });
+  const er = new errorGram.Error({ tipo: 'Léxico', linea: `${yy_.yylineno + 1}`, descripcion: `El lexema "${yy_.yytext}" en la columna: ${yy_.yylloc.first_column + 1} no es válido.` });
   tablaErrores.Errores.getInstance().push(er);
 
 break;

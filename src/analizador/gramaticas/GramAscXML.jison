@@ -40,7 +40,7 @@
 
 
 . {
-  const er = new errorGram.Error({ tipo: 'léxico', linea: `${yylineno + 1}`, descripcion: `El lexema "${yytext}" en la columna: ${yylloc.first_column + 1} no es válido.` });
+  const er = new errorGram.Error({ tipo: 'Léxico', linea: `${yylineno + 1}`, descripcion: `El lexema "${yytext}" en la columna: ${yylloc.first_column + 1} no es válido.` });
   tablaErrores.Errores.getInstance().push(er);
 }
 
@@ -100,9 +100,19 @@ NODORAIZ
 OBJETO
     : ETABRE IDENTIFICADOR LISTAATRIBUTOS ETCIERRE OBJETOS ETABRE BARRA IDENTIFICADOR ETCIERRE      { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'OBJETO -> ETABRE IDENTIFICADOR LISTAATRIBUTOS ETCIERRE OBJETOS ETABRE BARRA IDENTIFICADOR ETCIERRE', 
                                                                                                     reglas:'OBJETO.Objeto = new Objeto(IDENTIFICADOR.val, \' \', LISTAATRIBUTOS.lista, OBJETOS.lista, true);'}));
+                                                                                                    /*Validación de etiqueta de apertura y de cierre iguales*/
+                                                                                                    if($2 != $8)
+                                                                                                    {                                                                                                        
+                                                                                                        tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Semántico', linea: `${yylineno + 1}`, descripcion: `Etiqueta de apertura "${$2}" y de cierre "${$8}" no coinciden. Columna: ${this._$.first_column + 1}.`}));
+                                                                                                    };
                                                                                                     $$ = new Objeto($2,'',@1.first_line, @1.first_column,$3,$5,true); }
     | ETABRE IDENTIFICADOR LISTAATRIBUTOS ETCIERRE LISTA_IDS ETABRE BARRA IDENTIFICADOR ETCIERRE    { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'OBJETO -> ETABRE IDENTIFICADOR LISTAATRIBUTOS ETCIERRE LISTA_IDS ETABRE BARRA IDENTIFICADOR ETCIERRE', 
                                                                                                     reglas:'OBJETO.Objeto = new Objeto(IDENTIFICADOR.val, LISTA_IDS.lista, LISTAATRIBUTOS.lista, [], true);'}));
+                                                                                                    /*Validación de etiqueta de apertura y de cierre iguales*/
+                                                                                                    if($2 != $8)
+                                                                                                    {                                                                                                        
+                                                                                                        tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Semántico', linea: `${yylineno + 1}`, descripcion: `Etiqueta de apertura "${$2}" y de cierre "${$8}" no coinciden. Columna: ${this._$.first_column + 1}.`}));
+                                                                                                    };
                                                                                                     $$ = new Objeto($2,$5,@1.first_line, @1.first_column,$3,[],true); }
     | ETABRE IDENTIFICADOR LISTAATRIBUTOS BARRA ETCIERRE                                            { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'OBJETO -> ETABRE IDENTIFICADOR LISTAATRIBUTOS BARRA ETCIERRE', 
                                                                                                     reglas:'OBJETO.Objeto = new Objeto(IDENTIFICADOR.val, \' \', LISTAATRIBUTOS.lista, [], false);'}));
