@@ -14,7 +14,7 @@
         >
           <q-card class="bg-primary text-white">
             <q-bar>
-              <div>AST</div>
+              <div>CST - XML</div>
 
               <q-space />
 
@@ -60,7 +60,7 @@
             <q-card class="editorXML" style="width:auto">
               <q-bar class="bg-black text-white" style="width:auto">
                 <q-btn push label="Ejecutar" icon="play_arrow" @click="ejecutar" />
-                <q-btn push label="AST" @click="darkDialog = true" />
+                <q-btn push label="CST - XML" @click="darkDialog = true" />
                 <q-space />
                 <q-btn push label="Limpiar" icon="cleaning_services" @click="limpiar" />
               </q-bar>              
@@ -183,6 +183,7 @@ import "codemirror/mode/xml/xml.js";
 import "codemirror/mode/xquery/xquery.js";
 // Analizador
 import AXml from '../analizador/gramaticas/GramAscXML';
+import AXMLTree from '../analizador/gramaticas/GramAscXMLTree'
 import AXpath from '../analizador/gramaticas/gramatica_ASC_XPATH';
 import DXpath from '../analizador/gramaticas/gramatica_DESC_XPATH';
 //Ejecucion
@@ -300,6 +301,9 @@ export default {
       this.inicializarValores();
       try {
         const raiz = AXml.parse(this.code);
+        //Para el árbol CST
+        const raizxml = AXMLTree.parse(this.code);
+
         //Validacion de raiz
         if (raiz == null) {
           this.notificar(
@@ -311,6 +315,10 @@ export default {
         this.xmlXP = raiz;
         console.log(raiz.cuerpo);
         let ejecucion = new Ejecucion(this.xmlXP.prologo, this.xmlXP.cuerpo, this.code);
+        //Nueva ejecución para el arbol CST
+        let exec = new Ejecucion(raiz.prologo, raiz.cuerpo, this.code, raizxml);
+        this.dot = exec.getDot();
+
         ejecucion.verObjetos();
         this.dataTS(ejecucion.ts.tabla);
         this.notificar("primary", "Ejecución realizada con éxito");
