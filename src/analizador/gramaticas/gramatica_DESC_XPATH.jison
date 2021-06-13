@@ -105,7 +105,11 @@
 //Gramatica 
 
 S : INSTRUCCIONES EOF  
-        {   return new NodoAST({label: 'S', hijos: [$1], linea: yylineno}); };
+        {   return new NodoAST({label: 'S', hijos: [$1], linea: yylineno}); }
+   | error / {                                                                                                        
+        tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Semántico', linea: `${yylineno + 1}`, descripcion: `No coinciden "${yytext}", se recupero del error con el simbolo /`}));
+      }     
+        ;
 
 INSTRUCCIONES : INSTRUCCION INSTRUCCIONES 
         { $$ = new NodoAST({label: 'INSTRUCCIONES', hijos: [...$1.hijos, ...$2.hijos], linea: yylineno}); } ;
@@ -249,6 +253,9 @@ ATRIBUTO : arroba id
 
 FILTROS : LISTA_PREDICADO 
           { $$ = new NodoAST({label: 'FILTROS', hijos: [...$1.hijos], linea: yylineno}); }        
+        | error [ {                                                                                                        
+                    tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Semántico', linea: `${yylineno + 1}`, descripcion: `No coinciden "${yytext}", se recupero del error con el simbolo [`}));
+                }  
 ; 
 
 LISTA_PREDICADO : PREDICADO LISTA_PREDICADO 
@@ -276,6 +283,11 @@ EXPR : ATRIBUTO_PREDICADO
         { $$ = new NodoAST({label: 'EXPR', hijos: [$1], linea: yylineno}); }
      | PATH
         { $$ = new NodoAST({label: 'EXPR', hijos: [$1], linea: yylineno}); }
+     | par_izq EXPR par_der
+        { $$ = new NodoAST({label: 'EXPR', hijos: [$1,...$2.hijos,$3], linea: yylineno}); } 
+     | error / {                                                                                                        
+                    tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Semántico', linea: `${yylineno + 1}`, descripcion: `No coinciden "${yytext}", se recupero del error con el simbolo /`}));
+                } 
      ;
 
      OPERACIONES : EXPR OPER { 
