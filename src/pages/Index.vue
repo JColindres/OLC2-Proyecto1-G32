@@ -35,6 +35,36 @@
           </q-card>
         </q-dialog>
 
+        <q-dialog
+          v-model="darkDialog2"
+          persistent
+          :maximized="maximizedToggle"
+          transition-show="slide-up"
+          transition-hide="slide-down"
+        >
+          <q-card class="bg-primary text-white">
+            <q-bar>
+              <div>AST - XPATH</div>
+
+              <q-space />
+
+              <q-btn dense flat icon="minimize" @click="maximizedToggle = false" :disable="!maximizedToggle">
+                <q-tooltip v-if="maximizedToggle" content-class="bg-white text-primary">Minimize</q-tooltip>
+              </q-btn>
+              <q-btn dense flat icon="crop_square" @click="maximizedToggle = true" :disable="maximizedToggle">
+                <q-tooltip v-if="!maximizedToggle" content-class="bg-white text-primary">Maximize</q-tooltip>
+              </q-btn>
+              <q-btn dense flat icon="close" v-close-popup>
+                <q-tooltip content-class="bg-white text-primary">Close</q-tooltip>
+              </q-btn>
+            </q-bar>
+            
+            <q-card-section class="q-pt-none">
+              <ast :dot="dot2" />
+            </q-card-section>
+          </q-card>
+        </q-dialog>
+
       </div>
     </div>
 
@@ -50,6 +80,7 @@
             <q-bar class="bg-black text-white" style="width:auto">
               <q-btn push label="Ejecutar_ASC" icon="play_arrow" @click="ejecutarXPath"/>
               <q-btn push label="Ejecutar_DESC" icon="play_arrow" @click="ejecutarXPath_DESC"/>
+                <q-btn push label="AST - XPATH" @click="darkDialog2 = true" />
             </q-bar>              
             <codemirror v-model="codeXP" :options="cmOptionsXP" />              
           </q-card>
@@ -203,6 +234,7 @@ export default {
       splitterModel: 20, // start at 50%
       insideModel: 50,
       darkDialog: false,
+      darkDialog2: false,
       maximizedToggle: true,
       codeXP: "",
       cmOptionsXP: {
@@ -246,6 +278,7 @@ export default {
       output: "salida de ejemplo",
       tab: "editor",
       dot: "",
+      dot2: "",
       salida: [],
       errores: [],
       columns: [
@@ -347,7 +380,7 @@ export default {
           return;
         }
         let ejecucion = new Ejecucion(this.xmlXP.prologo, this.xmlXP.cuerpo, this.code, raiz);
-        this.dot = ejecucion.getDot();
+        this.dot2 = ejecucion.getDot();
         this.codeS = ejecucion.recorrer();
         console.log(raiz);
         this.notificar("primary", "Ejecución realizada con éxito");
@@ -374,7 +407,7 @@ export default {
           return;
         }
         let ejecucion = new Ejecucion(this.xmlXP.prologo, this.xmlXP.cuerpo, this.code, raiz);
-        this.dot = ejecucion.getDot();
+        this.dot2 = ejecucion.getDot();
         console.log(raiz);
         this.notificar("primary", "Ejecución realizada con éxito");
       } catch (error) {
@@ -388,9 +421,10 @@ export default {
       //Entornos.getInstance().clear();
       RepGramAscXML.getInstance().clear();
       this.errores = [];
-      this.entornos = [];
+      this.simbolos = [];
       this.salida = [];
       this.dot = '';
+      this.dot2 = '';
       this.repgramascxml = [];
     },
     validarError(error) {
