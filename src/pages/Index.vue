@@ -346,7 +346,6 @@ export default {
           return;
         }
         this.xmlXP = raiz;
-        console.log(raiz.cuerpo);
         let ejecucion = new Ejecucion(this.xmlXP.prologo, this.xmlXP.cuerpo, this.code);
         //Nueva ejecución para el arbol CST
         let exec = new Ejecucion(raiz.prologo, raiz.cuerpo, this.code, raizxml);
@@ -381,8 +380,9 @@ export default {
         }
         let ejecucion = new Ejecucion(this.xmlXP.prologo, this.xmlXP.cuerpo, this.code, raiz);
         this.dot2 = ejecucion.getDot();
+        ejecucion.verObjetos();
+        this.dataTS(ejecucion.ts.tabla);
         this.codeS = ejecucion.recorrer();
-        console.log(raiz);
         this.notificar("primary", "Ejecución realizada con éxito");
       } catch (error) {
         this.validarError(error);

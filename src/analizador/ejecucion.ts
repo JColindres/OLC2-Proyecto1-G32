@@ -32,25 +32,26 @@ export class Ejecucion {
   verObjetos() {
     this.ts = new XmlTS();
 
-    this.cuerpoXml.forEach(element => {
+    this.cuerpoXml.forEach((element, index) => {
       let etiqueta = "doble";
       if (!element.doble) {
         etiqueta = "única"
       }
-      this.ts.agregar(element.identificador, element.texto, "Raiz", "Etiqueta " + etiqueta, element.linea, element.columna);
+      this.ts.agregar(element.identificador, element.texto, "Raiz", "Etiqueta " + etiqueta, element.linea, element.columna, null);
       if (element.listaAtributos.length > 0) {
         element.listaAtributos.forEach(atributos => {
-          this.ts.agregar(atributos.identificador, atributos.valor, element.identificador, "Atributo", atributos.linea, atributos.columna);
+          this.ts.agregar(atributos.identificador, atributos.valor, element.identificador, "Atributo", atributos.linea, atributos.columna, this.cuerpoXml[index]);
         });
       }
       if (element.listaObjetos.length > 0) {
-        this.tablaRecursiva(element.listaObjetos, element.identificador);
+        this.tablaRecursiva(element.listaObjetos, element.identificador, this.cuerpoXml, index);
       }
     });
+    //console.log(this.ts);
   }
 
-  tablaRecursiva(elemento: Array<Objeto>, entorno: string) {
-    elemento.forEach(element => {
+  tablaRecursiva(elemento: Array<Objeto>, entorno: string, padre: Array<Object>, indice: number) {
+    elemento.forEach((element, index) => {
       let etiqueta = "doble";
       if (!element.doble) {
         etiqueta = "única"
@@ -67,14 +68,14 @@ export class Ejecucion {
           texto += " " + element.texto[i];
         }
       }
-      this.ts.agregar(element.identificador, texto, entorno, "Etiqueta " + etiqueta, element.linea, element.columna);
+      this.ts.agregar(element.identificador, texto, entorno, "Etiqueta " + etiqueta, element.linea, element.columna, padre[indice]);
       if (element.listaAtributos.length > 0) {
         element.listaAtributos.forEach(atributos => {
-          this.ts.agregar(atributos.identificador, atributos.valor, element.identificador, "Atributo", atributos.linea, atributos.columna);
+          this.ts.agregar(atributos.identificador, atributos.valor, element.identificador, "Atributo", atributos.linea, atributos.columna, elemento[index]);
         });
       }
       if (element.listaObjetos.length > 0) {
-        this.tablaRecursiva(element.listaObjetos, element.identificador);
+        this.tablaRecursiva(element.listaObjetos, element.identificador, elemento, index);
       }
     });
   }
@@ -180,6 +181,18 @@ export class Ejecucion {
         });
       }
 
+      if (this.identificar('PADRE', nodo)) {
+        nodo.hijos.forEach((element: any) => {
+          if (element instanceof Object) {
+            this.recorrido(element);
+          }
+          else if (typeof element === 'string') {
+            console.log(element);
+            this.consultaXML = this.reducir(this.consultaXML, element, 'PADRE');
+          }
+        });
+      }
+
     }
   }
 
@@ -207,7 +220,7 @@ export class Ejecucion {
     }
     else if (nodo === 'DESCENDIENTES_NODO') {
       if (etiqueta === '//') {
-        this.descendiente = false;
+        this.descendiente = true;
         return consulta;
       }
       else if (etiqueta === '@') {
@@ -263,6 +276,36 @@ export class Ejecucion {
           if (element.listaObjetos.length > 0) {
             cons = cons.concat(this.recDescen(element.listaObjetos, etiqueta, false));
           }
+        });
+        return cons;
+      }
+    }
+    else if (nodo === 'PADRE') {
+      if (etiqueta === '/..') {
+        if(this.atributo){
+          this.descendiente = false;
+          this.atributo = false;
+          return consulta;
+        }
+        this.descendiente = false;
+        this.atributo = false;
+        let cons: Array<Objeto> = [];
+        consulta.forEach(element => {
+          this.ts.tabla.forEach(padre => {
+            if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+              let a = padre[6];
+              let b = false;
+              cons.forEach(element => {
+                if(element == a){
+                  b = true;
+                }
+              });
+              if(!b){
+                cons.push(a);
+              }
+            }
+          });
+
         });
         return cons;
       }
