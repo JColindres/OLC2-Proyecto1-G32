@@ -80,7 +80,9 @@
             <q-bar class="bg-black text-white" style="width:auto">
               <q-btn push label="Ejecutar_ASC" icon="play_arrow" @click="ejecutarXPath"/>
               <q-btn push label="Ejecutar_DESC" icon="play_arrow" @click="ejecutarXPath_DESC"/>
-                <q-btn push label="AST - XPATH" @click="darkDialog2 = true" />
+              <q-btn push label="AST - XPATH" @click="darkDialog2 = true" />
+              <q-space />
+              <q-btn push label="" icon="cleaning_services" @click="limpiarXP" />
             </q-bar>              
             <codemirror v-model="codeXP" :options="cmOptionsXP" />              
           </q-card>
@@ -409,6 +411,7 @@ export default {
         let ejecucion = new Ejecucion(this.xmlXP.prologo, this.xmlXP.cuerpo, this.code, raiz);
         this.dot2 = ejecucion.getDot();
         console.log(raiz);
+        this.codeS = ejecucion.recorrer();
         this.notificar("primary", "Ejecución realizada con éxito");
       } catch (error) {
         this.validarError(error);
@@ -454,6 +457,12 @@ export default {
     },
     limpiar(){
       this.code = '';
+      this.codeS = '';
+      this.inicializarValores();
+    },
+    limpiarXP(){
+      this.codeS = '';
+      this.codeXP = '';
       this.inicializarValores();
     },
     dataTS(arreglo){

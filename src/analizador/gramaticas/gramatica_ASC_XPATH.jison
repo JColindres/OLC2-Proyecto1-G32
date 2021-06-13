@@ -63,6 +63,7 @@
 [":"][":"]                          return 'bi_pto';
 ["@"]["*"]                          return 'any_atributo';
 "@"                                 return 'arroba';    
+\s+                                 return 'espacios';
 
 //error lexico
 . {
@@ -116,6 +117,9 @@ INSTRUCCIONES : INSTRUCCIONES INSTRUCCION
 
               | INSTRUCCION  
                  { $$ = new NodoAST({label: 'INSTRUCCIONES', hijos: [...$1.hijos], linea: yylineno}); }
+              | espacios 
+                {   tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Semántico', linea: `${yylineno + 1}`, descripcion: `No se permiten espacios`}));
+    }
               ;
 
 INSTRUCCION : INSTRUCCION o RUTA FILTROS
