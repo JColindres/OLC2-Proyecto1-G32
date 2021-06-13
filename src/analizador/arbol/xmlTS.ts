@@ -1,11 +1,11 @@
 export class XmlTS {
-    tabla: String[][];
+    tabla: any[][];
 
     constructor(){
         this.tabla = [];
     }
 
-    public agregar(identificador: String, valor:string, ambito: String, tipo: String, linea: any, columna: any){
-        this.tabla.push([identificador, valor, ambito, tipo, linea, columna]);
+    public agregar(identificador: String, valor:string, ambito: String, tipo: String, linea: any, columna: any, nodo: any){
+        this.tabla.push([identificador, valor, ambito, tipo, linea, columna, nodo]);
     }
 }
