@@ -15,6 +15,7 @@ export class Ejecucion {
   atributo: boolean;
   atributoTexto: string;
   atributoIdentificacion: any[];
+  nodo_descendente : boolean;
   consultaXML: Array<Objeto>;
   ts: XmlTS;
 
@@ -261,7 +262,7 @@ export class Ejecucion {
             this.recorrido(element);
           }
           else if (typeof element === 'string') {
-            console.log(this.consultaXML);
+            //console.log(this.consultaXML);
             this.consultaXML = this.reducir(this.consultaXML, element, 'HIJOS');
           }
         });
@@ -339,11 +340,11 @@ export class Ejecucion {
             if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
               if (element.listaObjetos.length > 0) {
                 cons = cons.concat(element.listaObjetos);
-                //repetir sin la etiqueta principal
               }
             }
           });
         });
+        this.nodo_descendente = true;
         return cons;
       }
     }
@@ -506,26 +507,53 @@ export class Ejecucion {
           }
         }
         cadena += '--------------------------------------(' + numero + ')---------------------------------\n';
-        cadena += '<' + element.cons.identificador;
-        if (element.cons.listaAtributos.length > 0) {
-          element.cons.listaAtributos.forEach(atributos => {
-            cadena += ' ' + atributos.identificador + '=' + atributos.valor;
-          });
-        }
-        if (element.cons.doble) {
-          cadena += '>\n';
-        }
-        else {
-          cadena += '/>\n';
-        }
-        if (texto != '') {
-          cadena += texto + '\n';
-        }
-        if (element.cons.listaObjetos.length > 0) {
-          cadena += this.traducirRecursiva(element.cons.listaObjetos);
-        }
-        if (element.cons.doble) {
-          cadena += '</' + element.cons.identificador + '>\n';
+        if (this.nodo_descendente){
+          cadena += '<' + element.cons.identificador;
+          if (element.cons.listaAtributos.length > 0) {
+            element.cons.listaAtributos.forEach(atributos => {
+              cadena += ' ' + atributos.identificador + '=' + atributos.valor;
+            });
+          }
+          if (element.cons.doble) {
+            cadena += '>\n';
+          }
+          else {
+            cadena += '/>\n';
+          }
+          if (texto != '') {
+            cadena += texto + '\n';
+          }
+          if (element.cons.listaObjetos.length > 0) {
+            cadena += this.traducirRecursiva(element.cons.listaObjetos);
+          }
+          if (element.cons.doble) {
+            cadena += '</' + element.cons.identificador + '>\n';
+          }
+          if (element.cons.listaObjetos.length > 0) {
+            cadena += this.traducirRecursiva(element.cons.listaObjetos);
+          }
+        }else{
+          cadena += '<' + element.cons.identificador;
+          if (element.cons.listaAtributos.length > 0) {
+            element.cons.listaAtributos.forEach(atributos => {
+              cadena += ' ' + atributos.identificador + '=' + atributos.valor;
+            });
+          }
+          if (element.cons.doble) {
+            cadena += '>\n';
+          }
+          else {
+            cadena += '/>\n';
+          }
+          if (texto != '') {
+            cadena += texto + '\n';
+          }
+          if (element.cons.listaObjetos.length > 0) {
+            cadena += this.traducirRecursiva(element.cons.listaObjetos);
+          }
+          if (element.cons.doble) {
+            cadena += '</' + element.cons.identificador + '>\n';
+          }
         }
       }
       else {
