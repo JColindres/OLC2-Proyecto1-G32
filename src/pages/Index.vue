@@ -14,7 +14,7 @@
         >
           <q-card class="bg-primary text-white">
             <q-bar>
-              <div>CST - XML</div>
+              <div>CST - XML Ascendente</div>
 
               <q-space />
 
@@ -65,6 +65,36 @@
           </q-card>
         </q-dialog>
 
+        <q-dialog
+          v-model="darkDialog3"
+          persistent
+          :maximized="maximizedToggle"
+          transition-show="slide-up"
+          transition-hide="slide-down"
+        >
+          <q-card class="bg-primary text-white">
+            <q-bar>
+              <div>CST - XML Descendente</div>
+
+              <q-space />
+
+              <q-btn dense flat icon="minimize" @click="maximizedToggle = false" :disable="!maximizedToggle">
+                <q-tooltip v-if="maximizedToggle" content-class="bg-white text-primary">Minimize</q-tooltip>
+              </q-btn>
+              <q-btn dense flat icon="crop_square" @click="maximizedToggle = true" :disable="maximizedToggle">
+                <q-tooltip v-if="!maximizedToggle" content-class="bg-white text-primary">Maximize</q-tooltip>
+              </q-btn>
+              <q-btn dense flat icon="close" v-close-popup>
+                <q-tooltip content-class="bg-white text-primary">Close</q-tooltip>
+              </q-btn>
+            </q-bar>
+            
+            <q-card-section class="q-pt-none">
+              <ast :dot="dot3" />
+            </q-card-section>
+          </q-card>
+        </q-dialog>
+
       </div>
     </div>
 
@@ -90,8 +120,10 @@
           <div class="col-md-6" style="width:50%">
             <q-card class="editorXML" style="width:auto">
               <q-bar class="bg-black text-white" style="width:auto">
-                <q-btn push label="Ejecutar" icon="play_arrow" @click="ejecutar" />
-                <q-btn push label="CST - XML" @click="darkDialog = true" />
+                <q-btn push label="Ejecutar asc" icon="play_arrow" @click="ejecutar" />
+                <q-btn push label="CST - XML Asc" @click="darkDialog = true" />
+                <q-btn push label="Ejecutar desc" icon="play_arrow" @click="ejecutarXMLDesc" />
+                <q-btn push label="CST - XML Desc" @click="darkDialog3 = true" />
                 <q-space />
                 <q-btn push label="Limpiar" icon="cleaning_services" @click="limpiar" />
               </q-bar>              
@@ -125,7 +157,7 @@
                   label="Tabla de Símbolos"
                   name="tabla_de_simbolos"
                 />
-                <q-tab label="Reporte Gramatical" name="rep_gram" @click="impconsola"></q-tab>
+                <q-tab label="Reporte Gramatical XML Asc" name="rep_gram"></q-tab>
               </q-tabs>
             </template>
 
@@ -215,6 +247,7 @@ import "codemirror/mode/xquery/xquery.js";
 // Analizador
 import AXml from '../analizador/gramaticas/GramAscXML';
 import AXMLTree from '../analizador/gramaticas/GramAscXMLTree'
+import AXMLDesc from '../analizador/gramaticas/GramDescXML';
 import AXpath from '../analizador/gramaticas/gramatica_ASC_XPATH';
 import DXpath from '../analizador/gramaticas/gramatica_DESC_XPATH';
 //Ejecucion
@@ -235,6 +268,7 @@ export default {
       insideModel: 50,
       darkDialog: false,
       darkDialog2: false,
+      darkDialog3: false,
       maximizedToggle: true,
       codeXP: "",
       cmOptionsXP: {
@@ -279,6 +313,7 @@ export default {
       tab: "editor",
       dot: "",
       dot2: "",
+      dot3: "",
       salida: [],
       errores: [],
       columns: [
@@ -307,6 +342,7 @@ export default {
         { name: "reglas", label: "Reglas", field: "reglas", align: "left" },
       ],
       xmlXP: null,
+      xmlXPDesc: null
     };
   },
   methods: {
@@ -416,6 +452,40 @@ export default {
       this.errores = Errores.getInstance().lista;
       //this.entornos = Entornos.getInstance().lista;
     },
+    ejecutarXMLDesc() {
+      if (this.code.trim() == "") {
+        this.notificar("primary", `El editor está vacío, escriba algo.`);
+        return;
+      }
+      this.inicializarValores();
+      try {
+        const raizdesc = AXMLDesc.parse(this.code);
+        console.log(raizdesc)
+        //Validacion de raiz
+        if (raizdesc == null) {
+          this.notificar(
+            "negative",
+            "No se pudo ejecutar"
+          );
+          return;
+        }
+        this.xmlXPDesc = raizdesc;
+        //let ejecucion = new Ejecucion(this.xmlXPDesc.prologo, this.xmlXPDesc.cuerpo, this.code);
+        //Nueva ejecución para el arbol CST
+        let exec = new Ejecucion(raizdesc.prologo, raizdesc.cuerpo, this.code, raizdesc);
+        this.dot3 = exec.getDot();
+
+        //ejecucion.verObjetos();
+        //this.dataTS(ejecucion.ts.tabla);
+        this.notificar("primary", "Ejecución realizada con éxito");
+      } catch (error) {
+        this.validarError(error);
+      }
+      //this.errores = Errores.getInstance().lista;
+      //this.repgramascxml = RepGramAscXML.getInstance().lista;
+      //this.simbolos = ejecucion.verObjetos();
+      //console.log(this.simbolos);
+    },
     inicializarValores() {
       Errores.getInstance().clear();
       //Entornos.getInstance().clear();
@@ -425,6 +495,7 @@ export default {
       this.salida = [];
       this.dot = '';
       this.dot2 = '';
+      this.dot3 = '';
       this.repgramascxml = [];
     },
     validarError(error) {
