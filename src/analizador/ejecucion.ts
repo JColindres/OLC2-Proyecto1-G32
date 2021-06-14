@@ -167,7 +167,7 @@ export class Ejecucion {
               this.atributoTexto = '';
               this.consultaXML = this.cuerpoXml;
             }
-            else {
+            else if (!(element === '[') && !(element === ']')) {
               this.consultaXML = this.reducir(this.consultaXML, element, 'INSTRUCCIONES');
               //console.log(this.consultaXML);
             }
@@ -224,14 +224,45 @@ export class Ejecucion {
           }
         });
       }
-      if (this.identificar('HIJOS',nodo)){
+
+      if (this.identificar('ATRIBUTO_PREDICADO', nodo)) {
         nodo.hijos.forEach((element: any) => {
-          if(element instanceof Object){
+          if (element instanceof Object) {
             this.recorrido(element);
           }
-          else if(typeof element === 'string'){
+          else if (typeof element === 'string') {
+            //console.log(element);
+            this.consultaXML = this.reducir(this.consultaXML, element, 'ATRIBUTO_PREDICADO');
+          }
+        });
+      }
+
+      if (this.identificar('ORDEN', nodo)) {
+        nodo.hijos.forEach((element: any) => {
+          if (element instanceof Object) {
+            this.recorrido(element);
+          }
+          else if (typeof element === 'string' && element === 'last') {
+            let cons: Array<Objeto>;
+            cons = [];
+            this.consultaXML.forEach((element, index) => {
+              if (index === this.consultaXML.length - 1) {
+                cons.push(element);
+              }
+            });
+            this.consultaXML = cons;
+          }
+        });
+      }
+
+      if (this.identificar('HIJOS', nodo)) {
+        nodo.hijos.forEach((element: any) => {
+          if (element instanceof Object) {
+            this.recorrido(element);
+          }
+          else if (typeof element === 'string') {
             console.log(this.consultaXML);
-            this.consultaXML = this.reducir(this.consultaXML, element,'HIJOS');
+            this.consultaXML = this.reducir(this.consultaXML, element, 'HIJOS');
           }
         });
       }
@@ -260,18 +291,18 @@ export class Ejecucion {
         });
         return cons;
       }
-      else if(etiqueta === 'node()'){
-          let cons: Array<Objeto> = [];
-          consulta.forEach(element => {
-            this.ts.tabla.forEach(padre => {
-              if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
-                if (element.listaObjetos.length > 0) {
-                  cons = cons.concat(element.listaObjetos);
-                }else {
-                    //arreglar cuando solo viene texto 
-                }
+      else if (etiqueta === 'node()') {
+        let cons: Array<Objeto> = [];
+        consulta.forEach(element => {
+          this.ts.tabla.forEach(padre => {
+            if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+              if (element.listaObjetos.length > 0) {
+                cons = cons.concat(element.listaObjetos);
+              } else {
+                //arreglar cuando solo viene texto 
               }
-            });
+            }
+          });
         });
         return cons;
       }
@@ -279,6 +310,7 @@ export class Ejecucion {
     else if (nodo === 'DESCENDIENTES_NODO') {
       if (etiqueta === '//') {
         this.descendiente = true;
+        this.esRaiz = false;
         return consulta;
       }
       else if (etiqueta === '@') {
@@ -300,25 +332,35 @@ export class Ejecucion {
         });
         return cons;
       }
-      else if(etiqueta === '//*'){
+      else if (etiqueta === '//*') {
         let cons: Array<Objeto> = [];
-      consulta.forEach(element => {
-        this.ts.tabla.forEach(padre => {
-          if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
-            if (element.listaObjetos.length > 0) {
-              cons = cons.concat(element.listaObjetos);
-              //repetir sin la etiqueta principal
+        consulta.forEach(element => {
+          this.ts.tabla.forEach(padre => {
+            if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+              if (element.listaObjetos.length > 0) {
+                cons = cons.concat(element.listaObjetos);
+                //repetir sin la etiqueta principal
+              }
             }
-          }
+          });
         });
-     });
-     return cons;
+        return cons;
       }
     }
     else if (nodo === 'INSTRUCCIONES') {
       let cons: Array<Objeto>;
       cons = [];
-      if (!this.descendiente) {
+      if (Number.isInteger(parseInt(etiqueta))) {
+        let indice = parseInt(etiqueta);
+        //console.log(indice);
+        consulta.forEach((element, index) => {
+          if (index === indice - 1) {
+            cons.push(element);
+          }
+        });
+        return cons;
+      }
+      else if (!this.descendiente) {
         if (this.esRaiz) {
           consulta.forEach(element => {
             if (element.identificador === etiqueta) {
@@ -382,19 +424,38 @@ export class Ejecucion {
         return cons;
       }
     }
-    else if (nodo === 'HIJOS'){
-      if (etiqueta === '/*') {
-      let cons: Array<Objeto> = [];
-      consulta.forEach(element => {
-        this.ts.tabla.forEach(padre => {
-          if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
-            if (element.listaObjetos.length > 0) {
-              cons = cons.concat(element.listaObjetos);
+    else if (nodo === 'ATRIBUTO_PREDICADO') {
+      if (etiqueta === '@') {
+        this.atributo = true;
+        return consulta;
+      }
+      else if (this.atributo) {
+        this.atributo = false;
+        let cons: Array<Objeto> = [];
+        consulta.forEach(element => {
+          element.listaAtributos.forEach(atributo => {
+            if (atributo.identificador === etiqueta) {
+              this.atributoTexto = etiqueta;
+              cons.push(element);
             }
-          }
+          });
         });
-     });
-     return cons;
+        return cons;
+      }
+    }
+    else if (nodo === 'HIJOS') {
+      if (etiqueta === '/*') {
+        let cons: Array<Objeto> = [];
+        consulta.forEach(element => {
+          this.ts.tabla.forEach(padre => {
+            if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+              if (element.listaObjetos.length > 0) {
+                cons = cons.concat(element.listaObjetos);
+              }
+            }
+          });
+        });
+        return cons;
       }
     }
   }
@@ -470,7 +531,7 @@ export class Ejecucion {
       else {
         cadena += '--------------------------------------(' + numero + ')---------------------------------\n';
         element.cons.listaAtributos.forEach(atributo => {
-          if(element.texto === atributo.identificador){
+          if (element.texto === atributo.identificador) {
             cadena += atributo.identificador + '=' + atributo.valor + '\n';
           }
         });
