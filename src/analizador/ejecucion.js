@@ -110,7 +110,7 @@ class Ejecucion {
             this.consultaXML = this.cuerpoXml;
             this.verObjetos();
             this.recorrido(this.raiz);
-            console.log(this.atributoIdentificacion);
+            //console.log(this.atributoIdentificacion);
             return this.traducir();
         }
         return 'no se pudo';
@@ -140,7 +140,7 @@ class Ejecucion {
                         }
                         else {
                             this.consultaXML = this.reducir(this.consultaXML, element, 'INSTRUCCIONES');
-                            console.log(this.consultaXML);
+                            //console.log(this.consultaXML);
                         }
                     }
                 });
@@ -190,6 +190,17 @@ class Ejecucion {
                     }
                 });
             }
+            if (this.identificar('HIJOS', nodo)) {
+                nodo.hijos.forEach((element) => {
+                    if (element instanceof Object) {
+                        this.recorrido(element);
+                    }
+                    else if (typeof element === 'string') {
+                        console.log(this.consultaXML);
+                        this.consultaXML = this.reducir(this.consultaXML, element, 'HIJOS');
+                    }
+                });
+            }
         }
     }
     reducir(consulta, etiqueta, nodo) {
@@ -209,6 +220,22 @@ class Ejecucion {
                         if (atributo.identificador === etiqueta) {
                             this.atributoTexto = etiqueta;
                             cons.push(element);
+                        }
+                    });
+                });
+                return cons;
+            }
+            else if (etiqueta === 'node()') {
+                let cons = [];
+                consulta.forEach(element => {
+                    this.ts.tabla.forEach(padre => {
+                        if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+                            if (element.listaObjetos.length > 0) {
+                                cons = cons.concat(element.listaObjetos);
+                            }
+                            else {
+                                //arreglar cuando solo viene texto 
+                            }
                         }
                     });
                 });
@@ -236,6 +263,20 @@ class Ejecucion {
                     if (element.listaObjetos.length > 0) {
                         cons = cons.concat(this.recDescen(element.listaObjetos, etiqueta, true));
                     }
+                });
+                return cons;
+            }
+            else if (etiqueta === '//*') {
+                let cons = [];
+                consulta.forEach(element => {
+                    this.ts.tabla.forEach(padre => {
+                        if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+                            if (element.listaObjetos.length > 0) {
+                                cons = cons.concat(element.listaObjetos);
+                                //repetir sin la etiqueta principal
+                            }
+                        }
+                    });
                 });
                 return cons;
             }
@@ -300,6 +341,21 @@ class Ejecucion {
                             });
                             if (!b) {
                                 cons.push(a);
+                            }
+                        }
+                    });
+                });
+                return cons;
+            }
+        }
+        else if (nodo === 'HIJOS') {
+            if (etiqueta === '/*') {
+                let cons = [];
+                consulta.forEach(element => {
+                    this.ts.tabla.forEach(padre => {
+                        if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+                            if (element.listaObjetos.length > 0) {
+                                cons = cons.concat(element.listaObjetos);
                             }
                         }
                     });

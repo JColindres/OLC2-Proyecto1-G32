@@ -7,8 +7,8 @@
 //Palabras reservadas
 'last' return 'last';
 'position' return 'position';
-'node' return 'node';
-'text' return 'text';
+'node()' return 'node';
+'text()' return 'text';
 'comment' return 'comment';
 
 //Axes
@@ -107,9 +107,7 @@
 
 S : INSTRUCCIONES EOF  
         { return new NodoAST({label: 'S', hijos: [$1], linea: yylineno}); }
-    | error / {                                                                                                        
-        tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Semántico', linea: `${yylineno + 1}`, descripcion: `No coinciden "${yytext}", se recupero del error con el simbolo /`}));
-      }
+    
 ;
 
 INSTRUCCIONES : INSTRUCCIONES INSTRUCCION 
@@ -119,7 +117,10 @@ INSTRUCCIONES : INSTRUCCIONES INSTRUCCION
                  { $$ = new NodoAST({label: 'INSTRUCCIONES', hijos: [...$1.hijos], linea: yylineno}); }
               | espacios 
                 {   tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Semántico', linea: `${yylineno + 1}`, descripcion: `No se permiten espacios`}));
-    }
+                } 
+              | error {                                                                                                        
+                tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Semántico', linea: `${yylineno + 1}`, descripcion: `No se esperaba ${yytext}`}));
+                }
               ;
 
 INSTRUCCION : INSTRUCCION o RUTA FILTROS
@@ -230,10 +231,10 @@ OPC_EJES : id
                 { $$ = new NodoAST({label: 'OPC_EJES', hijos: [$1], linea: yylineno}); }
         ;
 
-NODO_FUNCION : node par_izq par_der
-                { $$ = new NodoAST({label: 'NODO_FUNCION', hijos: [$1,$2,$3], linea: yylineno}); }
-         | text par_izq par_der 
-                { $$ = new NodoAST({label: 'NODO_FUNCION', hijos: [$1,$2,$3], linea: yylineno}); }
+NODO_FUNCION : node
+                { $$ = new NodoAST({label: 'NODO_FUNCION', hijos: [$1], linea: yylineno}); }
+         | text
+                { $$ = new NodoAST({label: 'NODO_FUNCION', hijos: [$1], linea: yylineno}); }
          ;
 
 OPC:            { $$ = new NodoAST({label: 'OPC', hijos: [], linea: yylineno}); }
@@ -260,8 +261,8 @@ ATRIBUTO : arroba id
 FILTROS :       { $$ = new NodoAST({label: 'FILTROS', hijos: [], linea: yylineno}); } 
         | LISTA_PREDICADO 
                 { $$ = new NodoAST({label: 'FILTROS', hijos: [...$1.hijos], linea: yylineno}); }    
-        | error [ {                                                                                                        
-                    tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Semántico', linea: `${yylineno + 1}`, descripcion: `No coinciden "${yytext}", se recupero del error con el simbolo [`}));
+        | error {                                                                                                        
+                    tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Semántico', linea: `${yylineno + 1}`, descripcion: `No se esperaba ${yytext}`}));
                 }    
 ; 
 
@@ -297,8 +298,8 @@ EXPR : ATRIBUTO_PREDICADO
         { $$ = new NodoAST({label: 'EXPR', hijos: [$1], linea: yylineno}); }
      | par_izq EXPR par_der
         { $$ = new NodoAST({label: 'EXPR', hijos: [$1,...$2.hijos,$3], linea: yylineno}); } 
-     | error / {                                                                                                        
-                    tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Semántico', linea: `${yylineno + 1}`, descripcion: `No coinciden "${yytext}", se recupero del error con el simbolo /`}));
+     | error {                                                                                                        
+                    tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Semántico', linea: `${yylineno + 1}`, descripcion: `No se esperaba ${yytext} `}));
                 }  
      ;
 

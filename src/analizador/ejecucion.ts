@@ -137,7 +137,7 @@ export class Ejecucion {
       this.consultaXML = this.cuerpoXml;
       this.verObjetos();
       this.recorrido(this.raiz);
-      console.log(this.atributoIdentificacion);
+      //console.log(this.atributoIdentificacion);
       return this.traducir();
     }
     return 'no se pudo';
@@ -169,7 +169,7 @@ export class Ejecucion {
             }
             else {
               this.consultaXML = this.reducir(this.consultaXML, element, 'INSTRUCCIONES');
-              console.log(this.consultaXML);
+              //console.log(this.consultaXML);
             }
           }
         });
@@ -224,7 +224,17 @@ export class Ejecucion {
           }
         });
       }
-
+      if (this.identificar('HIJOS',nodo)){
+        nodo.hijos.forEach((element: any) => {
+          if(element instanceof Object){
+            this.recorrido(element);
+          }
+          else if(typeof element === 'string'){
+            console.log(this.consultaXML);
+            this.consultaXML = this.reducir(this.consultaXML, element,'HIJOS');
+          }
+        });
+      }
     }
   }
 
@@ -247,6 +257,21 @@ export class Ejecucion {
               cons.push(element);
             }
           });
+        });
+        return cons;
+      }
+      else if(etiqueta === 'node()'){
+          let cons: Array<Objeto> = [];
+          consulta.forEach(element => {
+            this.ts.tabla.forEach(padre => {
+              if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+                if (element.listaObjetos.length > 0) {
+                  cons = cons.concat(element.listaObjetos);
+                }else {
+                    //arreglar cuando solo viene texto 
+                }
+              }
+            });
         });
         return cons;
       }
@@ -274,6 +299,20 @@ export class Ejecucion {
           }
         });
         return cons;
+      }
+      else if(etiqueta === '//*'){
+        let cons: Array<Objeto> = [];
+      consulta.forEach(element => {
+        this.ts.tabla.forEach(padre => {
+          if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+            if (element.listaObjetos.length > 0) {
+              cons = cons.concat(element.listaObjetos);
+              //repetir sin la etiqueta principal
+            }
+          }
+        });
+     });
+     return cons;
       }
     }
     else if (nodo === 'INSTRUCCIONES') {
@@ -339,9 +378,23 @@ export class Ejecucion {
               }
             }
           });
-
         });
         return cons;
+      }
+    }
+    else if (nodo === 'HIJOS'){
+      if (etiqueta === '/*') {
+      let cons: Array<Objeto> = [];
+      consulta.forEach(element => {
+        this.ts.tabla.forEach(padre => {
+          if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+            if (element.listaObjetos.length > 0) {
+              cons = cons.concat(element.listaObjetos);
+            }
+          }
+        });
+     });
+     return cons;
       }
     }
   }
