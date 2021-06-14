@@ -117,9 +117,6 @@ INSTRUCCIONES : INSTRUCCIONES INSTRUCCION
                  { $$ = new NodoAST({label: 'INSTRUCCIONES', hijos: [...$1.hijos], linea: yylineno}); }
               | espacios 
                 {   tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Semántico', linea: `${yylineno + 1}`, descripcion: `No se permiten espacios`}));
-                } 
-              | error {                                                                                                        
-                tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Semántico', linea: `${yylineno + 1}`, descripcion: `No se esperaba ${yytext}`}));
                 }
               ;
 
@@ -261,9 +258,6 @@ ATRIBUTO : arroba id
 FILTROS :       { $$ = new NodoAST({label: 'FILTROS', hijos: [], linea: yylineno}); } 
         | LISTA_PREDICADO 
                 { $$ = new NodoAST({label: 'FILTROS', hijos: [...$1.hijos], linea: yylineno}); }    
-        | error {                                                                                                        
-                    tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Semántico', linea: `${yylineno + 1}`, descripcion: `No se esperaba ${yytext}`}));
-                }    
 ; 
 
 LISTA_PREDICADO : LISTA_PREDICADO PREDICADO
@@ -298,9 +292,6 @@ EXPR : ATRIBUTO_PREDICADO
         { $$ = new NodoAST({label: 'EXPR', hijos: [$1], linea: yylineno}); }
      | par_izq EXPR par_der
         { $$ = new NodoAST({label: 'EXPR', hijos: [$1,...$2.hijos,$3], linea: yylineno}); } 
-     | error {                                                                                                        
-                    tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Semántico', linea: `${yylineno + 1}`, descripcion: `No se esperaba ${yytext} `}));
-                }  
      ;
 
 PATH : EXPR doble_diagonal EXPR
