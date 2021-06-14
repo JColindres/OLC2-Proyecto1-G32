@@ -72,69 +72,125 @@
   }
 */
 var GramDescXML = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,7],$V1=[2,5],$V2=[6,7],$V3=[12,21],$V4=[1,18],$V5=[2,18],$V6=[1,38],$V7=[1,39],$V8=[1,40],$V9=[1,41],$Va=[1,42],$Vb=[2,32],$Vc=[1,54],$Vd=[1,50],$Ve=[1,55],$Vf=[1,51],$Vg=[1,53],$Vh=[7,8,9,21,27,29,30,31,32,33,34];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,7],$V1=[2,5],$V2=[1,19],$V3=[1,17],$V4=[1,18],$V5=[1,20],$V6=[6,7],$V7=[12,21],$V8=[2,21],$V9=[1,35],$Va=[1,31],$Vb=[1,36],$Vc=[1,32],$Vd=[1,34],$Ve=[1,38],$Vf=[1,39],$Vg=[1,40],$Vh=[1,41],$Vi=[1,42],$Vj=[9,12,21],$Vk=[2,25],$Vl=[1,54],$Vm=[7,8,9,21,29,31,32,33,34,35,36];
 var parser = {trace: function trace () { },
 yy: {},
-symbols_: {"error":2,"INIT":3,"PROLOGO":4,"NODORAICES":5,"EOF":6,"ETABRE":7,"INTERR":8,"IDENTIFICADOR":9,"ASIGN":10,"CADENA":11,"ETCIERRE":12,"NODORAIZ":13,"NODORAICES_PRIM":14,"OBJETO":15,"LISTAATRIBUTOS":16,"ETIQUETAFIN":17,"DOBLEMULTIPLE":18,"DOBLESIMPLE":19,"ETIQUETAUNARIA":20,"BARRA":21,"LISTA_IDS":22,"ATRIBUTOS":23,"ATRIBUTO":24,"ATRIBUTOS_PRIM":25,"LISTA_IDS_PRIM":26,"TEXTO":27,"HREF":28,"DIGITO":29,"LT":30,"GT":31,"AMP":32,"APOS":33,"QUOT":34,"$accept":0,"$end":1},
-terminals_: {2:"error",6:"EOF",7:"ETABRE",8:"INTERR",9:"IDENTIFICADOR",10:"ASIGN",11:"CADENA",12:"ETCIERRE",21:"BARRA",27:"TEXTO",29:"DIGITO",30:"LT",31:"GT",32:"AMP",33:"APOS",34:"QUOT"},
-productions_: [0,[3,3],[4,11],[5,2],[14,2],[14,0],[13,1],[15,4],[17,1],[17,1],[17,1],[18,6],[19,6],[20,2],[16,1],[16,0],[23,2],[25,2],[25,0],[24,3],[22,2],[22,2],[22,2],[22,2],[22,2],[22,2],[26,2],[26,2],[26,2],[26,2],[26,2],[26,2],[26,0],[28,1],[28,1],[28,1],[28,1],[28,1]],
+symbols_: {"error":2,"INIT":3,"PROLOGO":4,"NODORAICES":5,"EOF":6,"ETABRE":7,"INTERR":8,"IDENTIFICADOR":9,"ASIGN":10,"CADENA":11,"ETCIERRE":12,"NODORAIZ":13,"NODORAICES_PRIM":14,"INICIO_ETI":15,"CONTETIQUETA":16,"ETIQUETA":17,"ATRIBUTOS":18,"FIN_ETI":19,"LISTA_IDS":20,"BARRA":21,"L_ETIQUETAS":22,"NUEVAETIQUETA":23,"L_ETIQUETAS_PRIM":24,"ATRIBUTO":25,"ATRIBUTOS_PRIM":26,"L_CONT":27,"LISTA_IDS_PRIM":28,"TEXTO":29,"HREF":30,"DIGITO":31,"LT":32,"GT":33,"AMP":34,"APOS":35,"QUOT":36,"$accept":0,"$end":1},
+terminals_: {2:"error",6:"EOF",7:"ETABRE",8:"INTERR",9:"IDENTIFICADOR",10:"ASIGN",11:"CADENA",12:"ETCIERRE",21:"BARRA",29:"TEXTO",31:"DIGITO",32:"LT",33:"GT",34:"AMP",35:"APOS",36:"QUOT"},
+productions_: [0,[3,3],[4,11],[5,2],[14,2],[14,0],[13,2],[15,2],[16,1],[17,2],[17,1],[19,6],[19,5],[19,5],[19,2],[22,2],[24,2],[24,1],[23,2],[18,2],[26,2],[26,0],[25,3],[20,2],[28,2],[28,0],[27,1],[27,1],[27,1],[27,1],[27,1],[27,1],[30,1],[30,1],[30,1],[30,1],[30,1]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
 var $0 = $$.length - 1;
 switch (yystate) {
 case 1:
- /*RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'INIT -> PROLOGO NODORAICES EOF', 
-                                        reglas:'INIT.lista = NODORAICES.lista; return(prologo: PROLOGO.lista, cuerpo: INIT.lista);'}));*/
-                                        /*this.$ = $$[$0-1]; return { prologo: $$[$0-2], cuerpo: this.$};*/ 
+ return new NodoAST({label: 'INIT', hijos: [$$[$0-2], $$[$0-1]], linea: yylineno}); 
 break;
 case 2:
- /*RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'PROLOGO -> ETABRE INTERR IDENTIFICADOR IDENTIFICADOR ASIGN CADENA IDENTIFICADOR ASIGN CADENA INTERR ETCIERRE;', 
-                                                                                                            reglas:'PROLOGO.Prolog = new Prologo(CADENA1.val, CADENA2.val);'}));*/
-                                                                                                            /*this.$ = new Prologo($$[$0-5],$$[$0-2]);*/ 
+ this.$ = new NodoAST({label: 'PROLOGO', hijos: [$$[$0-10], $$[$0-9], $$[$0-8], $$[$0-7], $$[$0-6], $$[$0-5], $$[$0-4], $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], linea: yylineno}); 
 break;
-case 3: case 4: case 8: case 9: case 10: case 11: case 12: case 13: case 16: case 17: case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31:
- 
+case 3:
+ this.$ = new NodoAST({label: 'NODORAICES', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+break;
+case 4:
+ this.$ = new NodoAST({label: 'NODORAICES_PRIM', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+break;
+case 5: case 21: case 25:
+ this.$ = ' '; 
 break;
 case 6:
- /*RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'NODORAIZ -> OBJETO', 
-                        reglas:'NODORAIZ.lista = OBJETO.lista;'}));*/
-                        /*this.$ = $$[$0];*/ 
+ this.$ = new NodoAST({label: 'NODORAIZ', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+break;
+case 7:
+ this.$ = new NodoAST({label: 'INICIO_ETI', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+break;
+case 8:
+ this.$ = new NodoAST({label: 'CONTETIQUETA', hijos: [$$[$0]], linea: yylineno}); 
+break;
+case 9:
+ this.$ = new NodoAST({label: 'ETIQUETA', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+break;
+case 10:
+ this.$ = new NodoAST({label: 'ETIQUETA', hijos: [$$[$0]], linea: yylineno}); 
+break;
+case 11:
+ this.$ = new NodoAST({label: 'FIN_ETI', hijos: [$$[$0-5], $$[$0-4], $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], linea: yylineno}); 
+break;
+case 12: case 13:
+ this.$ = new NodoAST({label: 'FIN_ETI', hijos: [$$[$0-4], $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], linea: yylineno}); 
 break;
 case 14:
- /*RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'LISTAATRIBUTOS -> ATRIBUTOS',
-                                reglas:'LISTAATRIBUTOS.lista = ATRIBUTOS.lista;'}));
-                                this.$ = $$[$0];*/ 
+ this.$ = new NodoAST({label: 'FIN_ETI', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
 break;
 case 15:
- /*RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'LISTAATRIBUTOS -> ε',
-                                reglas:'LISTAATRIBUTOS.lista = [];'}));
-                                this.$ = []; */
+ this.$ = new NodoAST({label: 'L_ETIQUETAS', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+break;
+case 16:
+ this.$ = new NodoAST({label: 'L_ETIQUETAS_PRIM', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+break;
+case 17:
+ this.$ = new NodoAST({label: 'L_ETIQUETAS_PRIM', hijos: [$$[$0]], linea: yylineno}); 
+break;
+case 18:
+ this.$ = new NodoAST({label: 'NUEVAETIQUETA', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
 break;
 case 19:
- /*RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'ATRIBUTO -> IDENTIFICADOR ASIGN CADENA', 
-                                    reglas:'ATRIBUTO.Atributo = new Atributo(IDENTIFICADOR.val, CADENA.val);'}));
-                                    this.$ = new Atributo($$[$0-2], $$[$0], _$[$0-2].first_line, _$[$0-2].first_column);*/ 
+ this.$ = new NodoAST({label: 'ATRIBUTOS', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+break;
+case 20:
+ this.$ = new NodoAST({label: 'ATRIBUTOS_PRIM', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+break;
+case 22:
+ this.$ = new NodoAST({label: 'ATRIBUTO', hijos: [$$[$0-2], $$[$0-1], $$[$0]], linea: yylineno}); 
+break;
+case 23:
+ this.$ = new NodoAST({label: 'LISTA_IDS', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+break;
+case 24:
+ this.$ = new NodoAST({label: 'LISTA_IDS_PRIM', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+break;
+case 26:
+ this.$ = new NodoAST({label: 'IDENTIFICADOR', hijos: [$$[$0]], linea: yylineno}); 
+break;
+case 27:
+ this.$ = new NodoAST({label: 'TEXTO', hijos: [$$[$0]], linea: yylineno}); 
+break;
+case 28:
+ this.$ = new NodoAST({label: 'HREF', hijos: [$$[$0]], linea: yylineno}); 
+break;
+case 29:
+ this.$ = new NodoAST({label: 'DIGITO', hijos: [$$[$0]], linea: yylineno}); 
+break;
+case 30:
+ this.$ = new NodoAST({label: 'INTERR', hijos: [$$[$0]], linea: yylineno}); 
+break;
+case 31:
+ this.$ = new NodoAST({label: 'BARRA', hijos: [$$[$0]], linea: yylineno}); 
+break;
+case 32:
+ /*RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> LT', reglas:' HREF.val = LT;'})); this.$ = $$[$0];*/
+                this.$ = new NodoAST({label: 'LT', hijos: [$$[$0]], linea: yylineno});  
 break;
 case 33:
- /*RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> LT', reglas:' HREF.val = LT;'})); this.$ = $$[$0];*/ 
+ /*RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> GT', reglas:' HREF.val = GT;'})); this.$ = $$[$0];*/ 
+                this.$ = new NodoAST({label: 'GT', hijos: [$$[$0]], linea: yylineno}); 
 break;
 case 34:
- /*RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> GT', reglas:' HREF.val = GT;'})); this.$ = $$[$0];*/ 
+ /*RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> AMP', reglas:' HREF.val = AMP;'})); this.$ = $$[$0];*/ 
+                this.$ = new NodoAST({label: 'AMP', hijos: [$$[$0]], linea: yylineno}); 
 break;
 case 35:
- /*RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> AMP', reglas:' HREF.val = AMP;'})); this.$ = $$[$0];*/ 
+ /*RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> APOS', reglas:' HREF.val = APOS;'})); this.$ = $$[$0];*/ 
+                this.$ = new NodoAST({label: 'APOS', hijos: [$$[$0]], linea: yylineno}); 
 break;
 case 36:
- /*RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> APOS', reglas:' HREF.val = APOS;'})); this.$ = $$[$0];*/ 
-break;
-case 37:
  /*RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> QUOT', reglas:' HREF.val = QUOT;'})); this.$ = $$[$0];*/ 
+                this.$ = new NodoAST({label: 'QUOT', hijos: [$$[$0]], linea: yylineno}); 
 break;
 }
 },
-table: [{3:1,4:2,7:[1,3]},{1:[3]},{5:4,7:$V0,13:5,15:6},{8:[1,8]},{6:[1,9]},{6:$V1,7:$V0,13:11,14:10,15:6},o($V2,[2,6]),{9:[1,12]},{9:[1,13]},{1:[2,1]},{6:[2,3]},{6:$V1,7:$V0,13:11,14:14,15:6},o($V3,[2,15],{16:15,23:16,24:17,9:$V4}),{9:[1,19]},{6:[2,4]},{12:[1,24],17:20,18:21,19:22,20:23,21:[1,25]},o($V3,[2,14]),o($V3,$V5,{25:26,24:27,9:$V4}),{10:[1,28]},{10:[1,29]},o($V2,[2,7]),o($V2,[2,8]),o($V2,[2,9]),o($V2,[2,10]),{7:$V0,8:[1,36],9:[1,32],15:30,21:[1,37],22:31,27:[1,33],28:34,29:[1,35],30:$V6,31:$V7,32:$V8,33:$V9,34:$Va},{12:[1,43]},o($V3,[2,16]),o($V3,$V5,{24:27,25:44,9:$V4}),{11:[1,45]},{11:[1,46]},{7:[1,47]},{7:[1,48]},{7:$Vb,8:$Vc,9:$Vd,21:$Ve,26:49,27:$Vf,28:52,29:$Vg,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va},{7:$Vb,8:$Vc,9:$Vd,21:$Ve,26:56,27:$Vf,28:52,29:$Vg,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va},{7:$Vb,8:$Vc,9:$Vd,21:$Ve,26:57,27:$Vf,28:52,29:$Vg,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va},{7:$Vb,8:$Vc,9:$Vd,21:$Ve,26:58,27:$Vf,28:52,29:$Vg,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va},{7:$Vb,8:$Vc,9:$Vd,21:$Ve,26:59,27:$Vf,28:52,29:$Vg,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va},{7:$Vb,8:$Vc,9:$Vd,21:$Ve,26:60,27:$Vf,28:52,29:$Vg,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va},o($Vh,[2,33]),o($Vh,[2,34]),o($Vh,[2,35]),o($Vh,[2,36]),o($Vh,[2,37]),o($V2,[2,13]),o($V3,[2,17]),o([9,12,21],[2,19]),{9:[1,61]},{21:[1,62]},{21:[1,63]},{7:[2,20]},{7:$Vb,8:$Vc,9:$Vd,21:$Ve,26:64,27:$Vf,28:52,29:$Vg,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va},{7:$Vb,8:$Vc,9:$Vd,21:$Ve,26:65,27:$Vf,28:52,29:$Vg,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va},{7:$Vb,8:$Vc,9:$Vd,21:$Ve,26:66,27:$Vf,28:52,29:$Vg,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va},{7:$Vb,8:$Vc,9:$Vd,21:$Ve,26:67,27:$Vf,28:52,29:$Vg,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va},{7:$Vb,8:$Vc,9:$Vd,21:$Ve,26:68,27:$Vf,28:52,29:$Vg,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va},{7:$Vb,8:$Vc,9:$Vd,21:$Ve,26:69,27:$Vf,28:52,29:$Vg,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va},{7:[2,21]},{7:[2,22]},{7:[2,23]},{7:[2,24]},{7:[2,25]},{10:[1,70]},{9:[1,71]},{9:[1,72]},{7:[2,26]},{7:[2,27]},{7:[2,28]},{7:[2,29]},{7:[2,30]},{7:[2,31]},{11:[1,73]},{12:[1,74]},{12:[1,75]},{8:[1,76]},o($V2,[2,11]),o($V2,[2,12]),{12:[1,77]},{7:[2,2]}],
-defaultActions: {9:[2,1],10:[2,3],14:[2,4],49:[2,20],56:[2,21],57:[2,22],58:[2,23],59:[2,24],60:[2,25],64:[2,26],65:[2,27],66:[2,28],67:[2,29],68:[2,30],69:[2,31],77:[2,2]},
+table: [{3:1,4:2,7:[1,3]},{1:[3]},{5:4,7:$V0,13:5,15:6},{8:[1,8]},{6:[1,9]},{6:$V1,7:$V0,13:11,14:10,15:6},{9:$V2,12:$V3,16:12,17:13,18:14,19:15,21:$V4,25:16},{9:$V5},{9:[1,21]},{1:[2,1]},{6:[2,3]},{6:$V1,7:$V0,13:11,14:22,15:6},o($V6,[2,6]),o($V6,[2,8]),{12:$V3,19:23,21:$V4},o($V6,[2,10]),o($V7,$V8,{26:24,25:25,9:$V2}),{7:[1,28],8:$V9,9:$Va,15:37,20:26,21:$Vb,22:27,23:30,27:29,29:$Vc,30:33,31:$Vd,32:$Ve,33:$Vf,34:$Vg,35:$Vh,36:$Vi},{12:[1,43]},{10:[1,44]},o($Vj,[2,7]),{9:[1,45]},{6:[2,4]},o($V6,[2,9]),o($V7,[2,19]),o($V7,$V8,{25:25,26:46,9:$V2}),{7:[1,47]},{21:[1,48]},{9:$V5,21:[1,49]},{7:$Vk,8:$V9,9:$Va,21:$Vb,27:51,28:50,29:$Vc,30:33,31:$Vd,32:$Ve,33:$Vf,34:$Vg,35:$Vh,36:$Vi},{7:$Vl,15:37,23:53,24:52},o($Vm,[2,26]),o($Vm,[2,27]),o($Vm,[2,28]),o($Vm,[2,29]),o($Vm,[2,30]),o($Vm,[2,31]),{9:$V2,12:$V3,16:55,17:13,18:14,19:15,21:$V4,25:16},o($Vm,[2,32]),o($Vm,[2,33]),o($Vm,[2,34]),o($Vm,[2,35]),o($Vm,[2,36]),o($V6,[2,14]),{11:[1,56]},{10:[1,57]},o($V7,[2,20]),{21:[1,58]},{9:[1,59]},{9:[1,60]},{7:[2,23]},{7:$Vk,8:$V9,9:$Va,21:$Vb,27:51,28:61,29:$Vc,30:33,31:$Vd,32:$Ve,33:$Vf,34:$Vg,35:$Vh,36:$Vi},{21:[2,15]},{7:$Vl,15:37,23:53,24:62},{9:$V5,21:[2,17]},{7:[2,18]},o($Vj,[2,22]),{11:[1,63]},{9:[1,64]},{12:[1,65]},{12:[1,66]},{7:[2,24]},{21:[2,16]},{9:[1,67]},{12:[1,68]},o($V6,[2,12]),o($V6,[2,13]),{10:[1,69]},o($V6,[2,11]),{11:[1,70]},{8:[1,71]},{12:[1,72]},{7:[2,2]}],
+defaultActions: {9:[2,1],10:[2,3],22:[2,4],50:[2,23],52:[2,15],55:[2,18],61:[2,24],62:[2,16],72:[2,2]},
 parseError: function parseError (str, hash) {
     if (hash.recoverable) {
         this.trace(str);
@@ -288,8 +344,10 @@ parse: function parse(input) {
     const {Atributo} = require("../abstractas/atributo");
     const {Prologo} = require("../abstractas/prologo");
 
-    const ValAsc = require("../Reportes/ValAscendente");
-    const RepoGram = require("../Reportes/RepGramAscXML");
+    const { NodoAST }= require('../arbol/nodoAST');
+
+    /*const ValDesc = require("../Reportes/ValDescendente");
+    const RepoGram = require("../Reportes/RepGramDescXML");*/
 /* generated by jison-lex 0.3.4 */
 var lexer = (function(){
 var lexer = ({
@@ -620,15 +678,15 @@ var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
 case 0:return 'COMENTARIO';
 break;
-case 1:return 30
+case 1:return 32
 break;
-case 2:return 31
+case 2:return 33
 break;
-case 3:return 32
+case 3:return 34
 break;
-case 4:return 33
+case 4:return 35
 break;
-case 5:return 34
+case 5:return 36
 break;
 case 6:return 10;
 break;
@@ -644,17 +702,17 @@ case 11:return 9;
 break;
 case 12:return 11;
 break;
-case 13:return 27;
+case 13:return 29;
 break;
-case 14:return 29
+case 14:return 31
 break;
 case 15:/*Ignorar espacios en blanco*/
 break;
 case 16:/*Ignorar espacios en blanco*/
 break;
 case 17:
-  /*const er = new errorGram.Error({ tipo: 'léxico', linea: `${yy_.yylineno + 1}`, descripcion: `El lexema "${yy_.yytext}" en la columna: ${yy_.yylloc.first_column + 1} no es válido.` });
-  tablaErrores.Errores.getInstance().push(er);*/
+  const er = new errorGram.Error({ tipo: 'Léxico', linea: `${yy_.yylineno + 1}`, descripcion: `El lexema "${yy_.yytext}" en la columna: ${yy_.yylloc.first_column + 1} no es válido.` });
+  tablaErrores.Errores.getInstance().push(er);
 
 break;
 case 18:return 6;
