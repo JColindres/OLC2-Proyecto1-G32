@@ -229,6 +229,16 @@ class Ejecucion {
                     }
                 });
             }
+            if (this.identificar('ATRIBUTO_NODO', nodo)) {
+                nodo.hijos.forEach((element) => {
+                    if (element instanceof Object) {
+                        this.recorrido(element);
+                    }
+                    else if (typeof element === 'string') {
+                        this.consultaXML = this.reducir(this.consultaXML, element, 'ATRIBUTO_NODO');
+                    }
+                });
+            }
         }
     }
     reducir(consulta, etiqueta, nodo) {
@@ -421,6 +431,18 @@ class Ejecucion {
                 return cons;
             }
         }
+        if (nodo === 'ATRIBUTO_NODO') {
+            if (etiqueta === '/@*') {
+                let cons = [];
+                consulta.forEach(element => {
+                    if (element.listaAtributos.length > 0) {
+                        cons = cons.concat(element);
+                    }
+                });
+                this.atributo_nodo = true;
+                return cons;
+            }
+        }
     }
     recDescen(a, etiqueta, atributo) {
         let cons = [];
@@ -491,6 +513,13 @@ class Ejecucion {
                     }
                     if (element.cons.listaObjetos.length > 0) {
                         cadena += this.traducirRecursiva(element.cons.listaObjetos);
+                    }
+                }
+                else if (this.atributo_nodo) {
+                    if (element.cons.listaAtributos.length > 0) {
+                        element.cons.listaAtributos.forEach(atributos => {
+                            cadena += ' ' + atributos.identificador + '=' + atributos.valor;
+                        });
                     }
                 }
                 else {

@@ -15,7 +15,8 @@ export class Ejecucion {
   atributo: boolean;
   atributoTexto: string;
   atributoIdentificacion: any[];
-  nodo_descendente : boolean;
+  nodo_descendente : boolean; //  -> //*
+  atributo_nodo: boolean;   // -> /@*
   consultaXML: Array<Objeto>;
   ts: XmlTS;
 
@@ -267,6 +268,16 @@ export class Ejecucion {
           }
         });
       }
+      if (this.identificar('ATRIBUTO_NODO', nodo)) {
+        nodo.hijos.forEach((element: any) => {
+          if (element instanceof Object) {
+            this.recorrido(element);
+          }
+          else if (typeof element === 'string') {
+            this.consultaXML = this.reducir(this.consultaXML, element, 'ATRIBUTO_NODO');
+          }
+        });
+      }
     }
   }
 
@@ -459,6 +470,18 @@ export class Ejecucion {
         return cons;
       }
     }
+    if(nodo === 'ATRIBUTO_NODO'){
+      if (etiqueta === '/@*') {
+        let cons: Array<Objeto> = [];
+        consulta.forEach(element => {
+           if (element.listaAtributos.length > 0) {
+                cons = cons.concat(element);
+              }
+        });
+        this.atributo_nodo = true;
+        return cons;
+      }
+    }
   }
 
   recDescen(a: Array<Objeto>, etiqueta: string, atributo: boolean): Array<Objeto> {
@@ -531,6 +554,13 @@ export class Ejecucion {
           }
           if (element.cons.listaObjetos.length > 0) {
             cadena += this.traducirRecursiva(element.cons.listaObjetos);
+          }
+        }
+        else if (this.atributo_nodo){
+          if (element.cons.listaAtributos.length > 0) {
+            element.cons.listaAtributos.forEach(atributos => {
+              cadena += ' ' + atributos.identificador + '=' + atributos.valor;
+            });
           }
         }else{
           cadena += '<' + element.cons.identificador;
