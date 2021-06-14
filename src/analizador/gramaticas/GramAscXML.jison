@@ -51,12 +51,16 @@
 /********************************************* PARTE SINTÁCTICA *********************************************/
 /*********Área declaraciones*********/
 %{
+    //Req. para recopilación de errores
     const errorGram = require("../arbol/error");
     const tablaErrores = require("../arbol/errores");
+
+    //Req. para el manejo de datos
     const {Objeto} = require("../abstractas/objeto");
     const {Atributo} = require("../abstractas/atributo");
     const {Prologo} = require("../abstractas/prologo");
 
+    //Req. para elaborar el reporte gramatical
     const ValAsc = require("../Reportes/ValAscendente");
     const RepoGram = require("../Reportes/RepGramAscXML");
 %}
@@ -99,7 +103,7 @@ NODORAIZ
 
 OBJETO
     : ETABRE IDENTIFICADOR LISTAATRIBUTOS ETCIERRE OBJETOS ETABRE BARRA IDENTIFICADOR ETCIERRE      { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'OBJETO -> ETABRE IDENTIFICADOR LISTAATRIBUTOS ETCIERRE OBJETOS ETABRE BARRA IDENTIFICADOR ETCIERRE', 
-                                                                                                    reglas:'OBJETO.Objeto = new Objeto(IDENTIFICADOR.val, \' \', LISTAATRIBUTOS.lista, OBJETOS.lista, true);'}));
+                                                                                                    reglas:'OBJETO.Objeto = new Objeto(IDENTIFICADOR.val, \'  \', linea.val, columna.val, LISTAATRIBUTOS.lista, OBJETOS.lista, true);'}));
                                                                                                     /*Validación de etiqueta de apertura y de cierre iguales*/
                                                                                                     if($2 != $8)
                                                                                                     {                                                                                                        
@@ -107,7 +111,7 @@ OBJETO
                                                                                                     };
                                                                                                     $$ = new Objeto($2,'',@1.first_line, @1.first_column,$3,$5,true); }
     | ETABRE IDENTIFICADOR LISTAATRIBUTOS ETCIERRE LISTA_IDS ETABRE BARRA IDENTIFICADOR ETCIERRE    { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'OBJETO -> ETABRE IDENTIFICADOR LISTAATRIBUTOS ETCIERRE LISTA_IDS ETABRE BARRA IDENTIFICADOR ETCIERRE', 
-                                                                                                    reglas:'OBJETO.Objeto = new Objeto(IDENTIFICADOR.val, LISTA_IDS.lista, LISTAATRIBUTOS.lista, [], true);'}));
+                                                                                                    reglas:'OBJETO.Objeto = new Objeto(IDENTIFICADOR.val, LISTA_IDS.lista, linea.val, columna.val, LISTAATRIBUTOS.lista, [], true);'}));
                                                                                                     /*Validación de etiqueta de apertura y de cierre iguales*/
                                                                                                     if($2 != $8)
                                                                                                     {                                                                                                        
@@ -115,13 +119,13 @@ OBJETO
                                                                                                     };
                                                                                                     $$ = new Objeto($2,$5,@1.first_line, @1.first_column,$3,[],true); }
     | ETABRE IDENTIFICADOR LISTAATRIBUTOS BARRA ETCIERRE                                            { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'OBJETO -> ETABRE IDENTIFICADOR LISTAATRIBUTOS BARRA ETCIERRE', 
-                                                                                                    reglas:'OBJETO.Objeto = new Objeto(IDENTIFICADOR.val, \' \', LISTAATRIBUTOS.lista, [], false);'}));
+                                                                                                    reglas:'OBJETO.Objeto = new Objeto(IDENTIFICADOR.val, \'  \', linea.val, columna.val, LISTAATRIBUTOS.lista, [], false);'}));
                                                                                                     $$ = new Objeto($2,'',@1.first_line, @1.first_column,$3,[],false); }
 ;
 
 OBJETOS
     : OBJETOS OBJETO        { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'OBJETOS -> OBJETOS OBJETO', 
-                            reglas:'OBJETOS.lista = OBJETOS1.lista; \n OBJETOS.lista.push(OBJETO);'}));
+                            reglas:'OBJETOS.lista = OBJETOS1.lista; OBJETOS.lista.push(OBJETO);'}));
                             $1.push($2); $$ = $1; }
     | OBJETO                { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'OBJETOS -> OBJETOS OBJETO', 
                             reglas:'OBJETOS.lista = [OBJETO];'}));
@@ -139,7 +143,7 @@ LISTAATRIBUTOS
 
 ATRIBUTOS
     : ATRIBUTOS ATRIBUTO        { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'ATRIBUTOS -> ATRIBUTOS ATRIBUTO', 
-                                reglas:'ATRIBUTOS.lista = ATRIBUTOS1.lista; \n ATRIBUTOS.lista.push(ATRIBUTO)'}));
+                                reglas:'ATRIBUTOS.lista = ATRIBUTOS1.lista; ATRIBUTOS.lista.push(ATRIBUTO)'}));
                                 $1.push($2); $$ = $1; }
     | ATRIBUTO                  { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'ATRIBUTOS -> ATRIBUTO', 
                                 reglas:'ATRIBUTOS.lista = [ATRIBUTO];'}));
@@ -148,28 +152,28 @@ ATRIBUTOS
 
 ATRIBUTO
     : IDENTIFICADOR ASIGN CADENA    { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'ATRIBUTO -> IDENTIFICADOR ASIGN CADENA', 
-                                    reglas:'ATRIBUTO.Atributo = new Atributo(IDENTIFICADOR.val, CADENA.val);'}));
+                                    reglas:'ATRIBUTO.Atributo = new Atributo(IDENTIFICADOR.val, CADENA.val, linea.val, columna.val);'}));
                                     $$ = new Atributo($1, $3, @1.first_line, @1.first_column); }
 ;
 
 LISTA_IDS
     : LISTA_IDS IDENTIFICADOR   { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'LISTA_IDS -> LISTA_IDS IDENTIFICADOR', 
-                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; \n LISTA_IDS.lista.push(IDENTIFICADOR.val);'})); 
+                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; LISTA_IDS.lista.push(IDENTIFICADOR.val);'})); 
                                 $1.push($2); $$ = $1; }
     | LISTA_IDS TEXTO           { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'LISTA_IDS -> LISTA_IDS TEXTO', 
-                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; \n LISTA_IDS.lista.push(TEXTO.val);'}));
+                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; LISTA_IDS.lista.push(TEXTO.val);'}));
                                 $1.push($2); $$ = $1; }
     | LISTA_IDS HREF            { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'LISTA_IDS -> LISTA_IDS HREF', 
-                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; \n LISTA_IDS.lista.push(HREF.val);'})); $1.push($2); 
+                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; LISTA_IDS.lista.push(HREF.val);'})); $1.push($2); 
                                 $$ = $1; }
     | LISTA_IDS DIGITO          { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'LISTA_IDS -> LISTA_IDS DIGITO', 
-                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; \n LISTA_IDS.lista.push(DIGITO.val);'})); $1.push($2);
+                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; LISTA_IDS.lista.push(DIGITO.val);'})); $1.push($2);
                                 $$ = $1; }
     | LISTA_IDS INTERR          { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'LISTA_IDS -> LISTA_IDS INTERR', 
-                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; \n LISTA_IDS.lista.push(INTERR.val);'}));
+                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; LISTA_IDS.lista.push(INTERR.val);'}));
                                 $1.push($2); $$ = $1; }
     | LISTA_IDS BARRA           { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'LISTA_IDS -> LISTA_IDS BARRA', 
-                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; \n LISTA_IDS.lista.push(BARRA.val);'}));
+                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; LISTA_IDS.lista.push(BARRA.val);'}));
                                 $1.push($2); $$ = $1; }
     | IDENTIFICADOR             { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'LISTA_IDS -> IDENTIFICADOR', 
                                 reglas:'LISTA_IDS.lista = [IDENTIFICADOR.val]'}));

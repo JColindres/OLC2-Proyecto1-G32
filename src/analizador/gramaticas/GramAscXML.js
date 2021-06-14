@@ -110,7 +110,7 @@ case 5:
 break;
 case 6:
  RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'OBJETO -> ETABRE IDENTIFICADOR LISTAATRIBUTOS ETCIERRE OBJETOS ETABRE BARRA IDENTIFICADOR ETCIERRE', 
-                                                                                                    reglas:'OBJETO.Objeto = new Objeto(IDENTIFICADOR.val, \' \', LISTAATRIBUTOS.lista, OBJETOS.lista, true);'}));
+                                                                                                    reglas:'OBJETO.Objeto = new Objeto(IDENTIFICADOR.val, \'  \', linea.val, columna.val, LISTAATRIBUTOS.lista, OBJETOS.lista, true);'}));
                                                                                                     /*Validación de etiqueta de apertura y de cierre iguales*/
                                                                                                     if($$[$0-7] != $$[$0-1])
                                                                                                     {                                                                                                        
@@ -120,7 +120,7 @@ case 6:
 break;
 case 7:
  RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'OBJETO -> ETABRE IDENTIFICADOR LISTAATRIBUTOS ETCIERRE LISTA_IDS ETABRE BARRA IDENTIFICADOR ETCIERRE', 
-                                                                                                    reglas:'OBJETO.Objeto = new Objeto(IDENTIFICADOR.val, LISTA_IDS.lista, LISTAATRIBUTOS.lista, [], true);'}));
+                                                                                                    reglas:'OBJETO.Objeto = new Objeto(IDENTIFICADOR.val, LISTA_IDS.lista, linea.val, columna.val, LISTAATRIBUTOS.lista, [], true);'}));
                                                                                                     /*Validación de etiqueta de apertura y de cierre iguales*/
                                                                                                     if($$[$0-7] != $$[$0-1])
                                                                                                     {                                                                                                        
@@ -130,12 +130,12 @@ case 7:
 break;
 case 8:
  RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'OBJETO -> ETABRE IDENTIFICADOR LISTAATRIBUTOS BARRA ETCIERRE', 
-                                                                                                    reglas:'OBJETO.Objeto = new Objeto(IDENTIFICADOR.val, \' \', LISTAATRIBUTOS.lista, [], false);'}));
+                                                                                                    reglas:'OBJETO.Objeto = new Objeto(IDENTIFICADOR.val, \'  \', linea.val, columna.val, LISTAATRIBUTOS.lista, [], false);'}));
                                                                                                     this.$ = new Objeto($$[$0-3],'',_$[$0-4].first_line, _$[$0-4].first_column,$$[$0-2],[],false); 
 break;
 case 9:
  RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'OBJETOS -> OBJETOS OBJETO', 
-                            reglas:'OBJETOS.lista = OBJETOS1.lista; \n OBJETOS.lista.push(OBJETO);'}));
+                            reglas:'OBJETOS.lista = OBJETOS1.lista; OBJETOS.lista.push(OBJETO);'}));
                             $$[$0-1].push($$[$0]); this.$ = $$[$0-1]; 
 break;
 case 10:
@@ -155,7 +155,7 @@ case 12:
 break;
 case 13:
  RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'ATRIBUTOS -> ATRIBUTOS ATRIBUTO', 
-                                reglas:'ATRIBUTOS.lista = ATRIBUTOS1.lista; \n ATRIBUTOS.lista.push(ATRIBUTO)'}));
+                                reglas:'ATRIBUTOS.lista = ATRIBUTOS1.lista; ATRIBUTOS.lista.push(ATRIBUTO)'}));
                                 $$[$0-1].push($$[$0]); this.$ = $$[$0-1]; 
 break;
 case 14:
@@ -165,37 +165,37 @@ case 14:
 break;
 case 15:
  RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'ATRIBUTO -> IDENTIFICADOR ASIGN CADENA', 
-                                    reglas:'ATRIBUTO.Atributo = new Atributo(IDENTIFICADOR.val, CADENA.val);'}));
+                                    reglas:'ATRIBUTO.Atributo = new Atributo(IDENTIFICADOR.val, CADENA.val, linea.val, columna.val);'}));
                                     this.$ = new Atributo($$[$0-2], $$[$0], _$[$0-2].first_line, _$[$0-2].first_column); 
 break;
 case 16:
  RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'LISTA_IDS -> LISTA_IDS IDENTIFICADOR', 
-                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; \n LISTA_IDS.lista.push(IDENTIFICADOR.val);'})); 
+                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; LISTA_IDS.lista.push(IDENTIFICADOR.val);'})); 
                                 $$[$0-1].push($$[$0]); this.$ = $$[$0-1]; 
 break;
 case 17:
  RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'LISTA_IDS -> LISTA_IDS TEXTO', 
-                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; \n LISTA_IDS.lista.push(TEXTO.val);'}));
+                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; LISTA_IDS.lista.push(TEXTO.val);'}));
                                 $$[$0-1].push($$[$0]); this.$ = $$[$0-1]; 
 break;
 case 18:
  RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'LISTA_IDS -> LISTA_IDS HREF', 
-                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; \n LISTA_IDS.lista.push(HREF.val);'})); $$[$0-1].push($$[$0]); 
+                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; LISTA_IDS.lista.push(HREF.val);'})); $$[$0-1].push($$[$0]); 
                                 this.$ = $$[$0-1]; 
 break;
 case 19:
  RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'LISTA_IDS -> LISTA_IDS DIGITO', 
-                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; \n LISTA_IDS.lista.push(DIGITO.val);'})); $$[$0-1].push($$[$0]);
+                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; LISTA_IDS.lista.push(DIGITO.val);'})); $$[$0-1].push($$[$0]);
                                 this.$ = $$[$0-1]; 
 break;
 case 20:
  RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'LISTA_IDS -> LISTA_IDS INTERR', 
-                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; \n LISTA_IDS.lista.push(INTERR.val);'}));
+                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; LISTA_IDS.lista.push(INTERR.val);'}));
                                 $$[$0-1].push($$[$0]); this.$ = $$[$0-1]; 
 break;
 case 21:
  RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'LISTA_IDS -> LISTA_IDS BARRA', 
-                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; \n LISTA_IDS.lista.push(BARRA.val);'}));
+                                reglas:'LISTA_IDS.lista = LISTA_IDS1.lista; LISTA_IDS.lista.push(BARRA.val);'}));
                                 $$[$0-1].push($$[$0]); this.$ = $$[$0-1]; 
 break;
 case 22:
@@ -394,12 +394,16 @@ parse: function parse(input) {
     return true;
 }};
 
+    //Req. para recopilación de errores
     const errorGram = require("../arbol/error");
     const tablaErrores = require("../arbol/errores");
+
+    //Req. para el manejo de datos
     const {Objeto} = require("../abstractas/objeto");
     const {Atributo} = require("../abstractas/atributo");
     const {Prologo} = require("../abstractas/prologo");
 
+    //Req. para elaborar el reporte gramatical
     const ValAsc = require("../Reportes/ValAscendente");
     const RepoGram = require("../Reportes/RepGramAscXML");
 /* generated by jison-lex 0.3.4 */

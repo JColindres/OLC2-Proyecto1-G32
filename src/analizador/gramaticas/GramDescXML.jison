@@ -51,16 +51,20 @@
 /********************************************* PARTE SINTÁCTICA *********************************************/
 /*********Área declaraciones*********/
 %{
+    //Req. para recopilación de errores
     const errorGram = require("../arbol/error");
     const tablaErrores = require("../arbol/errores");
+
+    //Req. para el manejo de errores
     const {Objeto} = require("../abstractas/objeto");
     const {Atributo} = require("../abstractas/atributo");
     const {Prologo} = require("../abstractas/prologo");
 
+    //Req. que recopilará los nodos para el ASTs
     const { NodoAST }= require('../arbol/nodoAST');
 
-    /*const ValDesc = require("../Reportes/ValDescendente");
-    const RepoGram = require("../Reportes/RepGramDescXML");*/
+    const ValAsc = require("../Reportes/ValAscendente");
+    const RepoGram = require("../Reportes/RepGramDescXML");
 %}
 
 /*********Asociación de operadores y precedencias*********/

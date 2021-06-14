@@ -51,9 +51,11 @@
 /********************************************* PARTE SINTÁCTICA *********************************************/
 /*********Área declaraciones*********/
 %{
+    //Req. para recopilación de errores
     const errorGram = require("../arbol/error");
     const tablaErrores = require("../arbol/errores");
 
+    //Req. que recopilará los nodos para elaborar el CST
     const { NodoAST }= require('../arbol/nodoAST');
 %}
 
@@ -96,7 +98,9 @@ OBJETOS
 
 LISTAATRIBUTOS
     : ATRIBUTOS                 { $$ = new NodoAST({label: 'LISTA_ATRIBUTOS', hijos: [$1], linea: yylineno}); }
-    | /*ε*/                     { $$ = ' ';/*$$ = new NodoAST({label: ' ', hijos: [], linea: yylineno});*/ }
+    | /*ε*/                     { $$ = ' ';
+                                /*Se coloca vacío, de lo contrario retorna 'undefined' al concatenar un string y crea error*/
+                                /*$$ = new NodoAST({label: ' ', hijos: [], linea: yylineno});*/ }
 ;
 
 ATRIBUTOS

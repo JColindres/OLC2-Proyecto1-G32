@@ -5,6 +5,7 @@
         <q-btn-group push spread>
         </q-btn-group>
 
+        <!-- Q-DIALOG para el CST XML ascendente -->
         <q-dialog
           v-model="darkDialog"
           persistent
@@ -35,6 +36,7 @@
           </q-card>
         </q-dialog>
 
+        <!-- Q-DIALOG  para el AST XPATH ascendente -->
         <q-dialog
           v-model="darkDialog2"
           persistent
@@ -44,7 +46,7 @@
         >
           <q-card class="bg-primary text-white">
             <q-bar>
-              <div>AST - XPATH</div>
+              <div>AST - XPATH Ascendente</div>
 
               <q-space />
 
@@ -65,6 +67,38 @@
           </q-card>
         </q-dialog>
 
+        <!-- Q-DIALOG  para el AST XPATH descendente -->
+        <q-dialog
+          v-model="darkDialog4"
+          persistent
+          :maximized="maximizedToggle"
+          transition-show="slide-up"
+          transition-hide="slide-down"
+        >
+          <q-card class="bg-primary text-white">
+            <q-bar>
+              <div>AST - XPATH Descendente</div>
+
+              <q-space />
+
+              <q-btn dense flat icon="minimize" @click="maximizedToggle = false" :disable="!maximizedToggle">
+                <q-tooltip v-if="maximizedToggle" content-class="bg-white text-primary">Minimize</q-tooltip>
+              </q-btn>
+              <q-btn dense flat icon="crop_square" @click="maximizedToggle = true" :disable="maximizedToggle">
+                <q-tooltip v-if="!maximizedToggle" content-class="bg-white text-primary">Maximize</q-tooltip>
+              </q-btn>
+              <q-btn dense flat icon="close" v-close-popup>
+                <q-tooltip content-class="bg-white text-primary">Close</q-tooltip>
+              </q-btn>
+            </q-bar>
+            
+            <q-card-section class="q-pt-none">
+              <ast :dot="dot3" />
+            </q-card-section>
+          </q-card>
+        </q-dialog>
+
+        <!-- Q-DIALOG para el CST XML descendente -->
         <q-dialog
           v-model="darkDialog3"
           persistent
@@ -90,7 +124,7 @@
             </q-bar>
             
             <q-card-section class="q-pt-none">
-              <ast :dot="dot3" />
+              <ast :dot="dot4" />
             </q-card-section>
           </q-card>
         </q-dialog>
@@ -110,7 +144,8 @@
             <q-bar class="bg-black text-white" style="width:auto">
               <q-btn push label="Ejecutar_ASC" icon="play_arrow" @click="ejecutarXPath"/>
               <q-btn push label="Ejecutar_DESC" icon="play_arrow" @click="ejecutarXPath_DESC"/>
-              <q-btn push label="AST - XPATH" @click="darkDialog2 = true" />
+              <q-btn push label="AST - XPATH Asc" @click="darkDialog2 = true" />
+              <q-btn push label="AST - XPATH Desc" @click="darkDialog4 = true" />
               <q-space />
               <q-btn push label="" icon="cleaning_services" @click="limpiarXP" />
             </q-bar>              
@@ -271,6 +306,7 @@ export default {
       darkDialog: false,
       darkDialog2: false,
       darkDialog3: false,
+      darkDialog4: false,
       maximizedToggle: true,
       codeXP: "",
       cmOptionsXP: {
@@ -316,6 +352,7 @@ export default {
       dot: "",
       dot2: "",
       dot3: "",
+      dot4: "",
       salida: [],
       errores: [],
       columns: [
@@ -372,6 +409,7 @@ export default {
       this.inicializarValores();
       try {
         const raiz = AXml.parse(this.code);
+
         //Para el árbol CST
         const raizxml = AXMLTree.parse(this.code);
 
@@ -383,8 +421,10 @@ export default {
           );
           return;
         }
+
         this.xmlXP = raiz;
         let ejecucion = new Ejecucion(this.xmlXP.prologo, this.xmlXP.cuerpo, this.code);
+
         //Nueva ejecución para el arbol CST
         let exec = new Ejecucion(raiz.prologo, raiz.cuerpo, this.code, raizxml);
         this.dot = exec.getDot();
@@ -405,9 +445,10 @@ export default {
         this.notificar("primary", `El editor está vacío, escriba algo.`);
         return;
       }
-      this.inicializarValores();
+      this.inicializarValores2();
       try {
         const raiz = AXpath.parse(this.codeXP);
+
         //Validacion de raiz
         if (raiz == null) {
           this.notificar(
@@ -416,11 +457,14 @@ export default {
           );
           return;
         }
+
         let ejecucion = new Ejecucion(this.xmlXP.prologo, this.xmlXP.cuerpo, this.code, raiz);
         this.dot2 = ejecucion.getDot();
+
         ejecucion.verObjetos();
         this.dataTS(ejecucion.ts.tabla);
         this.codeS = ejecucion.recorrer();
+
         this.notificar("primary", "Ejecución realizada con éxito");
       } catch (error) {
         this.validarError(error);
@@ -433,9 +477,10 @@ export default {
         this.notificar("primary", `El editor está vacío, escriba algo.`);
         return;
       }
-      this.inicializarValores();
+      this.inicializarValores3();
       try {
         const raiz = DXpath.parse(this.codeXP);
+
         //Validacion de raiz
         if (raiz == null) {
           this.notificar(
@@ -444,10 +489,13 @@ export default {
           );
           return;
         }
+
         let ejecucion = new Ejecucion(this.xmlXP.prologo, this.xmlXP.cuerpo, this.code, raiz);
-        this.dot2 = ejecucion.getDot();
+        this.dot3 = ejecucion.getDot();
         console.log(raiz);
+
         this.codeS = ejecucion.recorrer();
+
         this.notificar("primary", "Ejecución realizada con éxito");
       } catch (error) {
         this.validarError(error);
@@ -456,39 +504,36 @@ export default {
       //this.entornos = Entornos.getInstance().lista;
     },
     ejecutarXMLDesc() {
-      if (this.code.trim() == "") {
+      if (this.code.trim() == "") 
+      {
         this.notificar("primary", `El editor está vacío, escriba algo.`);
         return;
       }
-      this.inicializarValores();
+      this.inicializarValores4();
       try {
+        //Llamado al parser XML - Desc
         const raizdesc = AXMLDesc.parse(this.code);
-        console.log(raizdesc)
+
         //Validacion de raiz
         if (raizdesc == null) {
           this.notificar(
             "negative",
             "No se pudo ejecutar"
           );
+
           return;
         }
-        this.xmlXPDesc = raizdesc;
-        //let ejecucion = new Ejecucion(this.xmlXPDesc.prologo, this.xmlXPDesc.cuerpo, this.code);
-        //Nueva ejecución para el arbol CST
-        let exec = new Ejecucion(raizdesc.prologo, raizdesc.cuerpo, this.code, raizdesc);
-        this.dot3 = exec.getDot();
 
-        //ejecucion.verObjetos();
-        //this.dataTS(ejecucion.ts.tabla);
+        //Se llama a Ejecución para conseguir el dot
+        let exec = new Ejecucion(raizdesc.prologo, raizdesc.cuerpo, this.code, raizdesc);
+        this.dot4 = exec.getDot();
+
         this.notificar("primary", "Ejecución realizada con éxito");
       } catch (error) {
         this.validarError(error);
       }
-      //this.errores = Errores.getInstance().lista;
-      //this.repgramascxml = RepGramAscXML.getInstance().lista;
-      //this.simbolos = ejecucion.verObjetos();
-      //console.log(this.simbolos);
     },
+    /*inicializarValores corresponde a ejecutar*/
     inicializarValores() {
       Errores.getInstance().clear();
       //Entornos.getInstance().clear();
@@ -497,9 +542,23 @@ export default {
       this.simbolos = [];
       this.salida = [];
       this.dot = '';
-      this.dot2 = '';
-      this.dot3 = '';
       this.repgramascxml = [];
+    },
+    /*inicializarValores corresponde a ejecutarXPath*/
+    inicializarValores2() {
+      Errores.getInstance().clear();
+      this.errores = [];
+      this.dot2 = '';
+    },
+    /*inicializarValores corresponde a ejecutarXPath_DESC*/
+    inicializarValores3() {
+      Errores.getInstance().clear();
+      this.errores = [];
+      this.dot3 = '';
+    },
+    /*inicializarValores4 corresponde a ejecutarXMLDesc*/
+    inicializarValores4() {
+      this.dot4 = '';
     },
     validarError(error) {
       const json = JSON.stringify(error);
@@ -530,11 +589,13 @@ export default {
       this.code = '';
       this.codeS = '';
       this.inicializarValores();
+      this.inicializarValores4();
     },
     limpiarXP(){
       this.codeS = '';
       this.codeXP = '';
-      this.inicializarValores();
+      this.inicializarValores2();
+      this.inicializarValores3();
     },
     dataTS(arreglo){
       arreglo.forEach(element => {
@@ -547,10 +608,6 @@ export default {
         }
         this.simbolos.push({identificador: element[0], valor: a, ambito: element[2], tipo: element[3], linea: element[4], columna: element[5]});
       });
-    },
-    impconsola()
-    {
-      console.log(this.columnsTS);
     }
   },
 };

@@ -2,11 +2,11 @@
 import { ValAscendente } from "./ValAscendente";
 
 //La clase a exportar para el reporte gramatical ascendente del XML
-export class RepGramAscXML 
+export class RepGramDescXML 
 {
-    private static instance: RepGramAscXML;
+    private static instance: RepGramDescXML;
     
-    //Lista de objetos con las producciones y sus reglas
+    //Lista de objetos con las producciones y sus reglas (ValAsc = ValDesc)
     lista: ValAscendente[];
 
     private constructor() 
@@ -14,13 +14,13 @@ export class RepGramAscXML
         this.lista = [];
     }
 
-    public static getInstance(): RepGramAscXML 
+    public static getInstance(): RepGramDescXML 
     {
-        if (!RepGramAscXML.instance) 
+        if (!RepGramDescXML.instance) 
         {
-            RepGramAscXML.instance = new RepGramAscXML();
+            RepGramDescXML.instance = new RepGramDescXML();
         }
-        return RepGramAscXML.instance;
+        return RepGramDescXML.instance;
     }
 
     public push(valor: ValAscendente): void 
