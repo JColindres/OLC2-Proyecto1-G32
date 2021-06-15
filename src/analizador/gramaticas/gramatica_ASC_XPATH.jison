@@ -285,7 +285,7 @@ EXPR : ATRIBUTO_PREDICADO
      | ORDEN 
         { $$ = new NodoAST({label: 'EXPR', hijos: [$1], linea: yylineno}); }
      | VALORES
-        { $$ = new NodoAST({label: 'EXPR', hijos: [...$1.hijos], linea: yylineno}); }
+        { $$ = new NodoAST({label: 'EXPR', hijos: [$1], linea: yylineno}); }
      | EJES OPC_EJES
         { $$ = new NodoAST({label: 'EXPR', hijos: [$1,...$2.hijos], linea: yylineno}); }
      | PATH
@@ -366,15 +366,15 @@ ATRIBUTO_PREDICADO : arroba OPC
                    ;
 
 VALORES : integer 
-                 { $$ = new NodoAST({label: 'VALORES', hijos: [$1], linea: yylineno}); }
+                 { $$ = new NodoAST({label: 'integer', hijos: [$1], linea: yylineno}); }
         | double
-                { $$ = new NodoAST({label: 'VALORES', hijos: [$1], linea: yylineno}); }
+                { $$ = new NodoAST({label: 'double', hijos: [$1], linea: yylineno}); }
         | string 
-                { $$ = new NodoAST({label: 'VALORES', hijos: [$1], linea: yylineno}); }
+                { $$ = new NodoAST({label: 'string', hijos: [$1], linea: yylineno}); }
         | id
-                { $$ = new NodoAST({label: 'VALORES', hijos: [$1], linea: yylineno}); }
+                { $$ = new NodoAST({label: 'id', hijos: [$1], linea: yylineno}); }
         | punto
-                { $$ = new NodoAST({label: 'VALORES', hijos: [$1], linea: yylineno}); }
+                { $$ = new NodoAST({label: 'punto', hijos: [$1], linea: yylineno}); }
         | dos_pts
-                { $$ = new NodoAST({label: 'VALORES', hijos: [$1], linea: yylineno}); }
+                { $$ = new NodoAST({label: 'dos_pts', hijos: [$1], linea: yylineno}); }
         ; 
