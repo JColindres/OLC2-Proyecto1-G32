@@ -297,7 +297,6 @@ export default {
   components: {
     codemirror,
     ast: require("../components/Ast").default,
-    tablaSimbolos: require("../components/TablaSimbolos").default,
   },
   data() {
     return {

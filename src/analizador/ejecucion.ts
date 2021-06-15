@@ -1,6 +1,9 @@
 import { forEach } from "lodash";
 import { Objeto } from "./abstractas/objeto";
 import { XmlTS } from "./arbol/xmlTS";
+import { Operacion, Operador } from "./expresiones/operacion";
+import { Primitivo } from "./expresiones/primitivo";
+import { Expresion } from "./Interfaces/Expresion";
 
 export class Ejecucion {
   prologoXml: JSON;
@@ -15,6 +18,7 @@ export class Ejecucion {
   atributo: boolean;
   atributoTexto: string;
   atributoIdentificacion: any[];
+  indiceValor: number;
   nodo_descendente : boolean; //  -> //*
   atributo_nodo: boolean;   // -> /@*
   consultaXML: Array<Objeto>;
@@ -136,6 +140,7 @@ export class Ejecucion {
       this.atributo = false;
       this.atributoTexto = '';
       this.atributoIdentificacion = [];
+      this.indiceValor = null;
       this.consultaXML = this.cuerpoXml;
       this.verObjetos();
       this.recorrido(this.raiz);
@@ -167,6 +172,7 @@ export class Ejecucion {
               this.descendiente = false;
               this.atributo = false;
               this.atributoTexto = '';
+              this.indiceValor = null;
               this.consultaXML = this.cuerpoXml;
             }
             else if (!(element === '[') && !(element === ']')) {
@@ -255,6 +261,17 @@ export class Ejecucion {
             this.consultaXML = cons;
           }
         });
+      }
+
+      if (this.identificar('ARITMETICAS', nodo) || this.identificar('integer', nodo)) {
+        if(this.identificar('integer', nodo)){
+          this.consultaXML = this.reducir(this.consultaXML, nodo.hijos[0], 'INSTRUCCIONES');
+        }
+        else{
+          let val:Expresion = null;
+          val = this.calcular(nodo);
+          this.consultaXML = this.reducir(this.consultaXML, val.getValorImplicito(val), 'INSTRUCCIONES');
+        }
       }
 
       if (this.identificar('HIJOS', nodo)) {
@@ -508,6 +525,59 @@ export class Ejecucion {
       }
     });
     return cons;
+  }
+
+  calcular(nodo: any): Expresion{
+    if (this.identificar('ARITMETICAS', nodo)) {
+      let izq:Expresion,der: Expresion = null;
+      let op = "";
+      nodo.hijos.forEach((element: any) => {
+        if (element instanceof Object) {
+          if(op === "" && this.identificar('integer', element)){
+            izq = new Primitivo(Number(element.hijos[0]), 1, 1);
+          }
+          else if(!(op === "") && this.identificar('integer', element)){
+            der = new Primitivo(Number(element.hijos[0]), 1, 1);
+          }
+          else if(op === "" && this.identificar('ARITMETICAS', element)){
+            izq = this.calcular(element);
+          }
+          else if(!(op === "") && this.identificar('ARITMETICAS', element)){
+            der = this.calcular(element);
+          }
+          else if(op === "" && this.identificar('ORDEN', element)){
+            izq = new Primitivo(Number(this.consultaXML.length),1,1);
+          }
+          else if(!(op === "") && this.identificar('ORDEN', element)){
+            der = new Primitivo(Number(this.consultaXML.length),1,1);
+          }
+        }
+        else if (typeof element === 'string') {
+          if(!(element === '(') && !(element === ')')){
+            op = element;
+          }
+        }
+      });
+      if(izq && der && !(op === "")){
+        let a: Operacion;
+        if(op === '+'){
+           a = new Operacion(izq, der, Operador.SUMA, 1, 1);
+        }
+        else if(op === '-'){
+          a = new Operacion(izq, der, Operador.RESTA, 1, 1);
+        }
+        else if(op === '*'){
+          a = new Operacion(izq, der, Operador.MULTIPLICACION, 1, 1);
+        }
+        else if(op === 'div'){
+          a = new Operacion(izq, der, Operador.DIVISION, 1, 1);
+        }
+        else if(op === 'mod'){
+          a = new Operacion(izq, der, Operador.MODULO, 1, 1);
+        }
+        return a;
+      }
+    }
   }
 
   traducir(): string {
