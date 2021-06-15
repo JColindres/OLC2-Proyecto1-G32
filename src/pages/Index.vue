@@ -142,10 +142,8 @@
           <div class="col-md-12" style="width:100%">
           <q-card class="editorXML" style="width:auto">
             <q-bar class="bg-black text-white" style="width:auto">
-              <q-btn push label="Ejecutar_ASC" icon="play_arrow" @click="ejecutarXPath"/>
-              <q-btn push label="Ejecutar_DESC" icon="play_arrow" @click="ejecutarXPath_DESC"/>
-              <q-btn push label="AST - XPATH Asc" @click="darkDialog2 = true" />
-              <q-btn push label="AST - XPATH Desc" @click="darkDialog4 = true" />
+              <q-btn push label="Ejecutar XPATH ASC" icon="play_arrow" @click="ejecutarXPath"/>
+              <q-btn push label="Ejecutar XPATH DESC" icon="play_arrow" @click="ejecutarXPath_DESC"/>
               <q-space />
               <q-btn push label="" icon="cleaning_services" @click="limpiarXP" />
             </q-bar>              
@@ -154,13 +152,21 @@
           </div>
         </div>
         <div class="row">
+          <div class="col-md-12" style="width:100%">
+            <q-bar class="text-white" style="background-color: #002B88; width:auto">           
+              <q-btn push label="AST - XPATH Asc" @click="darkDialog2 = true" />
+              <q-btn push label="AST - XPATH Desc" @click="darkDialog4 = true" />
+              <q-btn push label="CST - XML Asc" @click="darkDialog = true" />
+              <q-btn push label="CST - XML Desc" @click="darkDialog3 = true" />
+            </q-bar>
+          </div>
+        </div>
+        <div class="row">
           <div class="col-md-6" style="width:50%">
             <q-card class="editorXML" style="width:auto">
               <q-bar class="bg-black text-white" style="width:auto">
-                <q-btn push label="Ejecutar asc" icon="play_arrow" @click="ejecutar" />
-                <q-btn push label="CST - XML Asc" @click="darkDialog = true" />
-                <q-btn push label="Ejecutar desc" icon="play_arrow" @click="ejecutarXMLDesc" />
-                <q-btn push label="CST - XML Desc" @click="darkDialog3 = true" />
+                <q-btn push label="Ejecutar XML ASC" icon="play_arrow" @click="ejecutar" />                
+                <q-btn push label="Ejecutar XML DESC" icon="play_arrow" @click="ejecutarXMLDesc" />                
                 <q-space />
                 <q-btn push label="Limpiar" icon="cleaning_services" @click="limpiar" />
               </q-bar>              
@@ -195,6 +201,7 @@
                   name="tabla_de_simbolos"
                 />
                 <q-tab label="Reporte Gramatical XML Asc" name="rep_gram"></q-tab>
+                <q-tab label="Reporte Gramatical XML Desc" name="rep_gram_desc"></q-tab>
               </q-tabs>
             </template>
 
@@ -255,6 +262,22 @@
                     />
                   </div>
                 </q-tab-panel>
+
+                <q-tab-panel name="rep_gram_desc" v-if="repgramdescxml != null && repgramdescxml.length > 0">
+                  <div class="q-pa-md">
+                    <q-table
+                      title="Reporte Gramatical XML Descendente"
+                      :data="repgramdescxml"
+                      :columns="coldescxml"
+                      row-key="name"
+                      dark
+                      color="amber"
+                      dense
+                      :pagination="{ rowsPerPage: 0 }"
+                      rows-per-page-label="Reporte gramatical por página"
+                    />
+                  </div>
+                </q-tab-panel>
                 
               </q-tab-panels>
             </template>
@@ -292,6 +315,7 @@ import { Errores } from "../analizador/arbol/errores";
 import { Error as InstanciaError } from "../analizador/arbol/error";
 import { Ejecucion } from "../analizador/ejecucion";
 import { RepGramAscXML } from '../analizador/Reportes/RepGramAscXML';
+import { RepGramDescXML } from '../analizador/Reportes/RepGramDescXML'
 
 export default {
   components: {
@@ -375,7 +399,12 @@ export default {
         { name: "columna", label: "Columna", field: "columna", align: "left" },
       ],
       repgramascxml: [],
+      repgramdescxml: [],
       colascxml: [
+        { name: "produccion", label: "Producción", field: "produccion", align: "left"},
+        { name: "reglas", label: "Reglas", field: "reglas", align: "left" },
+      ],
+      coldescxml: [
         { name: "produccion", label: "Producción", field: "produccion", align: "left"},
         { name: "reglas", label: "Reglas", field: "reglas", align: "left" },
       ],
@@ -531,6 +560,8 @@ export default {
       } catch (error) {
         this.validarError(error);
       }
+      this.errores = Errores.getInstance().lista;
+      this.repgramdescxml = RepGramDescXML.getInstance().lista;
     },
     /*inicializarValores corresponde a ejecutar*/
     inicializarValores() {
@@ -557,7 +588,11 @@ export default {
     },
     /*inicializarValores4 corresponde a ejecutarXMLDesc*/
     inicializarValores4() {
+      Errores.getInstance().clear();
+      RepGramDescXML.getInstance().clear();
+      this.errores = [];
       this.dot4 = '';
+      this.repgramdescxml = [];
     },
     validarError(error) {
       const json = JSON.stringify(error);

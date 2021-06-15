@@ -27,13 +27,13 @@
 "/"                         return 'BARRA';
 "<"                         return 'ETABRE';
 ">"                         return 'ETCIERRE';
-"?"                         return 'INTERR'
+"?"                         return 'INTERR';
 
 /***Otras ER***/ 
-([a-zA-Z_])[a-zA-ZñÑ0-9_-]*	    return 'IDENTIFICADOR';
-["][^\"]*["]                    return 'CADENA';
-([^ \r\t\na-zA-ZñÑ0-9_><\"\'&]) return 'TEXTO';
-[0-9]                           return 'DIGITO'
+([a-zA-ZñÑáéíóúÁÉÍÓÚ_])[a-zA-ZñÑáéíóúÁÉÍÓÚ0-9_-]*	    return 'IDENTIFICADOR';
+["][^\"]*["]                                            return 'CADENA';
+([^ \r\t\na-zA-ZñÑáéíóúÁÉÍÓÚ0-9_><\"\'&])               return 'TEXTO';
+[0-9]                                                   return 'DIGITO';
 
 [ \r\t]+                    {/*Ignorar espacios en blanco*/}
 \n                          {/*Ignorar espacios en blanco*/}

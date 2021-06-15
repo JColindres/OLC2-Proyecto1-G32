@@ -30,10 +30,10 @@
 "?"                         return 'INTERR'
 
 /***Otras ER***/ 
-([a-zA-Z_])[a-zA-ZñÑ0-9_-]*	    return 'IDENTIFICADOR';
-["][^\"]*["]                    return 'CADENA';
-([^ \r\t\na-zA-ZñÑ0-9_><\"\'&]) return 'TEXTO';
-[0-9]                           return 'DIGITO'
+([a-zA-ZñÑáéíóúÁÉÍÓÚ_])[a-zA-ZñÑáéíóúÁÉÍÓÚ0-9_-]*	    return 'IDENTIFICADOR';
+["][^\"]*["]                                            return 'CADENA';
+([^ \r\t\na-zA-ZñÑáéíóúÁÉÍÓÚ0-9_><\"\'&])               return 'TEXTO';
+[0-9]                                                   return 'DIGITO';
 
 [ \r\t]+                    {/*Ignorar espacios en blanco*/}
 \n                          {/*Ignorar espacios en blanco*/}
@@ -81,7 +81,7 @@ INIT
 ;
 
 PROLOGO
-    : ETABRE INTERR IDENTIFICADOR IDENTIFICADOR ASIGN CADENA IDENTIFICADOR ASIGN CADENA INTERR ETCIERRE     { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'PROLOGO -> ETABRE INTERR IDENTIFICADOR IDENTIFICADOR ASIGN CADENA IDENTIFICADOR ASIGN CADENA INTERR ETCIERRE;', 
+    : ETABRE INTERR IDENTIFICADOR IDENTIFICADOR ASIGN CADENA IDENTIFICADOR ASIGN CADENA INTERR ETCIERRE     { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'PROLOGO -> ETABRE INTERR IDENTIFICADOR IDENTIFICADOR ASIGN CADENA IDENTIFICADOR ASIGN CADENA INTERR ETCIERRE', 
                                                                                                             reglas:'PROLOGO.Prolog = new Prologo(CADENA1.val, CADENA2.val);'}));
                                                                                                             $$ = new Prologo($6,$9); }
 ;  
@@ -196,9 +196,9 @@ LISTA_IDS
 ;
 
 HREF
-    : LT        { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> LT', reglas:' HREF.val = LT;'})); $$ = $1; }
-    | GT        { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> GT', reglas:' HREF.val = GT;'})); $$ = $1; }
-    | AMP       { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> AMP', reglas:' HREF.val = AMP;'})); $$ = $1; }
-    | APOS      { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> APOS', reglas:' HREF.val = APOS;'})); $$ = $1; }
-    | QUOT      { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> QUOT', reglas:' HREF.val = QUOT;'})); $$ = $1; }
+    : LT        { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> LT', reglas:' HREF.val = \'<\';'})); $$ = '<'; }
+    | GT        { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> GT', reglas:' HREF.val = \'>\';'})); $$ = '>'; }
+    | AMP       { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> AMP', reglas:' HREF.val = \'&\';'})); $$ = '&'; }
+    | APOS      { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> APOS', reglas:' HREF.val = \' \' \';'})); $$ = '\''; }
+    | QUOT      { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> QUOT', reglas:' HREF.val = \' \" \';'})); $$ = '\"'; }
 ;

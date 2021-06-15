@@ -89,7 +89,7 @@ case 1:
                                         this.$ = $$[$0-1]; return { prologo: $$[$0-2], cuerpo: this.$}; 
 break;
 case 2:
- RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'PROLOGO -> ETABRE INTERR IDENTIFICADOR IDENTIFICADOR ASIGN CADENA IDENTIFICADOR ASIGN CADENA INTERR ETCIERRE;', 
+ RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'PROLOGO -> ETABRE INTERR IDENTIFICADOR IDENTIFICADOR ASIGN CADENA IDENTIFICADOR ASIGN CADENA INTERR ETCIERRE', 
                                                                                                             reglas:'PROLOGO.Prolog = new Prologo(CADENA1.val, CADENA2.val);'}));
                                                                                                             this.$ = new Prologo($$[$0-5],$$[$0-2]); 
 break;
@@ -229,19 +229,19 @@ case 27:
                                 this.$ = [$$[$0]]; 
 break;
 case 28:
- RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> LT', reglas:' HREF.val = LT;'})); this.$ = $$[$0]; 
+ RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> LT', reglas:' HREF.val = \'<\';'})); this.$ = '<'; 
 break;
 case 29:
- RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> GT', reglas:' HREF.val = GT;'})); this.$ = $$[$0]; 
+ RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> GT', reglas:' HREF.val = \'>\';'})); this.$ = '>'; 
 break;
 case 30:
- RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> AMP', reglas:' HREF.val = AMP;'})); this.$ = $$[$0]; 
+ RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> AMP', reglas:' HREF.val = \'&\';'})); this.$ = '&'; 
 break;
 case 31:
- RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> APOS', reglas:' HREF.val = APOS;'})); this.$ = $$[$0]; 
+ RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> APOS', reglas:' HREF.val = \' \' \';'})); this.$ = '\''; 
 break;
 case 32:
- RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> QUOT', reglas:' HREF.val = QUOT;'})); this.$ = $$[$0]; 
+ RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> QUOT', reglas:' HREF.val = \' \" \';'})); this.$ = '\"'; 
 break;
 }
 },
@@ -762,7 +762,7 @@ case 12:return 11;
 break;
 case 13:return 21;
 break;
-case 14:return 23
+case 14:return 23;
 break;
 case 15:/*Ignorar espacios en blanco*/
 break;
@@ -777,7 +777,7 @@ case 18:return 6;
 break;
 }
 },
-rules: [/^(?:[<][\s\S\n]*?)/i,/^(?:&lt;)/i,/^(?:&gt;)/i,/^(?:&amp;)/i,/^(?:&apos;)/i,/^(?:&quot;)/i,/^(?:=)/i,/^(?:\/)/i,/^(?:<)/i,/^(?:>)/i,/^(?:\?)/i,/^(?:([a-zA-Z_])[a-zA-ZñÑ0-9_-]*)/i,/^(?:["][^\"]*["])/i,/^(?:([^ \r\t\na-zA-ZñÑ0-9_><\"\'&]))/i,/^(?:[0-9])/i,/^(?:[ \r\t]+)/i,/^(?:\n)/i,/^(?:.)/i,/^(?:$)/i],
+rules: [/^(?:[<][\s\S\n]*?)/i,/^(?:&lt;)/i,/^(?:&gt;)/i,/^(?:&amp;)/i,/^(?:&apos;)/i,/^(?:&quot;)/i,/^(?:=)/i,/^(?:\/)/i,/^(?:<)/i,/^(?:>)/i,/^(?:\?)/i,/^(?:([a-zA-ZñÑáéíóúÁÉÍÓÚ_])[a-zA-ZñÑáéíóúÁÉÍÓÚ0-9_-]*)/i,/^(?:["][^\"]*["])/i,/^(?:([^ \r\t\na-zA-ZñÑáéíóúÁÉÍÓÚ0-9_><\"\'&]))/i,/^(?:[0-9])/i,/^(?:[ \r\t]+)/i,/^(?:\n)/i,/^(?:.)/i,/^(?:$)/i],
 conditions: {"comment":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],"inclusive":true},"INITIAL":{"rules":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],"inclusive":true}}
 });
 return lexer;

@@ -72,125 +72,194 @@
   }
 */
 var GramDescXML = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,7],$V1=[2,5],$V2=[1,19],$V3=[1,17],$V4=[1,18],$V5=[1,20],$V6=[6,7],$V7=[12,21],$V8=[2,21],$V9=[1,35],$Va=[1,31],$Vb=[1,36],$Vc=[1,32],$Vd=[1,34],$Ve=[1,38],$Vf=[1,39],$Vg=[1,40],$Vh=[1,41],$Vi=[1,42],$Vj=[9,12,21],$Vk=[2,25],$Vl=[1,54],$Vm=[7,8,9,21,29,31,32,33,34,35,36];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,8],$V1=[2,5],$V2=[6,7],$V3=[1,20],$V4=[1,18],$V5=[1,19],$V6=[1,21],$V7=[12,22],$V8=[2,21],$V9=[1,36],$Va=[1,32],$Vb=[1,37],$Vc=[1,33],$Vd=[1,35],$Ve=[1,38],$Vf=[1,39],$Vg=[1,40],$Vh=[1,41],$Vi=[1,42],$Vj=[9,12,22],$Vk=[2,25],$Vl=[1,54],$Vm=[7,8,9,22,29,31,32,33,34,35,36];
 var parser = {trace: function trace () { },
 yy: {},
-symbols_: {"error":2,"INIT":3,"PROLOGO":4,"NODORAICES":5,"EOF":6,"ETABRE":7,"INTERR":8,"IDENTIFICADOR":9,"ASIGN":10,"CADENA":11,"ETCIERRE":12,"NODORAIZ":13,"NODORAICES_PRIM":14,"INICIO_ETI":15,"CONTETIQUETA":16,"ETIQUETA":17,"ATRIBUTOS":18,"FIN_ETI":19,"LISTA_IDS":20,"BARRA":21,"L_ETIQUETAS":22,"NUEVAETIQUETA":23,"L_ETIQUETAS_PRIM":24,"ATRIBUTO":25,"ATRIBUTOS_PRIM":26,"L_CONT":27,"LISTA_IDS_PRIM":28,"TEXTO":29,"HREF":30,"DIGITO":31,"LT":32,"GT":33,"AMP":34,"APOS":35,"QUOT":36,"$accept":0,"$end":1},
-terminals_: {2:"error",6:"EOF",7:"ETABRE",8:"INTERR",9:"IDENTIFICADOR",10:"ASIGN",11:"CADENA",12:"ETCIERRE",21:"BARRA",29:"TEXTO",31:"DIGITO",32:"LT",33:"GT",34:"AMP",35:"APOS",36:"QUOT"},
-productions_: [0,[3,3],[4,11],[5,2],[14,2],[14,0],[13,2],[15,2],[16,1],[17,2],[17,1],[19,6],[19,5],[19,5],[19,2],[22,2],[24,2],[24,1],[23,2],[18,2],[26,2],[26,0],[25,3],[20,2],[28,2],[28,0],[27,1],[27,1],[27,1],[27,1],[27,1],[27,1],[30,1],[30,1],[30,1],[30,1],[30,1]],
+symbols_: {"error":2,"INIT":3,"PROLOGO":4,"NODORAICES":5,"EOF":6,"ETABRE":7,"INTERR":8,"IDENTIFICADOR":9,"ASIGN":10,"CADENA":11,"ETCIERRE":12,"NODORAIZ":13,"NODORAICES_PRIM":14,"OBJETO":15,"INICIO_ETI":16,"CONTETIQUETA":17,"ETIQUETA":18,"ATRIBUTOS":19,"FIN_ETI":20,"LISTA_IDS":21,"BARRA":22,"L_ETIQUETAS":23,"L_ETIQUETAS_PRIM":24,"ATRIBUTO":25,"ATRIBUTOS_PRIM":26,"L_CONT":27,"LISTA_IDS_PRIM":28,"TEXTO":29,"HREF":30,"DIGITO":31,"LT":32,"GT":33,"AMP":34,"APOS":35,"QUOT":36,"$accept":0,"$end":1},
+terminals_: {2:"error",6:"EOF",7:"ETABRE",8:"INTERR",9:"IDENTIFICADOR",10:"ASIGN",11:"CADENA",12:"ETCIERRE",22:"BARRA",29:"TEXTO",31:"DIGITO",32:"LT",33:"GT",34:"AMP",35:"APOS",36:"QUOT"},
+productions_: [0,[3,3],[4,11],[5,2],[14,2],[14,0],[13,1],[15,2],[16,2],[17,1],[18,2],[18,1],[20,6],[20,5],[20,5],[20,2],[23,2],[24,2],[24,1],[19,2],[26,2],[26,0],[25,3],[21,2],[28,2],[28,0],[27,1],[27,1],[27,1],[27,1],[27,1],[27,1],[30,1],[30,1],[30,1],[30,1],[30,1]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
 var $0 = $$.length - 1;
 switch (yystate) {
 case 1:
- return new NodoAST({label: 'INIT', hijos: [$$[$0-2], $$[$0-1]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'INIT -> PROLOGO NODORAICES EOF',
+                                    reglas:'INIT.lista = NODORAICES.lista; return(prologo: PROLOGO.lista, cuerpo: INIT.lista);'}));
+                                    return new NodoAST({label: 'INIT', hijos: [$$[$0-2], $$[$0-1]], linea: yylineno}); 
 break;
 case 2:
- this.$ = new NodoAST({label: 'PROLOGO', hijos: [$$[$0-10], $$[$0-9], $$[$0-8], $$[$0-7], $$[$0-6], $$[$0-5], $$[$0-4], $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'PROLOGO -> ETABRE INTERR IDENTIFICADOR IDENTIFICADOR ASIGN CADENA IDENTIFICADOR ASIGN CADENA INTERR ETCIERRE',
+                                                                                                        reglas:'PROLOGO.Prolog = new Prologo(CADENA1.val, CADENA2.val);'})); 
+                                                                                                        this.$ = new NodoAST({label: 'PROLOGO', hijos: [$$[$0-10], $$[$0-9], $$[$0-8], $$[$0-7], $$[$0-6], $$[$0-5], $$[$0-4], $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], linea: yylineno}); 
 break;
 case 3:
- this.$ = new NodoAST({label: 'NODORAICES', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'NODORAICES -> NODORAIZ NODORAICES_PRIM',
+                                    reglas:'NODORAICES.lista = NODORAICES_PRIM.lista; NODORAICES.lista.push(NODORAIZ)'}));
+                                    this.$ = new NodoAST({label: 'NODORAICES', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
 break;
 case 4:
- this.$ = new NodoAST({label: 'NODORAICES_PRIM', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'NODORAICES_PRIM -> NODORAIZ NODORAICES_PRIM',
+                                    reglas:'NODORAICES_PRIM.lista = NODORAICES_PRIM1.lista; NODORAICES_PRIM.lista.push(NODORAIZ)'}));
+                                    this.$ = new NodoAST({label: 'NODORAICES_PRIM', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
 break;
-case 5: case 21: case 25:
- this.$ = ' '; 
+case 5:
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'NODORAICES_PRIM -> ε',
+                                    reglas:'NODORAICES_PRIM.lista = []'}));
+                                    this.$ = ' '; 
 break;
 case 6:
- this.$ = new NodoAST({label: 'NODORAIZ', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'NODORAIZ -> OBJETO',
+                    reglas:'NODORAIZ.lista = OBJETO.lista;'}));
+                    this.$ = new NodoAST({label: 'NODORAIZ', hijos: [$$[$0]], linea: yylineno}); 
 break;
 case 7:
- this.$ = new NodoAST({label: 'INICIO_ETI', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'OBJETO -> INICIO_ETI CONTETI',
+                                reglas:'OBJETO.Objeto = new Objeto(INICIO_ETI.IDENTIFICADOR, CONTETIQUETA.Etiqueta);'}));
+                                this.$ = new NodoAST({label: 'OBJETO', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
 break;
 case 8:
- this.$ = new NodoAST({label: 'CONTETIQUETA', hijos: [$$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'INICIO_ETI -> ETABRE IDENTIFICADOR',
+                                reglas:'INICIO_ETI.IDENTIFICADOR = IDENTIFICADOR.val;'}));
+                                this.$ = new NodoAST({label: 'INICIO_ETI', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
 break;
 case 9:
- this.$ = new NodoAST({label: 'ETIQUETA', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'CONTETIQUETA -> ETIQUETA',
+                        reglas:'CONTETIQUETA.Etiqueta = new Etiqueta(ETIQUETA.Atributos, ETIQUETA.Contenido);'}));
+                        this.$ = new NodoAST({label: 'CONTETIQUETA', hijos: [$$[$0]], linea: yylineno}); 
 break;
 case 10:
- this.$ = new NodoAST({label: 'ETIQUETA', hijos: [$$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'ETIQUETA -> ATRIBUTOS FIN_ETI',
+                            reglas:'ETIQUETA.Atributos = Atributos.lista; ETIQUETA.Contenido = FIN_ETI.Cntenido'}));
+                            this.$ = new NodoAST({label: 'ETIQUETA', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
 break;
 case 11:
- this.$ = new NodoAST({label: 'FIN_ETI', hijos: [$$[$0-5], $$[$0-4], $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'ETIQUETA -> FIN_ETI',
+                            reglas:'ETIQUETA.Atributos = []; ETIQUETA.Contenido = FIN_ETI.Contenido'}));
+                            this.$ = new NodoAST({label: 'ETIQUETA', hijos: [$$[$0]], linea: yylineno}); 
 break;
-case 12: case 13:
- this.$ = new NodoAST({label: 'FIN_ETI', hijos: [$$[$0-4], $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], linea: yylineno}); 
+case 12:
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'FIN_ETI -> ETCIERRE LISTA_IDS ETABRE BARRA IDENTIFICADOR ETCIERRE',
+                                                                reglas:'FIN_ETI.Contenido = LISTA_IDS.lista;'}));
+                                                                this.$ = new NodoAST({label: 'FIN_ETI', hijos: [$$[$0-5], $$[$0-4], $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], linea: yylineno}); 
+break;
+case 13:
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'FIN_ETI -> ETCIERRE L_ETIQUETAS ETABRE BARRA IDENTIFICADOR ETCIERRE',
+                                                                reglas:'FIN_ETI.Contenido = L_ETIQUETAS.lista;'}));
+                                                                this.$ = new NodoAST({label: 'FIN_ETI', hijos: [$$[$0-4], $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], linea: yylineno}); 
 break;
 case 14:
- this.$ = new NodoAST({label: 'FIN_ETI', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'FIN_ETI -> ETCIERRE ETABRE BARRA IDENTIFICADOR ETCIERRE',
+                                                                reglas:'FIN_ETI.Contenido = [];'}));
+                                                                this.$ = new NodoAST({label: 'FIN_ETI', hijos: [$$[$0-4], $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], linea: yylineno}); 
 break;
 case 15:
- this.$ = new NodoAST({label: 'L_ETIQUETAS', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'FIN_ETI -> BARRA ETCIERRE',
+                                                                reglas:'FIN_ETI.Contenido = [];'}));
+                                                                this.$ = new NodoAST({label: 'FIN_ETI', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
 break;
 case 16:
- this.$ = new NodoAST({label: 'L_ETIQUETAS_PRIM', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'L_ETIQUETAS -> NUEVAETIQUETA L_ETIQUETAS_PRIM',
+                                        reglas:'L_ETIQUETAS.lista = L_ETIQUETAS_PRIM.lista; L_ETIQUETAS.lista.push(NUEVAETIQUETA);'}));
+                                        this.$ = new NodoAST({label: 'L_ETIQUETAS', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
 break;
 case 17:
- this.$ = new NodoAST({label: 'L_ETIQUETAS_PRIM', hijos: [$$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'L_ETIQUETAS_PRIM -> OBJETO L_ETIQUETAS_PRIM',
+                                        reglas:'L_ETIQUETAS_PRIM.lista = L_ETIQUETAS_PRIM1.lista; L_ETIQUETAS_PRIM.lista.push(OBJETO);'}));
+                                        this.$ = new NodoAST({label: 'L_ETIQUETAS_PRIM', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
 break;
 case 18:
- this.$ = new NodoAST({label: 'NUEVAETIQUETA', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'L_ETIQUETAS_PRIM -> ETABRE',
+                                        reglas:'L_ETIQUETAS_PRIM.lista = [];'}));
+                                        this.$ = new NodoAST({label: 'L_ETIQUETAS_PRIM', hijos: [$$[$0]], linea: yylineno}); 
 break;
 case 19:
- this.$ = new NodoAST({label: 'ATRIBUTOS', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'ATRIBUTOS -> ATRIBUTO ATRIBUTOS_PRIM',
+                                reglas:'ATRIBUTOS.lista = ATRIBUTOS_PRIM.lista; ATRIBUTOS.lista.push(NODORAIZ)'}));
+                                this.$ = new NodoAST({label: 'ATRIBUTOS', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
 break;
 case 20:
- this.$ = new NodoAST({label: 'ATRIBUTOS_PRIM', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'ATRIBUTOS_PRIM -> ATRIBUTO ATRIBUTOS_PRIM',
+                                reglas:'ATRIBUTOS_PRIM.lista = ATRIBUTOS_PRIM1.lista; ATRIBUTOS_PRIM.lista.push(ATRIBUTO)'}));
+                                this.$ = new NodoAST({label: 'ATRIBUTOS_PRIM', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+break;
+case 21:
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'ATRIBUTOS_PRIM -> ε',
+                                reglas:'ATRIBUTOS_PRIM.lista = []'}));
+                                this.$ = ' '; 
 break;
 case 22:
- this.$ = new NodoAST({label: 'ATRIBUTO', hijos: [$$[$0-2], $$[$0-1], $$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion:'ATRIBUTO -> IDENTIFICADOR ASIGN CADENA', 
+                                    reglas:'ATRIBUTO.Atributo = new Atributo(IDENTIFICADOR.val, CADENA.val, linea.val, columna.val);'}));
+                                    this.$ = new NodoAST({label: 'ATRIBUTO', hijos: [$$[$0-2], $$[$0-1], $$[$0]], linea: yylineno}); 
 break;
 case 23:
- this.$ = new NodoAST({label: 'LISTA_IDS', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'LISTA_IDS -> L_CONT LISTA_IDS_PRIM',
+                                reglas:'LISTA_IDS.lista = LISTA_IDS_PRIM.lista; LISTA_IDS.lista.push(L_CONT)'}));
+                                this.$ = new NodoAST({label: 'LISTA_IDS', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
 break;
 case 24:
- this.$ = new NodoAST({label: 'LISTA_IDS_PRIM', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion: 'LISTA_IDS_PRIM -> L_CONT LISTA_IDS_PRIM',
+                            reglas:'LISTA_IDS_PRIM.lista = LISTA_IDS_PRIM1.lista; LISTA_IDS_PRIM.lista.push(L_CONT)'}));
+                            this.$ = new NodoAST({label: 'LISTA_IDS_PRIM', hijos: [$$[$0-1], $$[$0]], linea: yylineno}); 
+break;
+case 25:
+ this.$ = ' '; 
 break;
 case 26:
- this.$ = new NodoAST({label: 'IDENTIFICADOR', hijos: [$$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion:'L_CONT -> IDENTIFICADOR', 
+                        reglas:'L_CONT.lista = [IDENTIFICADOR.val]'}));
+                        this.$ = new NodoAST({label: 'IDENTIFICADOR', hijos: [$$[$0]], linea: yylineno}); 
 break;
 case 27:
- this.$ = new NodoAST({label: 'TEXTO', hijos: [$$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion:'L_CONT -> TEXTO', 
+                        reglas:'L_CONT.lista = [TEXTO.val]'}));
+                        this.$ = new NodoAST({label: 'TEXTO', hijos: [$$[$0]], linea: yylineno}); 
 break;
 case 28:
- this.$ = new NodoAST({label: 'HREF', hijos: [$$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion:'L_CONT -> HREF', 
+                        reglas:'L_CONT.lista = [HREF.val]'}));
+                        this.$ = new NodoAST({label: 'HREF', hijos: [$$[$0]], linea: yylineno}); 
 break;
 case 29:
- this.$ = new NodoAST({label: 'DIGITO', hijos: [$$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion:'L_CONT -> DIGITO', 
+                        reglas:'L_CONT.lista = [DIGITO.val]'}));
+                        this.$ = new NodoAST({label: 'DIGITO', hijos: [$$[$0]], linea: yylineno}); 
 break;
 case 30:
- this.$ = new NodoAST({label: 'INTERR', hijos: [$$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion:'L_CONT -> INTERR', 
+                        reglas:'L_CONT.lista = [INTERR.val]'}));
+                        this.$ = new NodoAST({label: 'INTERR', hijos: [$$[$0]], linea: yylineno}); 
 break;
 case 31:
- this.$ = new NodoAST({label: 'BARRA', hijos: [$$[$0]], linea: yylineno}); 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion:'L_CONT -> BARRA', 
+                        reglas:'L_CONT.lista = [BARRA.val]'}));
+                        this.$ = new NodoAST({label: 'BARRA', hijos: [$$[$0]], linea: yylineno}); 
 break;
 case 32:
- /*RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> LT', reglas:' HREF.val = LT;'})); this.$ = $$[$0];*/
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> LT', reglas:' HREF.val = LT;'}));
                 this.$ = new NodoAST({label: 'LT', hijos: [$$[$0]], linea: yylineno});  
 break;
 case 33:
- /*RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> GT', reglas:' HREF.val = GT;'})); this.$ = $$[$0];*/ 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> GT', reglas:' HREF.val = GT;'})); 
                 this.$ = new NodoAST({label: 'GT', hijos: [$$[$0]], linea: yylineno}); 
 break;
 case 34:
- /*RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> AMP', reglas:' HREF.val = AMP;'})); this.$ = $$[$0];*/ 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> AMP', reglas:' HREF.val = AMP;'})); 
                 this.$ = new NodoAST({label: 'AMP', hijos: [$$[$0]], linea: yylineno}); 
 break;
 case 35:
- /*RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> APOS', reglas:' HREF.val = APOS;'})); this.$ = $$[$0];*/ 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> APOS', reglas:' HREF.val = APOS;'})); 
                 this.$ = new NodoAST({label: 'APOS', hijos: [$$[$0]], linea: yylineno}); 
 break;
 case 36:
- /*RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> QUOT', reglas:' HREF.val = QUOT;'})); this.$ = $$[$0];*/ 
+ RepoGram.RepGramDescXML.getInstance().push(new ValAsc.ValAscendente({produccion:'HREF -> QUOT', reglas:' HREF.val = QUOT;'}));
                 this.$ = new NodoAST({label: 'QUOT', hijos: [$$[$0]], linea: yylineno}); 
 break;
 }
 },
-table: [{3:1,4:2,7:[1,3]},{1:[3]},{5:4,7:$V0,13:5,15:6},{8:[1,8]},{6:[1,9]},{6:$V1,7:$V0,13:11,14:10,15:6},{9:$V2,12:$V3,16:12,17:13,18:14,19:15,21:$V4,25:16},{9:$V5},{9:[1,21]},{1:[2,1]},{6:[2,3]},{6:$V1,7:$V0,13:11,14:22,15:6},o($V6,[2,6]),o($V6,[2,8]),{12:$V3,19:23,21:$V4},o($V6,[2,10]),o($V7,$V8,{26:24,25:25,9:$V2}),{7:[1,28],8:$V9,9:$Va,15:37,20:26,21:$Vb,22:27,23:30,27:29,29:$Vc,30:33,31:$Vd,32:$Ve,33:$Vf,34:$Vg,35:$Vh,36:$Vi},{12:[1,43]},{10:[1,44]},o($Vj,[2,7]),{9:[1,45]},{6:[2,4]},o($V6,[2,9]),o($V7,[2,19]),o($V7,$V8,{25:25,26:46,9:$V2}),{7:[1,47]},{21:[1,48]},{9:$V5,21:[1,49]},{7:$Vk,8:$V9,9:$Va,21:$Vb,27:51,28:50,29:$Vc,30:33,31:$Vd,32:$Ve,33:$Vf,34:$Vg,35:$Vh,36:$Vi},{7:$Vl,15:37,23:53,24:52},o($Vm,[2,26]),o($Vm,[2,27]),o($Vm,[2,28]),o($Vm,[2,29]),o($Vm,[2,30]),o($Vm,[2,31]),{9:$V2,12:$V3,16:55,17:13,18:14,19:15,21:$V4,25:16},o($Vm,[2,32]),o($Vm,[2,33]),o($Vm,[2,34]),o($Vm,[2,35]),o($Vm,[2,36]),o($V6,[2,14]),{11:[1,56]},{10:[1,57]},o($V7,[2,20]),{21:[1,58]},{9:[1,59]},{9:[1,60]},{7:[2,23]},{7:$Vk,8:$V9,9:$Va,21:$Vb,27:51,28:61,29:$Vc,30:33,31:$Vd,32:$Ve,33:$Vf,34:$Vg,35:$Vh,36:$Vi},{21:[2,15]},{7:$Vl,15:37,23:53,24:62},{9:$V5,21:[2,17]},{7:[2,18]},o($Vj,[2,22]),{11:[1,63]},{9:[1,64]},{12:[1,65]},{12:[1,66]},{7:[2,24]},{21:[2,16]},{9:[1,67]},{12:[1,68]},o($V6,[2,12]),o($V6,[2,13]),{10:[1,69]},o($V6,[2,11]),{11:[1,70]},{8:[1,71]},{12:[1,72]},{7:[2,2]}],
-defaultActions: {9:[2,1],10:[2,3],22:[2,4],50:[2,23],52:[2,15],55:[2,18],61:[2,24],62:[2,16],72:[2,2]},
+table: [{3:1,4:2,7:[1,3]},{1:[3]},{5:4,7:$V0,13:5,15:6,16:7},{8:[1,9]},{6:[1,10]},{6:$V1,7:$V0,13:12,14:11,15:6,16:7},o($V2,[2,6]),{9:$V3,12:$V4,17:13,18:14,19:15,20:16,22:$V5,25:17},{9:$V6},{9:[1,22]},{1:[2,1]},{6:[2,3]},{6:$V1,7:$V0,13:12,14:23,15:6,16:7},o($V2,[2,7]),o($V2,[2,9]),{12:$V4,20:24,22:$V5},o($V2,[2,11]),o($V7,$V8,{26:25,25:26,9:$V3}),{7:[1,29],8:$V9,9:$Va,15:31,16:7,21:27,22:$Vb,23:28,27:30,29:$Vc,30:34,31:$Vd,32:$Ve,33:$Vf,34:$Vg,35:$Vh,36:$Vi},{12:[1,43]},{10:[1,44]},o($Vj,[2,8]),{9:[1,45]},{6:[2,4]},o($V2,[2,10]),o($V7,[2,19]),o($V7,$V8,{25:26,26:46,9:$V3}),{7:[1,47]},{22:[1,48]},{9:$V6,22:[1,49]},{7:$Vk,8:$V9,9:$Va,22:$Vb,27:51,28:50,29:$Vc,30:34,31:$Vd,32:$Ve,33:$Vf,34:$Vg,35:$Vh,36:$Vi},{7:$Vl,15:53,16:7,24:52},o($Vm,[2,26]),o($Vm,[2,27]),o($Vm,[2,28]),o($Vm,[2,29]),o($Vm,[2,30]),o($Vm,[2,31]),o($Vm,[2,32]),o($Vm,[2,33]),o($Vm,[2,34]),o($Vm,[2,35]),o($Vm,[2,36]),o($V2,[2,15]),{11:[1,55]},{10:[1,56]},o($V7,[2,20]),{22:[1,57]},{9:[1,58]},{9:[1,59]},{7:[2,23]},{7:$Vk,8:$V9,9:$Va,22:$Vb,27:51,28:60,29:$Vc,30:34,31:$Vd,32:$Ve,33:$Vf,34:$Vg,35:$Vh,36:$Vi},{22:[2,16]},{7:$Vl,15:53,16:7,24:61},{9:$V6,22:[2,18]},o($Vj,[2,22]),{11:[1,62]},{9:[1,63]},{12:[1,64]},{12:[1,65]},{7:[2,24]},{22:[2,17]},{9:[1,66]},{12:[1,67]},o($V2,[2,13]),o($V2,[2,14]),{10:[1,68]},o($V2,[2,12]),{11:[1,69]},{8:[1,70]},{12:[1,71]},{7:[2,2]}],
+defaultActions: {10:[2,1],11:[2,3],23:[2,4],50:[2,23],52:[2,16],60:[2,24],61:[2,17],71:[2,2]},
 parseError: function parseError (str, hash) {
     if (hash.recoverable) {
         this.trace(str);
@@ -338,16 +407,21 @@ parse: function parse(input) {
     return true;
 }};
 
+    //Req. para recopilación de errores
     const errorGram = require("../arbol/error");
     const tablaErrores = require("../arbol/errores");
+
+    //Req. para el manejo de errores
     const {Objeto} = require("../abstractas/objeto");
     const {Atributo} = require("../abstractas/atributo");
     const {Prologo} = require("../abstractas/prologo");
 
+    //Req. que recopilará los nodos para el ASTs
     const { NodoAST }= require('../arbol/nodoAST');
 
-    /*const ValDesc = require("../Reportes/ValDescendente");
-    const RepoGram = require("../Reportes/RepGramDescXML");*/
+    //Req. para elaborar el reporte gramatical
+    const ValAsc = require("../Reportes/ValAscendente");
+    const RepoGram = require("../Reportes/RepGramDescXML");
 /* generated by jison-lex 0.3.4 */
 var lexer = (function(){
 var lexer = ({
@@ -690,13 +764,13 @@ case 5:return 36
 break;
 case 6:return 10;
 break;
-case 7:return 21;
+case 7:return 22;
 break;
 case 8:return 7;
 break;
 case 9:return 12;
 break;
-case 10:return 8
+case 10:return 8;
 break;
 case 11:return 9;
 break;
@@ -704,7 +778,7 @@ case 12:return 11;
 break;
 case 13:return 29;
 break;
-case 14:return 31
+case 14:return 31;
 break;
 case 15:/*Ignorar espacios en blanco*/
 break;
@@ -719,7 +793,7 @@ case 18:return 6;
 break;
 }
 },
-rules: [/^(?:[<][\s\S\n]*?)/i,/^(?:&lt;)/i,/^(?:&gt;)/i,/^(?:&amp;)/i,/^(?:&apos;)/i,/^(?:&quot;)/i,/^(?:=)/i,/^(?:\/)/i,/^(?:<)/i,/^(?:>)/i,/^(?:\?)/i,/^(?:([a-zA-Z_])[a-zA-ZñÑ0-9_-]*)/i,/^(?:["][^\"]*["])/i,/^(?:([^ \r\t\na-zA-ZñÑ0-9_><\"\'&]))/i,/^(?:[0-9])/i,/^(?:[ \r\t]+)/i,/^(?:\n)/i,/^(?:.)/i,/^(?:$)/i],
+rules: [/^(?:[<][\s\S\n]*?)/i,/^(?:&lt;)/i,/^(?:&gt;)/i,/^(?:&amp;)/i,/^(?:&apos;)/i,/^(?:&quot;)/i,/^(?:=)/i,/^(?:\/)/i,/^(?:<)/i,/^(?:>)/i,/^(?:\?)/i,/^(?:([a-zA-ZñÑáéíóúÁÉÍÓÚ_])[a-zA-ZñÑáéíóúÁÉÍÓÚ0-9_-]*)/i,/^(?:["][^\"]*["])/i,/^(?:([^ \r\t\na-zA-ZñÑáéíóúÁÉÍÓÚ0-9_><\"\'&]))/i,/^(?:[0-9])/i,/^(?:[ \r\t]+)/i,/^(?:\n)/i,/^(?:.)/i,/^(?:$)/i],
 conditions: {"comment":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],"inclusive":true},"INITIAL":{"rules":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],"inclusive":true}}
 });
 return lexer;
