@@ -28,16 +28,16 @@
 '+' return 'mas';
 '-' return 'menos';
 '*' return 'mul';
-'div' return 'div';
+//'div' return 'div';
 '=' return 'igual';
 '!=' return 'diferencia';
 '<=' return 'menor_igual';
 '>=' return 'mayor_igual';
 '<' return 'menor';
 '>' return 'mayor';
-'or' return 'or';
-'and' return 'and';
-'mod' return 'mod';
+//'or' return 'or';
+//'and' return 'and';
+//'mod' return 'mod';
 
 '[' return 'cor_izq';
 "]" return 'cor_der';
@@ -49,6 +49,10 @@
 [0-9]+                              return 'integer';
 \"[^\"]*\"                          return 'string';
 \'[^\']*\'                          return 'string';
+["m"]["o"]["d"]                     return 'mod';
+["d"]["i"]["v"]                     return 'div';
+["a"]["n"]["d"]                     return 'and';
+["o"]["r"]                          return 'or';
 [a-zA-ZñÑáéíóúÁÉÍÓÚ0-9]+            return 'id';
 
 [.][.]                              return 'dos_pts';
