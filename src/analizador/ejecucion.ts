@@ -164,8 +164,27 @@ export class Ejecucion {
         return 'No se encontró por algun error';
       }
       //console.log(this.atributoIdentificacion);
-      if (this.atributoIdentificacion.length > 0)
-        return this.traducir();
+      if (this.atributoIdentificacion.length > 0){
+        var buf = new Buffer(this.traducir())
+        var buf2 = 'ay :(';
+        console.log(JSON.stringify(this.prologoXml))
+        if(JSON.stringify(this.prologoXml).includes("UTF-8")){
+          console.log(buf.toString("utf8"))
+          buf2 = (buf.toString("utf8"))
+        }
+        else if(JSON.stringify(this.prologoXml).includes("ISO-8859-1")){
+          try {
+            buf2 = (this.traducir())
+          } catch (error) {
+            buf2 = 'ay :( iso-8859-1';
+          }
+        }
+        else if(JSON.stringify(this.prologoXml).includes("ASCII")){
+          console.log(buf.toString("ascii"))
+          buf2 = (buf.toString("ascii"))
+        }
+        return buf2;
+      }
       else
         return 'No se encontró'
     }
@@ -423,7 +442,7 @@ export class Ejecucion {
           this.consultaXML = cons;
         }
         else {
-          //this.consultaXML = [];
+          this.consultaXML = [];
           const er = new Error({ tipo: 'Semántico', linea: '0', descripcion: 'No existe ese atributo.' });
           Errores.getInstance().push(er);
         }
@@ -1343,10 +1362,16 @@ export class Ejecucion {
         let texto = "";
         //console.log("texto: " + element.identificador);
         for (var i = 0; i < element.cons.texto.length; i++) {
-          if (this.tildes.includes(element.cons.texto[i])) {
+          if (Number.isInteger(parseInt(element.cons.texto[i]))) {
             texto += element.cons.texto[i];
           }
-          else if (this.tildes.includes(element.cons.texto[i - 1])) {
+          else if (Number.isInteger(parseInt(element.cons.texto[i - 1]))) {
+            texto += element.cons.texto[i];
+          }
+          else if(element.cons.texto[i] === '.' || element.cons.texto[i] === '!' || element.cons.texto[i] === '?' || element.cons.texto[i] === ',' || element.cons.texto[i] === "'"){
+            texto += element.cons.texto[i];
+          }
+          else if(element.cons.texto[i-1] === "'"){
             texto += element.cons.texto[i];
           }
           else {
@@ -1460,10 +1485,16 @@ export class Ejecucion {
     elemento.forEach(element => {
       let texto = "";
       for (var i = 0; i < element.texto.length; i++) {
-        if (this.tildes.includes(element.texto[i])) {
+        if (Number.isInteger(parseInt(element.texto[i]))) {
           texto += element.texto[i];
         }
-        else if (this.tildes.includes(element.texto[i - 1])) {
+        else if (Number.isInteger(parseInt(element.texto[i - 1]))) {
+          texto += element.texto[i];
+        }
+        else if(element.texto[i] === '.' || element.texto[i] === '!' || element.texto[i] === '?' || element.texto[i] === ',' || element.texto[i] === "'"){
+          texto += element.texto[i];
+        }
+        else if(element.texto[i-1] === "'"){
           texto += element.texto[i];
         }
         else {
