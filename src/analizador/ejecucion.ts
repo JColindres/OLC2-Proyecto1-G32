@@ -26,6 +26,7 @@ export class Ejecucion {
   nodo_descendente: boolean; //  -> //*
   atributo_nodo: boolean;   // -> /@*
   ej_child: boolean;  //::child
+  ej_attrib: boolean; //::attribute
   node_texto : boolean; // -> /node()
   node_desc : boolean; // -> //node()
 
@@ -181,7 +182,6 @@ export class Ejecucion {
             this.recorrido(element);
           }
           else if (typeof element === 'string') {
-            //console.log(element);
             if (element === '|') {
               this.consultaXML.forEach(element => {
                 this.atributoIdentificacion.push({ cons: element, atributo: this.atributo, texto: this.atributoTexto })
@@ -390,6 +390,11 @@ export class Ejecucion {
         {
           this.ej_child = true;
         }
+        else if (nodo.hijos[0] == 'attribute')
+        {
+          this.ej_attrib = true;
+          this.atributo = true;
+        }
       }
       if (this.identificar('ATRIBUTO_DESCENDIENTES', nodo)) {
         nodo.hijos.forEach((element: any) => {
@@ -557,6 +562,7 @@ export class Ejecucion {
       else if (this.ej_child) {
         //Si viene una ruta tipo -> //nodo::child
         if(this.descendiente) {
+          this.punto = etiqueta;
           consulta.forEach(element => {
             if (element.identificador === etiqueta) {
               cons.push(element);
@@ -565,22 +571,50 @@ export class Ejecucion {
               cons = cons.concat(this.recDescen(element.listaObjetos, etiqueta, false));
             }
           });
-          this.ej_child = false;
           return cons;
-        } else {
-          //Si viene una ruta normal
-          consulta.forEach(element => {
-            if (element.listaObjetos.length > 0) {
-              element.listaObjetos.forEach(elements => {
-                if (elements.identificador === etiqueta) {
-                  cons.push(elements);
-                }
-              });
+        } 
+        //Si viene una ruta normal -> /nodo::child
+        else {
+          this.punto = etiqueta;
+          // Si child viene en la raiz -> child::raiz
+          if (this.esRaiz) {
+            consulta.forEach(element => {
+              if (element.identificador === etiqueta) {
+                cons.push(element);
+              }
+            });
+            this.esRaiz = false;
+
+            return cons;
+          }
+          else {
+            consulta.forEach(element => {
+              if (element.listaObjetos.length > 0) {
+                element.listaObjetos.forEach(elements => {
+                  if (elements.identificador === etiqueta) {
+                    cons.push(elements);
+                  }
+                });
+              }
+            });
+
+            return cons;
+          }
+        }        
+      }
+      //Axes - :: attrib
+      else if (this.ej_attrib) {
+        console.log("entro a axes::attrib")
+        this.punto = etiqueta;
+        consulta.forEach(element => {
+          element.listaAtributos.forEach(atributo => {
+            if (atributo.identificador === etiqueta) {
+              this.atributoTexto = etiqueta;
+              cons.push(element);
             }
           });
-          this.ej_child = false;
-          return cons;
-        }        
+        });
+        return cons;
       }
       else if (!this.descendiente) {
         this.punto = etiqueta;
