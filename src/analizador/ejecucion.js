@@ -602,59 +602,93 @@ class Ejecucion {
             }
             //Axes - ::child
             else if (this.ej_child) {
-                //Si viene una ruta tipo -> //nodo::child
-                if (this.descendiente) {
-                    this.punto = etiqueta;
-                    consulta.forEach(element => {
-                        if (element.identificador === etiqueta) {
-                            cons.push(element);
-                        }
-                        if (element.listaObjetos.length > 0) {
-                            cons = cons.concat(this.recDescen(element.listaObjetos, etiqueta, false));
-                        }
-                    });
-                    return cons;
-                }
-                //Si viene una ruta normal -> /nodo::child
-                else {
-                    this.punto = etiqueta;
-                    // Si child viene en la raiz -> child::raiz
+                //Para child::*
+                if (etiqueta === '*') {
+                    /*  Falta arreglar cuando se coloca -> //child::*; */
                     if (this.esRaiz) {
+                        return consulta;
+                    }
+                    else {
+                        consulta.forEach(element => {
+                            this.ts.tabla.forEach(padre => {
+                                if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+                                    if (element.listaObjetos.length > 0) {
+                                        cons = cons.concat(element.listaObjetos);
+                                    }
+                                }
+                            });
+                        });
+                        return cons;
+                    }
+                }
+                else {
+                    //Si viene una ruta tipo -> //nodo::child
+                    if (this.descendiente) {
+                        this.punto = etiqueta;
                         consulta.forEach(element => {
                             if (element.identificador === etiqueta) {
                                 cons.push(element);
                             }
-                        });
-                        this.esRaiz = false;
-                        return cons;
-                    }
-                    else {
-                        consulta.forEach(element => {
                             if (element.listaObjetos.length > 0) {
-                                element.listaObjetos.forEach(elements => {
-                                    if (elements.identificador === etiqueta) {
-                                        cons.push(elements);
-                                    }
-                                });
+                                cons = cons.concat(this.recDescen(element.listaObjetos, etiqueta, false));
                             }
                         });
                         return cons;
                     }
+                    //Si viene una ruta normal -> /nodo::child
+                    else {
+                        this.punto = etiqueta;
+                        // Si child viene en la raiz -> child::raiz
+                        if (this.esRaiz) {
+                            consulta.forEach(element => {
+                                if (element.identificador === etiqueta) {
+                                    cons.push(element);
+                                }
+                            });
+                            this.esRaiz = false;
+                            return cons;
+                        }
+                        else {
+                            consulta.forEach(element => {
+                                if (element.listaObjetos.length > 0) {
+                                    element.listaObjetos.forEach(elements => {
+                                        if (elements.identificador === etiqueta) {
+                                            cons.push(elements);
+                                        }
+                                    });
+                                }
+                            });
+                            return cons;
+                        }
+                    }
                 }
             }
-            //Axes - :: attrib
+            //Axes - :: attribute
             else if (this.ej_attrib) {
-                console.log("entro a axes::attrib");
-                this.punto = etiqueta;
-                consulta.forEach(element => {
-                    element.listaAtributos.forEach(atributo => {
-                        if (atributo.identificador === etiqueta) {
-                            this.atributoTexto = etiqueta;
-                            cons.push(element);
+                /*  Falta arreglar cuando se coloca -> //attribute::attrib; y /attribute::attrib; */
+                /*  Falta agregar correción también con //attribute::*; y /attribute::*; */
+                if (etiqueta === '*') {
+                    consulta.forEach(element => {
+                        if (element.listaAtributos.length > 0) {
+                            cons = cons.concat(element);
                         }
                     });
-                });
-                return cons;
+                    this.atributo = false;
+                    this.atributo_nodo = true;
+                    return cons;
+                }
+                else {
+                    this.punto = etiqueta;
+                    consulta.forEach(element => {
+                        element.listaAtributos.forEach(atributo => {
+                            if (atributo.identificador === etiqueta) {
+                                this.atributoTexto = etiqueta;
+                                cons.push(element);
+                            }
+                        });
+                    });
+                    return cons;
+                }
             }
             else if (!this.descendiente) {
                 this.punto = etiqueta;
@@ -769,6 +803,34 @@ class Ejecucion {
             }
         }
         else if (nodo === 'NODO_FUNCION') {
+            //Axes - child::func()
+            if (this.ej_child) {
+                let cons;
+                cons = [];
+                if (etiqueta === 'text()') {
+                    if (!this.esRaiz) {
+                        //Falta retornar en caso de: //child::text();
+                        return consulta;
+                    }
+                    consulta.forEach(element => {
+                        this.ts.tabla.forEach(padre => {
+                            if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+                                //Si el elemento posee más hijos entonces no puede poseer texto adentro
+                                if (element.listaObjetos.length > 0) {
+                                    //No retorna nada
+                                }
+                                else {
+                                    //Si no tiene hijos entonces se obtiene el texto
+                                    this.node_texto = true;
+                                    if (element.texto != null)
+                                        cons = cons.concat(element);
+                                }
+                            }
+                        });
+                    });
+                    return cons;
+                }
+            }
             if (etiqueta === 'node()') {
                 let cons = [];
                 consulta.forEach(element => {
