@@ -27,10 +27,12 @@ export class Ejecucion {
   atributo_nodo: boolean;   // -> /@*
   ej_child: boolean;  //::child
   ej_attrib: boolean; //::attribute
-  node_texto : boolean; // -> /node()
-  node_desc : boolean; // -> //node()
+  node_texto: boolean; // -> /node()
+  node_desc: boolean; // -> //node()
 
   consultaXML: Array<Objeto>;
+  pathh: Array<Objeto>;
+  pathhCount: number;
   ts: XmlTS;
 
   tildes: Array<String> = ['á', 'é', 'í', 'ó', 'ú'];
@@ -311,33 +313,21 @@ export class Ejecucion {
             }
             else if (this.identificar('PATH', element)) {
               es = 'esPath';
+              //console.log(es);
+              this.pathh = this.consultaXML;
+              this.pathhCount = 0;
+              this.path(element);
             }
           }
         });
 
-        this.consultaXML.forEach((element, index) => {
-          if (es === 'es@') {
-            if (element.listaAtributos.length > 0) {
-              val = this.calcular(nodo, element, index);
-              if (val.getValorImplicito(val)) {
-                cons.push(element);
-              }
-            }
-          }
-          else if (es === 'esID') {
-            console.log("entró esID");
-            if (element.listaObjetos.length > 0) {
-              val = this.calcular(nodo, element, index);
-              if (val.getValorImplicito(val)) {
-                cons.push(element);
-              }
-            }
-          }
-          else if (es === "esPunto") {
+        if (es === 'esPath') {
+          this.pathh.forEach((element, index) => {
             if (this.atributo) {
               if (element.listaAtributos.length > 0) {
                 val = this.calcular(nodo, element, index);
                 if (val.getValorImplicito(val)) {
+                  console.log(element);
                   cons.push(element);
                 }
               }
@@ -350,10 +340,87 @@ export class Ejecucion {
                 }
               }
             }
+          });
+          this.atributo = false;
+          this.pathh = [];
+          for (let index = 0; index < this.pathhCount; index++) {
+            cons.forEach(element => {
+              this.ts.tabla.forEach(padre => {
+                if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+                  let a = padre[6];
+                  let b = false;
+                  cons.forEach(element => {
+                    if (element == a) {
+                      b = true;
+                    }
+                  });
+                  if (!b) {
+                    cons.push(a);
+                  }
+                }
+              });
+            });
           }
-        });
-        if (cons.length > 0)
+          if(cons.length > 0){
+            this.consultaXML.forEach((element) => {
+              cons.forEach(y => {  
+                if (element.identificador === y.identificador && element.linea === y.linea && element.columna === y.columna) {                
+                  this.pathh.push(element);
+                }
+                else if (y.listaObjetos.length > 0) {
+                  y.listaObjetos.forEach(yy => {  
+                    if (element.identificador === yy.identificador && element.linea === yy.linea && element.columna === yy.columna) {                
+                      this.pathh.push(element);
+                    }
+                  });
+                }
+              });
+            });
+          }
+          cons = this.pathh;
+        }
+        else
+          this.consultaXML.forEach((element, index) => {
+            if (es === 'es@') {
+              if (element.listaAtributos.length > 0) {
+                val = this.calcular(nodo, element, index);
+                if (val.getValorImplicito(val)) {
+                  cons.push(element);
+                }
+              }
+            }
+            else if (es === 'esID') {
+              //console.log("entró esID");
+              if (element.listaObjetos.length > 0) {
+                val = this.calcular(nodo, element, index);
+                if (val.getValorImplicito(val)) {
+                  cons.push(element);
+                }
+              }
+            }
+            else if (es === "esPunto") {
+              if (this.atributo) {
+                if (element.listaAtributos.length > 0) {
+                  val = this.calcular(nodo, element, index);
+                  if (val.getValorImplicito(val)) {
+                    cons.push(element);
+                  }
+                }
+              }
+              else {
+                if (element) {
+                  val = this.calcular(nodo, element, index);
+                  if (val.getValorImplicito(val)) {
+                    cons.push(element);
+                  }
+                }
+              }
+            }
+          });
+        //console.log(cons.length)
+        if (cons.length > 0) {
           this.consultaXML = cons;
+        }
         else {
           //this.consultaXML = [];
           const er = new Error({ tipo: 'Semántico', linea: '0', descripcion: 'No existe ese atributo.' });
@@ -386,12 +453,10 @@ export class Ejecucion {
 
       if (this.identificar('EJES', nodo)) {
         //Se obtiene el tipo de eje y se activa el bool
-        if(nodo.hijos[0] == 'child')
-        {
+        if (nodo.hijos[0] == 'child') {
           this.ej_child = true;
         }
-        else if (nodo.hijos[0] == 'attribute')
-        {
+        else if (nodo.hijos[0] == 'attribute') {
           this.ej_attrib = true;
           this.atributo = true;
         }
@@ -442,15 +507,15 @@ export class Ejecucion {
               } else {
                 //arreglar cuando solo viene texto 
                 this.node_texto = true;
-                if(element.texto != null)
-                cons = cons.concat(element);
+                if (element.texto != null)
+                  cons = cons.concat(element);
               }
             }
           });
         });
         return cons;
       }
-      else if (etiqueta === 'text()'){
+      else if (etiqueta === 'text()') {
         let cons: Array<Objeto> = [];
         consulta.forEach(element => {
           this.ts.tabla.forEach(padre => {
@@ -459,8 +524,8 @@ export class Ejecucion {
                 //elemento
               } else {
                 this.node_texto = true;
-                if(element.texto != null)
-                cons = cons.concat(element);
+                if (element.texto != null)
+                  cons = cons.concat(element);
               }
             }
           });
@@ -518,8 +583,8 @@ export class Ejecucion {
               } else {
                 //arreglar cuando solo viene texto 
                 this.node_texto = true;
-                if(element.texto != null)
-                cons = cons.concat(element);
+                if (element.texto != null)
+                  cons = cons.concat(element);
               }
             }
           });
@@ -533,7 +598,7 @@ export class Ejecucion {
           this.ts.tabla.forEach(padre => {
             if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
               if (element.listaObjetos.length > 0) {
-                if(element.texto != null){
+                if (element.texto != null) {
                   this.node_texto = true;
                   cons = cons.concat(element.listaObjetos);
                 }
@@ -561,7 +626,7 @@ export class Ejecucion {
       //Axes - ::child
       else if (this.ej_child) {
         //Si viene una ruta tipo -> //nodo::child
-        if(this.descendiente) {
+        if (this.descendiente) {
           this.punto = etiqueta;
           consulta.forEach(element => {
             if (element.identificador === etiqueta) {
@@ -572,7 +637,7 @@ export class Ejecucion {
             }
           });
           return cons;
-        } 
+        }
         //Si viene una ruta normal -> /nodo::child
         else {
           this.punto = etiqueta;
@@ -600,7 +665,7 @@ export class Ejecucion {
 
             return cons;
           }
-        }        
+        }
       }
       //Axes - :: attrib
       else if (this.ej_attrib) {
@@ -728,13 +793,13 @@ export class Ejecucion {
         return cons;
       }
     }
-    else if(nodo === 'ATRIBUTO_DESCENDIENTES'){
-      if(etiqueta === '//@*'){
+    else if (nodo === 'ATRIBUTO_DESCENDIENTES') {
+      if (etiqueta === '//@*') {
         let cons: Array<Objeto> = [];
         consulta.forEach(element => {
-           if (element.listaObjetos.length > 0) {
-                cons = cons.concat(element);
-              }
+          if (element.listaObjetos.length > 0) {
+            cons = cons.concat(element);
+          }
         });
         //this.atributo_nodo = true;
         return cons;
@@ -769,6 +834,83 @@ export class Ejecucion {
       }
     });
     return cons;
+  }
+
+  recuperar(a: Array<Objeto>, b: Array<Objeto>, i: number) {
+    let cons: Array<Objeto> = a;
+    b.forEach((element) => {
+      cons.forEach(y => {
+        if (element.identificador === y.identificador && element.linea === y.linea && element.columna === y.columna) {
+          this.pathh.push(this.consultaXML[i]);
+          if (this.descendiente && element.listaObjetos.length > 0) {
+            this.recuperar(a, b, i);
+          }
+        }
+        else if (element.listaObjetos.length > 0) {
+          this.recuperar(a, b, i);
+        }
+        else {
+          this.recuperar(this.reducir(cons, '../', 'PADRE'), b, i);
+        }
+      });
+    });
+  }
+
+  path(nodo: any): void {
+    let cons: Array<Objeto> = this.pathh;
+    //console.log('entra');
+    if (this.identificar('PATH', nodo)) {
+      nodo.hijos.forEach((element: any, index) => {
+        if (element instanceof Object) {
+          if (element.label === 'PATH') {
+            this.path(element);
+          }
+          else if (element.label === 'ATRIBUTO_PREDICADO') {
+            cons = this.reducir(cons, element.hijos[0], 'RAIZ');
+            cons = this.reducir(cons, element.hijos[1], 'RAIZ');
+            this.pathh = cons;
+            this.pathhCount--;
+            //console.log('/@identificador ', this.pathh);
+          }
+          else if (element.label === 'id') {
+            cons = this.reducir(cons, '/', 'RAIZ');
+            cons = this.reducir(cons, element.hijos[0], 'INSTRUCCIONES');
+            this.pathh = cons;
+            if (index === 0)
+              this.pathhCount++;
+            else
+              this.pathhCount++;
+            //console.log('id ', this.pathh);
+          }
+          else if (element.label === 'dos_pts') {
+            cons = this.reducir(cons, '/..', 'PADRE');
+            this.pathh = cons;
+            this.pathhCount--;
+            //console.log('padre ', this.pathh);
+          }
+        }
+        else if (typeof element === 'string') {
+          //console.log(element);
+          if (element === '..') {
+            cons = this.reducir(cons, '/..', 'PADRE');
+            this.pathh = cons;
+            //console.log('padre ', this.pathh);
+          }
+          else if (element === '/') {
+            cons = this.pathh;
+            cons = this.reducir(cons, element, 'RAIZ');
+            this.pathh = cons;
+            this.pathhCount++;
+            //console.log('raiz ', this.pathh);
+          }
+          else {
+            cons = this.reducir(cons, element, 'INSTRUCCIONES');
+            //console.log('instruccion');
+            this.pathh = cons;
+          }
+        }
+      });
+    }
   }
 
   calcular(nodo: any, logica: Objeto, position: number): Expresion {
@@ -832,7 +974,7 @@ export class Ejecucion {
     if (this.identificar('RELACIONALES', nodo)) {
       let izq: Expresion, der: Expresion = null;
       let op = "";
-      console.log("entró relacional")
+      //console.log("entró relacional")
       nodo.hijos.forEach((element: any) => {
         if (element instanceof Object) {
           if (op === "" && this.identificar('integer', element)) {
@@ -857,14 +999,14 @@ export class Ejecucion {
             izq = new Primitivo(texto, 1, 1);
           }
           else if (!(op === "") && this.identificar('string', element)) {
-            console.log("entró string derecho");
+            //console.log("entró string derecho");
             let texto = element.hijos[0].slice(1, -1);
             let t = texto.split(" ");
             texto = '';
             for (var i = 0; i < t.length; i++) {
               texto += t[i];
             }
-            console.log(texto);
+            //console.log(texto);
             der = new Primitivo(texto, 1, 1);
           }
           else if (op === "" && this.identificar('ARITMETICAS', element)) {
@@ -874,13 +1016,13 @@ export class Ejecucion {
             der = this.calcular(element, logica, position);
           }
           else if (op === "" && this.identificar('ORDEN', element)) {
-            if(element.hijos[0] === 'position')
+            if (element.hijos[0] === 'position')
               izq = new Primitivo(Number(position), 1, 1);
             else
               izq = new Primitivo(Number(this.consultaXML.length), 1, 1);
           }
           else if (!(op === "") && this.identificar('ORDEN', element)) {
-            if(element.hijos[0] === 'position')
+            if (element.hijos[0] === 'position')
               der = new Primitivo(Number(position), 1, 1);
             else
               der = new Primitivo(Number(this.consultaXML.length), 1, 1);
@@ -890,7 +1032,7 @@ export class Ejecucion {
               if (atri.identificador === element.hijos[1]) {
                 let valor = atri.valor.slice(1, -1);
                 if (Number.isInteger(parseInt(valor)) && !valor.includes("/") && !valor.includes("-")) {
-                  console.log(parseInt(valor));
+                  //console.log(parseInt(valor));
                   izq = new Primitivo(Number(parseInt(valor)), 1, 1);
                 }
                 else {
@@ -925,7 +1067,7 @@ export class Ejecucion {
             });
           }
           else if (op === "" && this.identificar('id', element)) {
-            console.log("entró id");
+            //console.log("entró id");
             logica.listaObjetos.forEach(ob => {
               if (ob.identificador === element.hijos[0]) {
                 let texto = "";
@@ -933,11 +1075,11 @@ export class Ejecucion {
                   texto += ob.texto[i];
                 }
                 if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
-                  console.log(parseInt(texto));
+                  //console.log(parseInt(texto));
                   izq = new Primitivo(Number(parseInt(texto)), 1, 1);
                 }
                 else {
-                  console.log(texto);
+                  //console.log(texto);
                   izq = new Primitivo(texto, 1, 1);
                 }
               }
@@ -946,39 +1088,39 @@ export class Ejecucion {
           else if (!(op === "") && this.identificar('id', element)) {
             logica.listaObjetos.forEach(ob => {
               if (ob.identificador === element.hijos[0]) {
-                console.log(ob.texto);
+                //console.log(ob.texto);
                 let texto = "";
                 for (var i = 0; i < ob.texto.length; i++) {
                   texto += ob.texto[i];
                 }
                 if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
-                  console.log(parseInt(texto));
+                  //console.log(parseInt(texto));
                   der = new Primitivo(Number(parseInt(texto)), 1, 1);
                 }
                 else {
-                  console.log(texto);
+                  //console.log(texto);
                   der = new Primitivo(texto, 1, 1);
                 }
               }
             });
           }
           else if (op === "" && this.identificar('punto', element)) {
-            console.log("at " + this.atributo);
+            //console.log("at " + this.atributo);
             if (logica.identificador === this.punto && !this.atributo) {
               let texto = "";
               for (var i = 0; i < logica.texto.length; i++) {
                 texto += logica.texto[i];
               }
               if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
-                console.log(parseInt(texto));
+                //console.log(parseInt(texto));
                 izq = new Primitivo(Number(parseInt(texto)), 1, 1);
               }
               else {
-                console.log(texto);
+                //console.log(texto);
                 izq = new Primitivo(texto, 1, 1);
               }
             }
-            else{
+            else {
               logica.listaAtributos.forEach(atri => {
                 if (atri.identificador === this.punto) {
                   let valor = atri.valor.slice(1, -1);
@@ -1000,21 +1142,94 @@ export class Ejecucion {
           }
           else if (!(op === "") && this.identificar('punto', element)) {
             if (logica.identificador === this.punto && !this.atributo) {
-              console.log(logica.texto);
+              //console.log(logica.texto);
               let texto = "";
               for (var i = 0; i < logica.texto.length; i++) {
                 texto += logica.texto[i];
               }
               if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
-                console.log(parseInt(texto));
+                //console.log(parseInt(texto));
                 der = new Primitivo(Number(parseInt(texto)), 1, 1);
               }
               else {
-                console.log(texto);
+                //console.log(texto);
                 der = new Primitivo(texto, 1, 1);
               }
             }
-            else{
+            else {
+              logica.listaAtributos.forEach(atri => {
+                if (atri.identificador === this.punto) {
+                  let valor = atri.valor.slice(1, -1);
+                  if (Number.isInteger(parseInt(valor)) && !valor.includes("/") && !valor.includes("-")) {
+                    der = new Primitivo(Number(parseInt(valor)), 1, 1);
+                  }
+                  else {
+                    let texto = valor;
+                    let t = texto.split(" ");
+                    texto = '';
+                    for (var i = 0; i < t.length; i++) {
+                      texto += t[i];
+                    }
+                    der = new Primitivo(texto, 1, 1);
+                  }
+                }
+              });
+            }
+          }
+          else if (op === "" && this.identificar('PATH', element)) {
+            //console.log("at " + this.atributo);
+            if (logica.identificador === this.punto && !this.atributo) {
+              let texto = "";
+              for (var i = 0; i < logica.texto.length; i++) {
+                texto += logica.texto[i];
+              }
+              if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
+                //console.log(parseInt(texto));
+                izq = new Primitivo(Number(parseInt(texto)), 1, 1);
+              }
+              else {
+                //console.log(texto);
+                izq = new Primitivo(texto, 1, 1);
+              }
+            }
+            else {
+              logica.listaAtributos.forEach(atri => {
+                if (atri.identificador === this.punto) {
+                  let valor = atri.valor.slice(1, -1);
+                  //console.log(valor);
+                  if (Number.isInteger(parseInt(valor)) && !valor.includes("/") && !valor.includes("-")) {
+                    izq = new Primitivo(Number(parseInt(valor)), 1, 1);
+                  }
+                  else {
+                    let texto = valor;
+                    let t = texto.split(" ");
+                    texto = '';
+                    for (var i = 0; i < t.length; i++) {
+                      texto += t[i];
+                    }
+                    izq = new Primitivo(texto, 1, 1);
+                  }
+                }
+              });
+            }
+          }
+          else if (!(op === "") && this.identificar('PATH', element)) {
+            if (logica.identificador === this.punto && !this.atributo) {
+              //console.log(logica.texto);
+              let texto = "";
+              for (var i = 0; i < logica.texto.length; i++) {
+                texto += logica.texto[i];
+              }
+              if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
+                //console.log(parseInt(texto));
+                der = new Primitivo(Number(parseInt(texto)), 1, 1);
+              }
+              else {
+                //console.log(texto);
+                der = new Primitivo(texto, 1, 1);
+              }
+            }
+            else {
               logica.listaAtributos.forEach(atri => {
                 if (atri.identificador === this.punto) {
                   let valor = atri.valor.slice(1, -1);
@@ -1042,6 +1257,7 @@ export class Ejecucion {
         }
       });
       if (izq && der && !(op === "")) {
+        //console.log(izq.getValorImplicito(izq) + ',' + der.getValorImplicito(der));
         let a: Relacion;
         if (op === '<') {
           a = new Relacion(izq, der, Operador.MENOR_QUE, 1, 1);
@@ -1121,8 +1337,8 @@ export class Ejecucion {
               cadena += ' ' + atributos.identificador + '=' + atributos.valor + '\n';
             });
           }
-        } 
-        else if(this.node_desc){
+        }
+        else if (this.node_desc) {
           cadena += '<' + element.cons.identificador;
           if (element.cons.listaAtributos.length > 0) {
             element.cons.listaAtributos.forEach(atributos => {
@@ -1148,11 +1364,11 @@ export class Ejecucion {
             cadena += texto + '\n';
           }
         }
-        else if(this.node_texto){
-          if(element.texto != null){  
+        else if (this.node_texto) {
+          if (element.texto != null) {
             cadena += texto + '\n';
           }
-         } 
+        }
         else {
           cadena += '<' + element.cons.identificador;
           if (element.cons.listaAtributos.length > 0) {

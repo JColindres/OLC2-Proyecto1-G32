@@ -261,32 +261,20 @@ class Ejecucion {
                         }
                         else if (this.identificar('PATH', element)) {
                             es = 'esPath';
+                            //console.log(es);
+                            this.pathh = this.consultaXML;
+                            this.pathhCount = 0;
+                            this.path(element);
                         }
                     }
                 });
-                this.consultaXML.forEach((element, index) => {
-                    if (es === 'es@') {
-                        if (element.listaAtributos.length > 0) {
-                            val = this.calcular(nodo, element, index);
-                            if (val.getValorImplicito(val)) {
-                                cons.push(element);
-                            }
-                        }
-                    }
-                    else if (es === 'esID') {
-                        console.log("entró esID");
-                        if (element.listaObjetos.length > 0) {
-                            val = this.calcular(nodo, element, index);
-                            if (val.getValorImplicito(val)) {
-                                cons.push(element);
-                            }
-                        }
-                    }
-                    else if (es === "esPunto") {
+                if (es === 'esPath') {
+                    this.pathh.forEach((element, index) => {
                         if (this.atributo) {
                             if (element.listaAtributos.length > 0) {
                                 val = this.calcular(nodo, element, index);
                                 if (val.getValorImplicito(val)) {
+                                    console.log(element);
                                     cons.push(element);
                                 }
                             }
@@ -299,10 +287,87 @@ class Ejecucion {
                                 }
                             }
                         }
+                    });
+                    this.atributo = false;
+                    this.pathh = [];
+                    for (let index = 0; index < this.pathhCount; index++) {
+                        cons.forEach(element => {
+                            this.ts.tabla.forEach(padre => {
+                                if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+                                    let a = padre[6];
+                                    let b = false;
+                                    cons.forEach(element => {
+                                        if (element == a) {
+                                            b = true;
+                                        }
+                                    });
+                                    if (!b) {
+                                        cons.push(a);
+                                    }
+                                }
+                            });
+                        });
                     }
-                });
-                if (cons.length > 0)
+                    if (cons.length > 0) {
+                        this.consultaXML.forEach((element) => {
+                            cons.forEach(y => {
+                                if (element.identificador === y.identificador && element.linea === y.linea && element.columna === y.columna) {
+                                    this.pathh.push(element);
+                                }
+                                else if (y.listaObjetos.length > 0) {
+                                    y.listaObjetos.forEach(yy => {
+                                        if (element.identificador === yy.identificador && element.linea === yy.linea && element.columna === yy.columna) {
+                                            this.pathh.push(element);
+                                        }
+                                    });
+                                }
+                            });
+                        });
+                    }
+                    cons = this.pathh;
+                }
+                else
+                    this.consultaXML.forEach((element, index) => {
+                        if (es === 'es@') {
+                            if (element.listaAtributos.length > 0) {
+                                val = this.calcular(nodo, element, index);
+                                if (val.getValorImplicito(val)) {
+                                    cons.push(element);
+                                }
+                            }
+                        }
+                        else if (es === 'esID') {
+                            //console.log("entró esID");
+                            if (element.listaObjetos.length > 0) {
+                                val = this.calcular(nodo, element, index);
+                                if (val.getValorImplicito(val)) {
+                                    cons.push(element);
+                                }
+                            }
+                        }
+                        else if (es === "esPunto") {
+                            if (this.atributo) {
+                                if (element.listaAtributos.length > 0) {
+                                    val = this.calcular(nodo, element, index);
+                                    if (val.getValorImplicito(val)) {
+                                        cons.push(element);
+                                    }
+                                }
+                            }
+                            else {
+                                if (element) {
+                                    val = this.calcular(nodo, element, index);
+                                    if (val.getValorImplicito(val)) {
+                                        cons.push(element);
+                                    }
+                                }
+                            }
+                        }
+                    });
+                //console.log(cons.length)
+                if (cons.length > 0) {
                     this.consultaXML = cons;
+                }
                 else {
                     //this.consultaXML = [];
                     const er = new error_1.Error({ tipo: 'Semántico', linea: '0', descripcion: 'No existe ese atributo.' });
@@ -714,6 +779,81 @@ class Ejecucion {
         });
         return cons;
     }
+    recuperar(a, b, i) {
+        let cons = a;
+        b.forEach((element) => {
+            cons.forEach(y => {
+                if (element.identificador === y.identificador && element.linea === y.linea && element.columna === y.columna) {
+                    this.pathh.push(this.consultaXML[i]);
+                    if (this.descendiente && element.listaObjetos.length > 0) {
+                        this.recuperar(a, b, i);
+                    }
+                }
+                else if (element.listaObjetos.length > 0) {
+                    this.recuperar(a, b, i);
+                }
+                else {
+                    this.recuperar(this.reducir(cons, '../', 'PADRE'), b, i);
+                }
+            });
+        });
+    }
+    path(nodo) {
+        let cons = this.pathh;
+        //console.log('entra');
+        if (this.identificar('PATH', nodo)) {
+            nodo.hijos.forEach((element, index) => {
+                if (element instanceof Object) {
+                    if (element.label === 'PATH') {
+                        this.path(element);
+                    }
+                    else if (element.label === 'ATRIBUTO_PREDICADO') {
+                        cons = this.reducir(cons, element.hijos[0], 'RAIZ');
+                        cons = this.reducir(cons, element.hijos[1], 'RAIZ');
+                        this.pathh = cons;
+                        this.pathhCount--;
+                        //console.log('/@identificador ', this.pathh);
+                    }
+                    else if (element.label === 'id') {
+                        cons = this.reducir(cons, '/', 'RAIZ');
+                        cons = this.reducir(cons, element.hijos[0], 'INSTRUCCIONES');
+                        this.pathh = cons;
+                        if (index === 0)
+                            this.pathhCount++;
+                        else
+                            this.pathhCount++;
+                        //console.log('id ', this.pathh);
+                    }
+                    else if (element.label === 'dos_pts') {
+                        cons = this.reducir(cons, '/..', 'PADRE');
+                        this.pathh = cons;
+                        this.pathhCount--;
+                        //console.log('padre ', this.pathh);
+                    }
+                }
+                else if (typeof element === 'string') {
+                    //console.log(element);
+                    if (element === '..') {
+                        cons = this.reducir(cons, '/..', 'PADRE');
+                        this.pathh = cons;
+                        //console.log('padre ', this.pathh);
+                    }
+                    else if (element === '/') {
+                        cons = this.pathh;
+                        cons = this.reducir(cons, element, 'RAIZ');
+                        this.pathh = cons;
+                        this.pathhCount++;
+                        //console.log('raiz ', this.pathh);
+                    }
+                    else {
+                        cons = this.reducir(cons, element, 'INSTRUCCIONES');
+                        //console.log('instruccion');
+                        this.pathh = cons;
+                    }
+                }
+            });
+        }
+    }
     calcular(nodo, logica, position) {
         if (this.identificar('ARITMETICAS', nodo)) {
             let izq, der = null;
@@ -774,7 +914,7 @@ class Ejecucion {
         if (this.identificar('RELACIONALES', nodo)) {
             let izq, der = null;
             let op = "";
-            console.log("entró relacional");
+            //console.log("entró relacional")
             nodo.hijos.forEach((element) => {
                 if (element instanceof Object) {
                     if (op === "" && this.identificar('integer', element)) {
@@ -799,14 +939,14 @@ class Ejecucion {
                         izq = new primitivo_1.Primitivo(texto, 1, 1);
                     }
                     else if (!(op === "") && this.identificar('string', element)) {
-                        console.log("entró string derecho");
+                        //console.log("entró string derecho");
                         let texto = element.hijos[0].slice(1, -1);
                         let t = texto.split(" ");
                         texto = '';
                         for (var i = 0; i < t.length; i++) {
                             texto += t[i];
                         }
-                        console.log(texto);
+                        //console.log(texto);
                         der = new primitivo_1.Primitivo(texto, 1, 1);
                     }
                     else if (op === "" && this.identificar('ARITMETICAS', element)) {
@@ -832,7 +972,7 @@ class Ejecucion {
                             if (atri.identificador === element.hijos[1]) {
                                 let valor = atri.valor.slice(1, -1);
                                 if (Number.isInteger(parseInt(valor)) && !valor.includes("/") && !valor.includes("-")) {
-                                    console.log(parseInt(valor));
+                                    //console.log(parseInt(valor));
                                     izq = new primitivo_1.Primitivo(Number(parseInt(valor)), 1, 1);
                                 }
                                 else {
@@ -867,7 +1007,7 @@ class Ejecucion {
                         });
                     }
                     else if (op === "" && this.identificar('id', element)) {
-                        console.log("entró id");
+                        //console.log("entró id");
                         logica.listaObjetos.forEach(ob => {
                             if (ob.identificador === element.hijos[0]) {
                                 let texto = "";
@@ -875,11 +1015,11 @@ class Ejecucion {
                                     texto += ob.texto[i];
                                 }
                                 if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
-                                    console.log(parseInt(texto));
+                                    //console.log(parseInt(texto));
                                     izq = new primitivo_1.Primitivo(Number(parseInt(texto)), 1, 1);
                                 }
                                 else {
-                                    console.log(texto);
+                                    //console.log(texto);
                                     izq = new primitivo_1.Primitivo(texto, 1, 1);
                                 }
                             }
@@ -888,35 +1028,35 @@ class Ejecucion {
                     else if (!(op === "") && this.identificar('id', element)) {
                         logica.listaObjetos.forEach(ob => {
                             if (ob.identificador === element.hijos[0]) {
-                                console.log(ob.texto);
+                                //console.log(ob.texto);
                                 let texto = "";
                                 for (var i = 0; i < ob.texto.length; i++) {
                                     texto += ob.texto[i];
                                 }
                                 if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
-                                    console.log(parseInt(texto));
+                                    //console.log(parseInt(texto));
                                     der = new primitivo_1.Primitivo(Number(parseInt(texto)), 1, 1);
                                 }
                                 else {
-                                    console.log(texto);
+                                    //console.log(texto);
                                     der = new primitivo_1.Primitivo(texto, 1, 1);
                                 }
                             }
                         });
                     }
                     else if (op === "" && this.identificar('punto', element)) {
-                        console.log("at " + this.atributo);
+                        //console.log("at " + this.atributo);
                         if (logica.identificador === this.punto && !this.atributo) {
                             let texto = "";
                             for (var i = 0; i < logica.texto.length; i++) {
                                 texto += logica.texto[i];
                             }
                             if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
-                                console.log(parseInt(texto));
+                                //console.log(parseInt(texto));
                                 izq = new primitivo_1.Primitivo(Number(parseInt(texto)), 1, 1);
                             }
                             else {
-                                console.log(texto);
+                                //console.log(texto);
                                 izq = new primitivo_1.Primitivo(texto, 1, 1);
                             }
                         }
@@ -942,17 +1082,90 @@ class Ejecucion {
                     }
                     else if (!(op === "") && this.identificar('punto', element)) {
                         if (logica.identificador === this.punto && !this.atributo) {
-                            console.log(logica.texto);
+                            //console.log(logica.texto);
                             let texto = "";
                             for (var i = 0; i < logica.texto.length; i++) {
                                 texto += logica.texto[i];
                             }
                             if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
-                                console.log(parseInt(texto));
+                                //console.log(parseInt(texto));
                                 der = new primitivo_1.Primitivo(Number(parseInt(texto)), 1, 1);
                             }
                             else {
-                                console.log(texto);
+                                //console.log(texto);
+                                der = new primitivo_1.Primitivo(texto, 1, 1);
+                            }
+                        }
+                        else {
+                            logica.listaAtributos.forEach(atri => {
+                                if (atri.identificador === this.punto) {
+                                    let valor = atri.valor.slice(1, -1);
+                                    if (Number.isInteger(parseInt(valor)) && !valor.includes("/") && !valor.includes("-")) {
+                                        der = new primitivo_1.Primitivo(Number(parseInt(valor)), 1, 1);
+                                    }
+                                    else {
+                                        let texto = valor;
+                                        let t = texto.split(" ");
+                                        texto = '';
+                                        for (var i = 0; i < t.length; i++) {
+                                            texto += t[i];
+                                        }
+                                        der = new primitivo_1.Primitivo(texto, 1, 1);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                    else if (op === "" && this.identificar('PATH', element)) {
+                        //console.log("at " + this.atributo);
+                        if (logica.identificador === this.punto && !this.atributo) {
+                            let texto = "";
+                            for (var i = 0; i < logica.texto.length; i++) {
+                                texto += logica.texto[i];
+                            }
+                            if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
+                                //console.log(parseInt(texto));
+                                izq = new primitivo_1.Primitivo(Number(parseInt(texto)), 1, 1);
+                            }
+                            else {
+                                //console.log(texto);
+                                izq = new primitivo_1.Primitivo(texto, 1, 1);
+                            }
+                        }
+                        else {
+                            logica.listaAtributos.forEach(atri => {
+                                if (atri.identificador === this.punto) {
+                                    let valor = atri.valor.slice(1, -1);
+                                    //console.log(valor);
+                                    if (Number.isInteger(parseInt(valor)) && !valor.includes("/") && !valor.includes("-")) {
+                                        izq = new primitivo_1.Primitivo(Number(parseInt(valor)), 1, 1);
+                                    }
+                                    else {
+                                        let texto = valor;
+                                        let t = texto.split(" ");
+                                        texto = '';
+                                        for (var i = 0; i < t.length; i++) {
+                                            texto += t[i];
+                                        }
+                                        izq = new primitivo_1.Primitivo(texto, 1, 1);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                    else if (!(op === "") && this.identificar('PATH', element)) {
+                        if (logica.identificador === this.punto && !this.atributo) {
+                            //console.log(logica.texto);
+                            let texto = "";
+                            for (var i = 0; i < logica.texto.length; i++) {
+                                texto += logica.texto[i];
+                            }
+                            if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
+                                //console.log(parseInt(texto));
+                                der = new primitivo_1.Primitivo(Number(parseInt(texto)), 1, 1);
+                            }
+                            else {
+                                //console.log(texto);
                                 der = new primitivo_1.Primitivo(texto, 1, 1);
                             }
                         }
@@ -984,6 +1197,7 @@ class Ejecucion {
                 }
             });
             if (izq && der && !(op === "")) {
+                //console.log(izq.getValorImplicito(izq) + ',' + der.getValorImplicito(der));
                 let a;
                 if (op === '<') {
                     a = new relacional_1.Relacion(izq, der, operacion_1.Operador.MENOR_QUE, 1, 1);
