@@ -53,7 +53,7 @@
 ["d"]["i"]["v"]                     return 'div';
 ["a"]["n"]["d"]                     return 'and';
 ["o"]["r"]                          return 'or';
-[a-zA-ZñÑáéíóúÁÉÍÓÚ0-9]+            return 'id';
+[a-zA-ZñÑáéíóúÁÉÍÓÚ0-9_]+            return 'id';
 
 [.][.]                              return 'dos_pts';
 ["/"]["/"]["@"]["*"]                return 'diagonal_diagonal_arroba_ast';
@@ -67,7 +67,6 @@
 [":"][":"]                          return 'bi_pto';
 ["@"]["*"]                          return 'any_atributo';
 "@"                                 return 'arroba';    
-\s+                                 return 'espacios';
 
 //error lexico
 . {
@@ -116,12 +115,8 @@ S : INSTRUCCIONES EOF
 
 INSTRUCCIONES : INSTRUCCIONES INSTRUCCION 
                 { $$ = new NodoAST({label: 'INSTRUCCIONES', hijos: [...$1.hijos, ...$2.hijos], linea: yylineno}); }
-
               | INSTRUCCION  
                  { $$ = new NodoAST({label: 'INSTRUCCIONES', hijos: [...$1.hijos], linea: yylineno}); }
-              | espacios 
-                {   tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Semántico', linea: `${yylineno + 1}`, descripcion: `No se permiten espacios`}));
-                }
               ;
 
 INSTRUCCION : INSTRUCCION o RUTA FILTROS

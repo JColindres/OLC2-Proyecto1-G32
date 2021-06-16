@@ -26,6 +26,8 @@ export class Ejecucion {
   nodo_descendente: boolean; //  -> //*
   atributo_nodo: boolean;   // -> /@*
   ej_child: boolean;  //::child
+  node_texto : boolean; // -> /node()
+  node_desc : boolean; // -> //node()
 
   consultaXML: Array<Objeto>;
   ts: XmlTS;
@@ -389,6 +391,16 @@ export class Ejecucion {
           this.ej_child = true;
         }
       }
+      if (this.identificar('ATRIBUTO_DESCENDIENTES', nodo)) {
+        nodo.hijos.forEach((element: any) => {
+          if (element instanceof Object) {
+            this.recorrido(element);
+          }
+          else if (typeof element === 'string') {
+            this.consultaXML = this.reducir(this.consultaXML, element, 'ATRIBUTO_DESCENDIENTES');
+          }
+        });
+      }
     }
   }
 
@@ -424,6 +436,26 @@ export class Ejecucion {
                 cons = cons.concat(element.listaObjetos);
               } else {
                 //arreglar cuando solo viene texto 
+                this.node_texto = true;
+                if(element.texto != null)
+                cons = cons.concat(element);
+              }
+            }
+          });
+        });
+        return cons;
+      }
+      else if (etiqueta === 'text()'){
+        let cons: Array<Objeto> = [];
+        consulta.forEach(element => {
+          this.ts.tabla.forEach(padre => {
+            if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+              if (element.listaObjetos.length > 0) {
+                //elemento
+              } else {
+                this.node_texto = true;
+                if(element.texto != null)
+                cons = cons.concat(element);
               }
             }
           });
@@ -469,6 +501,42 @@ export class Ejecucion {
           });
         });
         this.nodo_descendente = true;
+        return cons;
+      }
+      else if (etiqueta === 'node()') {
+        let cons: Array<Objeto> = [];
+        consulta.forEach(element => {
+          this.ts.tabla.forEach(padre => {
+            if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+              if (element.listaObjetos.length > 0) {
+                cons = cons.concat(element.listaObjetos);
+              } else {
+                //arreglar cuando solo viene texto 
+                this.node_texto = true;
+                if(element.texto != null)
+                cons = cons.concat(element);
+              }
+            }
+          });
+        });
+        this.node_desc = true;
+        return cons;
+      }
+      else if (etiqueta === 'text()') {
+        let cons: Array<Objeto> = [];
+        consulta.forEach(element => {
+          this.ts.tabla.forEach(padre => {
+            if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+              if (element.listaObjetos.length > 0) {
+                if(element.texto != null){
+                  this.node_texto = true;
+                  cons = cons.concat(element.listaObjetos);
+                }
+              } else {
+              }
+            }
+          });
+        });
         return cons;
       }
     }
@@ -614,7 +682,7 @@ export class Ejecucion {
         return cons;
       }
     }
-    if (nodo === 'ATRIBUTO_NODO') {
+    else if (nodo === 'ATRIBUTO_NODO') {
       if (etiqueta === '/@*') {
         let cons: Array<Objeto> = [];
         consulta.forEach(element => {
@@ -623,6 +691,18 @@ export class Ejecucion {
           }
         });
         this.atributo_nodo = true;
+        return cons;
+      }
+    }
+    else if(nodo === 'ATRIBUTO_DESCENDIENTES'){
+      if(etiqueta === '//@*'){
+        let cons: Array<Objeto> = [];
+        consulta.forEach(element => {
+           if (element.listaObjetos.length > 0) {
+                cons = cons.concat(element);
+              }
+        });
+        //this.atributo_nodo = true;
         return cons;
       }
     }
@@ -1004,10 +1084,42 @@ export class Ejecucion {
         else if (this.atributo_nodo) {
           if (element.cons.listaAtributos.length > 0) {
             element.cons.listaAtributos.forEach(atributos => {
+              cadena += ' ' + atributos.identificador + '=' + atributos.valor + '\n';
+            });
+          }
+        } 
+        else if(this.node_desc){
+          cadena += '<' + element.cons.identificador;
+          if (element.cons.listaAtributos.length > 0) {
+            element.cons.listaAtributos.forEach(atributos => {
               cadena += ' ' + atributos.identificador + '=' + atributos.valor;
             });
           }
-        } else {
+          if (element.cons.doble) {
+            cadena += '>\n';
+          }
+          else {
+            cadena += '/>\n';
+          }
+          if (texto != '') {
+            cadena += texto + '\n';
+          }
+          if (element.cons.listaObjetos.length > 0) {
+            cadena += this.traducirRecursiva(element.cons.listaObjetos);
+          }
+          if (element.cons.doble) {
+            cadena += '</' + element.cons.identificador + '>\n';
+          }
+          if (texto != '') {
+            cadena += texto + '\n';
+          }
+        }
+        else if(this.node_texto){
+          if(element.texto != null){  
+            cadena += texto + '\n';
+          }
+         } 
+        else {
           cadena += '<' + element.cons.identificador;
           if (element.cons.listaAtributos.length > 0) {
             element.cons.listaAtributos.forEach(atributos => {
