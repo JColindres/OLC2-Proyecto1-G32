@@ -1,9 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Ejecucion = void 0;
+const error_1 = require("./arbol/error");
+const errores_1 = require("./arbol/errores");
 const xmlTS_1 = require("./arbol/xmlTS");
 const operacion_1 = require("./expresiones/operacion");
 const primitivo_1 = require("./expresiones/primitivo");
+const relacional_1 = require("./expresiones/relacional");
 class Ejecucion {
     constructor(prologo, cuerpo, cadena, raiz) {
         this.tildes = ['á', 'é', 'í', 'ó', 'ú'];
@@ -110,11 +113,20 @@ class Ejecucion {
             this.atributoTexto = '';
             this.atributoIdentificacion = [];
             this.indiceValor = null;
+            this.punto = '';
             this.consultaXML = this.cuerpoXml;
             this.verObjetos();
-            this.recorrido(this.raiz);
+            try {
+                this.recorrido(this.raiz);
+            }
+            catch (error) {
+                return 'No se encontró por algun error';
+            }
             //console.log(this.atributoIdentificacion);
-            return this.traducir();
+            if (this.atributoIdentificacion.length > 0)
+                return this.traducir();
+            else
+                return 'No se encontró';
         }
         return 'no se pudo';
     }
@@ -140,9 +152,10 @@ class Ejecucion {
                             this.atributo = false;
                             this.atributoTexto = '';
                             this.indiceValor = null;
+                            this.punto = '';
                             this.consultaXML = this.cuerpoXml;
                         }
-                        else if (!(element === '[') && !(element === ']')) {
+                        else if (!(element === '[') && !(element === ']') && !(element === '(') && !(element === ')')) {
                             this.consultaXML = this.reducir(this.consultaXML, element, 'INSTRUCCIONES');
                             //console.log(this.consultaXML);
                         }
@@ -228,8 +241,73 @@ class Ejecucion {
                 }
                 else {
                     let val = null;
-                    val = this.calcular(nodo);
+                    val = this.calcular(nodo, null, 0);
                     this.consultaXML = this.reducir(this.consultaXML, val.getValorImplicito(val), 'INSTRUCCIONES');
+                }
+            }
+            if (this.identificar('RELACIONALES', nodo)) {
+                let val = null;
+                let cons = [];
+                let es = '';
+                nodo.hijos.forEach((element) => {
+                    if (element instanceof Object) {
+                        if (this.identificar('ATRIBUTO_PREDICADO', element)) {
+                            es = 'es@';
+                        }
+                        else if (this.identificar('id', element)) {
+                            es = 'esID';
+                        }
+                        else if (this.identificar('punto', element)) {
+                            es = 'esPunto';
+                        }
+                        else if (this.identificar('PATH', element)) {
+                            es = 'esPath';
+                        }
+                    }
+                });
+                this.consultaXML.forEach((element, index) => {
+                    if (es === 'es@') {
+                        if (element.listaAtributos.length > 0) {
+                            val = this.calcular(nodo, element, index);
+                            if (val.getValorImplicito(val)) {
+                                cons.push(element);
+                            }
+                        }
+                    }
+                    else if (es === 'esID') {
+                        console.log("entró esID");
+                        if (element.listaObjetos.length > 0) {
+                            val = this.calcular(nodo, element, index);
+                            if (val.getValorImplicito(val)) {
+                                cons.push(element);
+                            }
+                        }
+                    }
+                    else if (es === "esPunto") {
+                        if (this.atributo) {
+                            if (element.listaAtributos.length > 0) {
+                                val = this.calcular(nodo, element, index);
+                                if (val.getValorImplicito(val)) {
+                                    cons.push(element);
+                                }
+                            }
+                        }
+                        else {
+                            if (element) {
+                                val = this.calcular(nodo, element, index);
+                                if (val.getValorImplicito(val)) {
+                                    cons.push(element);
+                                }
+                            }
+                        }
+                    }
+                });
+                if (cons.length > 0)
+                    this.consultaXML = cons;
+                else {
+                    //this.consultaXML = [];
+                    const er = new error_1.Error({ tipo: 'Semántico', linea: '0', descripcion: 'No existe ese atributo.' });
+                    errores_1.Errores.getInstance().push(er);
                 }
             }
             if (this.identificar('HIJOS', nodo)) {
@@ -272,6 +350,7 @@ class Ejecucion {
                 return consulta;
             }
             else if (this.atributo) {
+                this.punto = etiqueta;
                 let cons = [];
                 consulta.forEach(element => {
                     element.listaAtributos.forEach(atributo => {
@@ -311,6 +390,7 @@ class Ejecucion {
                 return consulta;
             }
             else if (this.atributo) {
+                this.punto = etiqueta;
                 let cons = [];
                 consulta.forEach(element => {
                     element.listaAtributos.forEach(atributo => {
@@ -384,6 +464,7 @@ class Ejecucion {
                 }
             }
             else if (!this.descendiente) {
+                this.punto = etiqueta;
                 if (this.esRaiz) {
                     consulta.forEach(element => {
                         if (element.identificador === etiqueta) {
@@ -407,6 +488,7 @@ class Ejecucion {
                 }
             }
             else {
+                this.punto = etiqueta;
                 consulta.forEach(element => {
                     if (element.identificador === etiqueta) {
                         cons.push(element);
@@ -511,6 +593,9 @@ class Ejecucion {
             else {
                 if (element.identificador === etiqueta) {
                     cons.push(element);
+                    if (this.descendiente && element.listaObjetos.length > 0) {
+                        cons = cons.concat(this.recDescen(element.listaObjetos, etiqueta, false));
+                    }
                 }
                 else if (element.listaObjetos.length > 0) {
                     cons = cons.concat(this.recDescen(element.listaObjetos, etiqueta, false));
@@ -519,7 +604,7 @@ class Ejecucion {
         });
         return cons;
     }
-    calcular(nodo) {
+    calcular(nodo, logica, position) {
         if (this.identificar('ARITMETICAS', nodo)) {
             let izq, der = null;
             let op = "";
@@ -531,11 +616,17 @@ class Ejecucion {
                     else if (!(op === "") && this.identificar('integer', element)) {
                         der = new primitivo_1.Primitivo(Number(element.hijos[0]), 1, 1);
                     }
+                    else if (op === "" && this.identificar('double', element)) {
+                        izq = new primitivo_1.Primitivo(Number(parseInt(element.hijos[0])), 1, 1);
+                    }
+                    else if (!(op === "") && this.identificar('double', element)) {
+                        der = new primitivo_1.Primitivo(Number(parseInt(element.hijos[0])), 1, 1);
+                    }
                     else if (op === "" && this.identificar('ARITMETICAS', element)) {
-                        izq = this.calcular(element);
+                        izq = this.calcular(element, null, position);
                     }
                     else if (!(op === "") && this.identificar('ARITMETICAS', element)) {
-                        der = this.calcular(element);
+                        der = this.calcular(element, null, position);
                     }
                     else if (op === "" && this.identificar('ORDEN', element)) {
                         izq = new primitivo_1.Primitivo(Number(this.consultaXML.length), 1, 1);
@@ -566,6 +657,244 @@ class Ejecucion {
                 }
                 else if (op === 'mod') {
                     a = new operacion_1.Operacion(izq, der, operacion_1.Operador.MODULO, 1, 1);
+                }
+                return a;
+            }
+        }
+        if (this.identificar('RELACIONALES', nodo)) {
+            let izq, der = null;
+            let op = "";
+            console.log("entró relacional");
+            nodo.hijos.forEach((element) => {
+                if (element instanceof Object) {
+                    if (op === "" && this.identificar('integer', element)) {
+                        izq = new primitivo_1.Primitivo(Number(element.hijos[0]), 1, 1);
+                    }
+                    else if (!(op === "") && this.identificar('integer', element)) {
+                        der = new primitivo_1.Primitivo(Number(element.hijos[0]), 1, 1);
+                    }
+                    else if (op === "" && this.identificar('double', element)) {
+                        izq = new primitivo_1.Primitivo(Number(parseInt(element.hijos[0])), 1, 1);
+                    }
+                    else if (!(op === "") && this.identificar('double', element)) {
+                        der = new primitivo_1.Primitivo(Number(parseInt(element.hijos[0])), 1, 1);
+                    }
+                    else if (op === "" && this.identificar('string', element)) {
+                        let texto = element.hijos[0].slice(1, -1);
+                        let t = texto.split(" ");
+                        texto = '';
+                        for (var i = 0; i < t.length; i++) {
+                            texto += t[i];
+                        }
+                        izq = new primitivo_1.Primitivo(texto, 1, 1);
+                    }
+                    else if (!(op === "") && this.identificar('string', element)) {
+                        console.log("entró string derecho");
+                        let texto = element.hijos[0].slice(1, -1);
+                        let t = texto.split(" ");
+                        texto = '';
+                        for (var i = 0; i < t.length; i++) {
+                            texto += t[i];
+                        }
+                        console.log(texto);
+                        der = new primitivo_1.Primitivo(texto, 1, 1);
+                    }
+                    else if (op === "" && this.identificar('ARITMETICAS', element)) {
+                        izq = this.calcular(element, logica, position);
+                    }
+                    else if (!(op === "") && this.identificar('ARITMETICAS', element)) {
+                        der = this.calcular(element, logica, position);
+                    }
+                    else if (op === "" && this.identificar('ORDEN', element)) {
+                        if (element.hijos[0] === 'position')
+                            izq = new primitivo_1.Primitivo(Number(position), 1, 1);
+                        else
+                            izq = new primitivo_1.Primitivo(Number(this.consultaXML.length), 1, 1);
+                    }
+                    else if (!(op === "") && this.identificar('ORDEN', element)) {
+                        if (element.hijos[0] === 'position')
+                            der = new primitivo_1.Primitivo(Number(position), 1, 1);
+                        else
+                            der = new primitivo_1.Primitivo(Number(this.consultaXML.length), 1, 1);
+                    }
+                    else if (op === "" && this.identificar('ATRIBUTO_PREDICADO', element)) {
+                        logica.listaAtributos.forEach(atri => {
+                            if (atri.identificador === element.hijos[1]) {
+                                let valor = atri.valor.slice(1, -1);
+                                if (Number.isInteger(parseInt(valor)) && !valor.includes("/") && !valor.includes("-")) {
+                                    console.log(parseInt(valor));
+                                    izq = new primitivo_1.Primitivo(Number(parseInt(valor)), 1, 1);
+                                }
+                                else {
+                                    let texto = valor;
+                                    let t = texto.split(" ");
+                                    texto = '';
+                                    for (var i = 0; i < t.length; i++) {
+                                        texto += t[i];
+                                    }
+                                    izq = new primitivo_1.Primitivo(texto, 1, 1);
+                                }
+                            }
+                        });
+                    }
+                    else if (!(op === "") && this.identificar('ATRIBUTO_PREDICADO', element)) {
+                        logica.listaAtributos.forEach(atri => {
+                            if (atri.identificador === element.hijos[1]) {
+                                let valor = atri.valor.slice(1, -1);
+                                if (Number.isInteger(parseInt(valor)) && !valor.includes("/") && !valor.includes("-")) {
+                                    der = new primitivo_1.Primitivo(Number(parseInt(valor)), 1, 1);
+                                }
+                                else {
+                                    let texto = valor;
+                                    let t = texto.split(" ");
+                                    texto = '';
+                                    for (var i = 0; i < t.length; i++) {
+                                        texto += t[i];
+                                    }
+                                    der = new primitivo_1.Primitivo(texto, 1, 1);
+                                }
+                            }
+                        });
+                    }
+                    else if (op === "" && this.identificar('id', element)) {
+                        console.log("entró id");
+                        logica.listaObjetos.forEach(ob => {
+                            if (ob.identificador === element.hijos[0]) {
+                                let texto = "";
+                                for (var i = 0; i < ob.texto.length; i++) {
+                                    texto += ob.texto[i];
+                                }
+                                if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
+                                    console.log(parseInt(texto));
+                                    izq = new primitivo_1.Primitivo(Number(parseInt(texto)), 1, 1);
+                                }
+                                else {
+                                    console.log(texto);
+                                    izq = new primitivo_1.Primitivo(texto, 1, 1);
+                                }
+                            }
+                        });
+                    }
+                    else if (!(op === "") && this.identificar('id', element)) {
+                        logica.listaObjetos.forEach(ob => {
+                            if (ob.identificador === element.hijos[0]) {
+                                console.log(ob.texto);
+                                let texto = "";
+                                for (var i = 0; i < ob.texto.length; i++) {
+                                    texto += ob.texto[i];
+                                }
+                                if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
+                                    console.log(parseInt(texto));
+                                    der = new primitivo_1.Primitivo(Number(parseInt(texto)), 1, 1);
+                                }
+                                else {
+                                    console.log(texto);
+                                    der = new primitivo_1.Primitivo(texto, 1, 1);
+                                }
+                            }
+                        });
+                    }
+                    else if (op === "" && this.identificar('punto', element)) {
+                        console.log("at " + this.atributo);
+                        if (logica.identificador === this.punto && !this.atributo) {
+                            let texto = "";
+                            for (var i = 0; i < logica.texto.length; i++) {
+                                texto += logica.texto[i];
+                            }
+                            if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
+                                console.log(parseInt(texto));
+                                izq = new primitivo_1.Primitivo(Number(parseInt(texto)), 1, 1);
+                            }
+                            else {
+                                console.log(texto);
+                                izq = new primitivo_1.Primitivo(texto, 1, 1);
+                            }
+                        }
+                        else {
+                            logica.listaAtributos.forEach(atri => {
+                                if (atri.identificador === this.punto) {
+                                    let valor = atri.valor.slice(1, -1);
+                                    if (Number.isInteger(parseInt(valor)) && !valor.includes("/") && !valor.includes("-")) {
+                                        izq = new primitivo_1.Primitivo(Number(parseInt(valor)), 1, 1);
+                                    }
+                                    else {
+                                        let texto = valor;
+                                        let t = texto.split(" ");
+                                        texto = '';
+                                        for (var i = 0; i < t.length; i++) {
+                                            texto += t[i];
+                                        }
+                                        izq = new primitivo_1.Primitivo(texto, 1, 1);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                    else if (!(op === "") && this.identificar('punto', element)) {
+                        if (logica.identificador === this.punto && !this.atributo) {
+                            console.log(logica.texto);
+                            let texto = "";
+                            for (var i = 0; i < logica.texto.length; i++) {
+                                texto += logica.texto[i];
+                            }
+                            if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
+                                console.log(parseInt(texto));
+                                der = new primitivo_1.Primitivo(Number(parseInt(texto)), 1, 1);
+                            }
+                            else {
+                                console.log(texto);
+                                der = new primitivo_1.Primitivo(texto, 1, 1);
+                            }
+                        }
+                        else {
+                            logica.listaAtributos.forEach(atri => {
+                                if (atri.identificador === this.punto) {
+                                    let valor = atri.valor.slice(1, -1);
+                                    if (Number.isInteger(parseInt(valor)) && !valor.includes("/") && !valor.includes("-")) {
+                                        der = new primitivo_1.Primitivo(Number(parseInt(valor)), 1, 1);
+                                    }
+                                    else {
+                                        let texto = valor;
+                                        let t = texto.split(" ");
+                                        texto = '';
+                                        for (var i = 0; i < t.length; i++) {
+                                            texto += t[i];
+                                        }
+                                        der = new primitivo_1.Primitivo(texto, 1, 1);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+                else if (typeof element === 'string') {
+                    if (!(element === '(') && !(element === ')')) {
+                        op = element;
+                    }
+                }
+            });
+            if (izq && der && !(op === "")) {
+                let a;
+                if (op === '<') {
+                    a = new relacional_1.Relacion(izq, der, operacion_1.Operador.MENOR_QUE, 1, 1);
+                }
+                else if (op === '>') {
+                    a = new relacional_1.Relacion(izq, der, operacion_1.Operador.MAYOR_QUE, 1, 1);
+                }
+                else if (op === '<=') {
+                    a = new relacional_1.Relacion(izq, der, operacion_1.Operador.MENOR_IGUA_QUE, 1, 1);
+                }
+                else if (op === '>=') {
+                    a = new relacional_1.Relacion(izq, der, operacion_1.Operador.MAYOR_IGUA_QUE, 1, 1);
+                }
+                else if (op === '=') {
+                    a = new relacional_1.Relacion(izq, der, operacion_1.Operador.IGUAL_IGUAL, 1, 1);
+                }
+                else if (op === '!=') {
+                    a = new relacional_1.Relacion(izq, der, operacion_1.Operador.DIFERENTE_QUE, 1, 1);
+                }
+                else if (op === '!') {
+                    a = new relacional_1.Relacion(izq, null, operacion_1.Operador.NOT, 1, 1);
                 }
                 return a;
             }
@@ -697,6 +1026,11 @@ class Ejecucion {
             }
         });
         return cadena;
+    }
+    validarError(error) {
+        const json = JSON.stringify(error);
+        const objeto = JSON.parse(json);
+        console.log(objeto);
     }
 }
 exports.Ejecucion = Ejecucion;
