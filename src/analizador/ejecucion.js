@@ -253,6 +253,12 @@ class Ejecucion {
                     }
                 });
             }
+            if (this.identificar('EJES', nodo)) {
+                //Se obtiene el tipo de eje y se activa el bool
+                if (nodo.hijos[0] == 'child') {
+                    this.ej_child = true;
+                }
+            }
         }
     }
     reducir(consulta, etiqueta, nodo) {
@@ -346,6 +352,36 @@ class Ejecucion {
                     }
                 });
                 return cons;
+            }
+            //Axes - ::child
+            else if (this.ej_child) {
+                //Si viene una ruta tipo -> //nodo::child
+                if (this.descendiente) {
+                    consulta.forEach(element => {
+                        if (element.identificador === etiqueta) {
+                            cons.push(element);
+                        }
+                        if (element.listaObjetos.length > 0) {
+                            cons = cons.concat(this.recDescen(element.listaObjetos, etiqueta, false));
+                        }
+                    });
+                    this.ej_child = false;
+                    return cons;
+                }
+                else {
+                    //Si viene una ruta normal
+                    consulta.forEach(element => {
+                        if (element.listaObjetos.length > 0) {
+                            element.listaObjetos.forEach(elements => {
+                                if (elements.identificador === etiqueta) {
+                                    cons.push(elements);
+                                }
+                            });
+                        }
+                    });
+                    this.ej_child = false;
+                    return cons;
+                }
             }
             else if (!this.descendiente) {
                 if (this.esRaiz) {

@@ -21,6 +21,8 @@ export class Ejecucion {
   indiceValor: number;
   nodo_descendente : boolean; //  -> //*
   atributo_nodo: boolean;   // -> /@*
+  ej_child: boolean;  //::child
+
   consultaXML: Array<Objeto>;
   ts: XmlTS;
 
@@ -285,6 +287,7 @@ export class Ejecucion {
           }
         });
       }
+
       if (this.identificar('ATRIBUTO_NODO', nodo)) {
         nodo.hijos.forEach((element: any) => {
           if (element instanceof Object) {
@@ -294,6 +297,14 @@ export class Ejecucion {
             this.consultaXML = this.reducir(this.consultaXML, element, 'ATRIBUTO_NODO');
           }
         });
+      }
+
+      if (this.identificar('EJES', nodo)) {
+        //Se obtiene el tipo de eje y se activa el bool
+        if(nodo.hijos[0] == 'child')
+        {
+          this.ej_child = true;
+        }
       }
     }
   }
@@ -388,6 +399,35 @@ export class Ejecucion {
           }
         });
         return cons;
+      }
+      //Axes - ::child
+      else if (this.ej_child) {
+        //Si viene una ruta tipo -> //nodo::child
+        if(this.descendiente) {
+          consulta.forEach(element => {
+            if (element.identificador === etiqueta) {
+              cons.push(element);
+            }
+            if (element.listaObjetos.length > 0) {
+              cons = cons.concat(this.recDescen(element.listaObjetos, etiqueta, false));
+            }
+          });
+          this.ej_child = false;
+          return cons;
+        } else {
+          //Si viene una ruta normal
+          consulta.forEach(element => {
+            if (element.listaObjetos.length > 0) {
+              element.listaObjetos.forEach(elements => {
+                if (elements.identificador === etiqueta) {
+                  cons.push(elements);
+                }
+              });
+            }
+          });
+          this.ej_child = false;
+          return cons;
+        }        
       }
       else if (!this.descendiente) {
         if (this.esRaiz) {
