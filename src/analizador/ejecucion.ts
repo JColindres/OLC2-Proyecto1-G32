@@ -23,6 +23,7 @@ export class Ejecucion {
   atributoIdentificacion: any[];
   indiceValor: number;
   punto: string;
+  posicion: any[];
   nodo_descendente: boolean; //  -> //*
   atributo_nodo: boolean;   // -> /@*
   ej_child: boolean;  //::child
@@ -165,25 +166,7 @@ export class Ejecucion {
       }
       //console.log(this.atributoIdentificacion);
       if (this.atributoIdentificacion.length > 0){
-        var buf = new Buffer(this.traducir())
-        var buf2 = 'ay :(';
-        console.log(JSON.stringify(this.prologoXml))
-        if(JSON.stringify(this.prologoXml).includes("UTF-8")){
-          console.log(buf.toString("utf8"))
-          buf2 = (buf.toString("utf8"))
-        }
-        else if(JSON.stringify(this.prologoXml).includes("ISO-8859-1")){
-          try {
-            buf2 = (this.traducir())
-          } catch (error) {
-            buf2 = 'ay :( iso-8859-1';
-          }
-        }
-        else if(JSON.stringify(this.prologoXml).includes("ASCII")){
-          console.log(buf.toString("ascii"))
-          buf2 = (buf.toString("ascii"))
-        }
-        return buf2;
+        return this.traducir();
       }
       else
         return 'No se encontró'
@@ -333,10 +316,13 @@ export class Ejecucion {
             }
             else if (this.identificar('PATH', element)) {
               es = 'esPath';
-              //console.log(es);
               this.pathh = this.consultaXML;
               this.pathhCount = 0;
               this.path(element);
+            }
+            else if (this.identificar('ORDEN', element)) {
+              es = 'esOrden';
+              this.posicion = [];
             }
           }
         });
@@ -434,6 +420,95 @@ export class Ejecucion {
                     cons.push(element);
                   }
                 }
+              }
+            }
+            else if(es === 'esOrden'){
+              try {
+                if (es === 'esOrden') {
+                  val = this.calcular(nodo, element, index);
+                  if (this.posicion[1]) {
+                    console.log("es posicion ", this.posicion)
+                    switch (this.posicion[4]) {
+                      case '<':
+                        if (this.posicion[2] === 'izq') {
+                          if (index === this.posicion[3] && this.posicion[3] < this.posicion[5]) {
+                            cons.push(element)
+                          }
+                        }
+                        else {
+                          if (index === this.posicion[5] && this.posicion[3] > this.posicion[5]) {
+                            cons.push(element)
+                          }
+                        }
+                        break;
+                      case '>':
+                        if (this.posicion[2] === 'izq') {
+                          if (index === this.posicion[3] && this.posicion[3] > this.posicion[5]) {
+                            cons.push(element)
+                          }
+                        }
+                        else {
+                          if (index === this.posicion[5] && this.posicion[3] < this.posicion[5]) {
+                            cons.push(element)
+                          }
+                        }
+                        break;
+                      case '<=':
+                        if (this.posicion[2] === 'izq') {
+                          if (index === this.posicion[3] && this.posicion[3] <= this.posicion[5]) {
+                            cons.push(element)
+                          }
+                        }
+                        else {
+                          if (index === this.posicion[5] && this.posicion[3] >= this.posicion[5]) {
+                            cons.push(element)
+                          }
+                        }
+                        break;
+                      case '>=':
+                        if (this.posicion[2] === 'izq') {
+                          if (index === this.posicion[3] && this.posicion[3] >= this.posicion[5]) {
+                            cons.push(element)
+                          }
+                        }
+                        else {
+                          if (index === this.posicion[5] && this.posicion[3] <= this.posicion[5]) {
+                            cons.push(element)
+                          }
+                        }
+                        break;
+                      case '=':
+                        if (this.posicion[2] === 'izq') {
+                          if (index === this.posicion[3] && this.posicion[3] === this.posicion[5]) {
+                            cons.push(element)
+                          }
+                        }
+                        else {
+                          if (index === this.posicion[5] && this.posicion[3] === this.posicion[5]) {
+                            cons.push(element)
+                          }
+                        }
+                        break;
+                      case '!=':
+                        if (this.posicion[2] === 'izq') {
+                          if (index === this.posicion[3] && !(this.posicion[3] === this.posicion[5])) {
+                            cons.push(element)
+                          }
+                        }
+                        else {
+                          if (index === this.posicion[5] && !(this.posicion[3] === this.posicion[5])) {
+                            cons.push(element)
+                          }
+                        }
+                        break;
+                      default:
+                        break;
+                    }
+                  }
+                  this.posicion = [];
+                }
+              } catch (error) {
+                
               }
             }
           });
@@ -1156,13 +1231,19 @@ export class Ejecucion {
           }
           else if (op === "" && this.identificar('ORDEN', element)) {
             if (element.hijos[0] === 'position')
-              izq = new Primitivo(Number(position), 1, 1);
+              {izq = new Primitivo(Number(position), 1, 1);
+              this.posicion.push(Number(position));
+              this.posicion.push(true); 
+              this.posicion.push("izq");}
             else
               izq = new Primitivo(Number(this.consultaXML.length), 1, 1);
           }
           else if (!(op === "") && this.identificar('ORDEN', element)) {
             if (element.hijos[0] === 'position')
-              der = new Primitivo(Number(position), 1, 1);
+              {der = new Primitivo(Number(position), 1, 1);
+                this.posicion.push(Number(position));
+                this.posicion.push(true); 
+                this.posicion.push("der");}
             else
               der = new Primitivo(Number(this.consultaXML.length), 1, 1);
           }
@@ -1393,10 +1474,16 @@ export class Ejecucion {
           if (!(element === '(') && !(element === ')')) {
             op = element;
           }
+        }                   
+        if(!izq){
+          izq = new Primitivo(Number(-1),1,1);
+        }                   
+        if(!der){
+          der = new Primitivo(Number(-1),1,1);
         }
       });
       if (izq && der && !(op === "")) {
-        //console.log(izq.getValorImplicito(izq) + ',' + der.getValorImplicito(der));
+        console.log(izq.getValorImplicito(izq) + ',' + der.getValorImplicito(der));
         let a: Relacion;
         if (op === '<') {
           a = new Relacion(izq, der, Operador.MENOR_QUE, 1, 1);
@@ -1419,6 +1506,14 @@ export class Ejecucion {
         else if (op === '!') {
           a = new Relacion(izq, null, Operador.NOT, 1, 1);
         }
+        if (this.posicion) {
+          if (this.posicion[1]) {
+            this.posicion.push(izq.getValorImplicito(izq) - 1);
+            this.posicion.push(op);
+            this.posicion.push(der.getValorImplicito(der) - 1);
+          }
+        }
+        console.log(a.getValorImplicito(a))
         return a;
       }
     }
@@ -1464,7 +1559,7 @@ export class Ejecucion {
             cadena += '/>\n';
           }
           if (texto != '') {
-            cadena += texto + '\n';
+            cadena += this.encode(texto) + '\n';
           }
           if (element.cons.listaObjetos.length > 0) {
             cadena += this.traducirRecursiva(element.cons.listaObjetos);
@@ -1497,7 +1592,7 @@ export class Ejecucion {
             cadena += '/>\n';
           }
           if (texto != '') {
-            cadena += texto + '\n';
+            cadena += this.encode(texto) + '\n';
           }
           if (element.cons.listaObjetos.length > 0) {
             cadena += this.traducirRecursiva(element.cons.listaObjetos);
@@ -1506,12 +1601,12 @@ export class Ejecucion {
             cadena += '</' + element.cons.identificador + '>\n';
           }
           if (texto != '') {
-            cadena += texto + '\n';
+            cadena += this.encode(texto) + '\n';
           }
         }
         else if (this.node_texto) {
           if (element.texto != null) {
-            cadena += texto + '\n';
+            cadena += this.encode(texto) + '\n';
           }
         }
         else {
@@ -1528,7 +1623,7 @@ export class Ejecucion {
             cadena += '/>\n';
           }
           if (texto != '') {
-            cadena += texto + '\n';
+            cadena += this.encode(texto) + '\n';
           }
           if (element.cons.listaObjetos.length > 0) {
             cadena += this.traducirRecursiva(element.cons.listaObjetos);
@@ -1585,7 +1680,7 @@ export class Ejecucion {
         cadena += '/>\n';
       }
       if (texto != '') {
-        cadena += texto + '\n';
+        cadena += this.encode(texto) + '\n';
       }
       if (element.listaObjetos.length > 0) {
         cadena += this.traducirRecursiva(element.listaObjetos);
@@ -1597,6 +1692,40 @@ export class Ejecucion {
     return cadena;
   }
 
+  enISO: string;
+  encode(texto: string): string{
+    var buf = new Buffer(texto)
+    var buf2 = 'ay :(';
+    //console.log(JSON.stringify(this.prologoXml))
+    if (JSON.stringify(this.prologoXml).includes("UTF-8")) {
+      //console.log(buf.toString("utf8"))
+      buf2 = (buf.toString("utf8"))
+    }
+    else if (JSON.stringify(this.prologoXml).includes("ISO-8859-1")) {
+      try {
+        buf2 = unescape(encodeURIComponent(texto));
+        
+      } catch (error) {
+        buf2 = '(ISO falló) '+texto;
+      }
+    }
+    else if (JSON.stringify(this.prologoXml).includes("ASCII")) {
+      //console.log(buf.toString("ascii"))
+      buf2 = (buf.toString("ascii"))
+    }
+    return buf2;
+  }
+
+  stringToBytes(text) {
+    const length = text.length;
+    const result = new Uint8Array(length);
+    for (let i = 0; i < length; i++) {
+      const code = text.charCodeAt(i);
+      const byte = code > 255 ? 32 : code;
+      result[i] = byte;
+    }
+    return result;
+  }
   validarError(error) {
     const json = JSON.stringify(error);
     const objeto = JSON.parse(json);
