@@ -12,9 +12,10 @@ _____
 **Contenido**   
 1. [Introduccion](#id1)
 2. [Objetivo del manual](#id2)
-3. [Instalación](#id3)
-4. [IDE](#id4)
-5. [Reportes](#id5)
+3. [Repositorio](#id3)
+4. [Instalación](#id4)
+5. [IDE](#id5)
+6. [Reportes](#id6)
 
 
 ## **Introducción**<a name="id1"></a>
@@ -30,8 +31,14 @@ Para la gestión de la información con TytusX deberá de introducirse por medio
 ***
 El objetivo primordial del manual de usuario es el de guiar, ayudar y resolver las dudas que el usuario tenga mientras utiliza el software TytusX.  Se presentará una sección donde se le guiará al usuario en su instalación, se ilustrarán algunos pasos para su utilización y se indicará lo necesario para su uso entre otros aspectos. Para conocer las herramientas y la lógica empleada en la construcción del proyecto se debe consultar el ["Manual Técnico de TytusX"](./Manual%20Técnico.md).
 
-## **Instalación**<a name="id3"></a>
+## **Repositorio**<a name="id3"></a>
+El proyecto se encuentra ya cargado para que no exista la necesidad de instalar y ejecutar de nuevo. Puede encontrar el proyecto en la siguiente direccion 
+
+### https://tytusdb.github.io/tytusx/20211SVAC/G32/
+
+## **Instalación**<a name="id4"></a>
 ***
+Si en dado caso se desea realizar un cambio o correr el proyecto en la computadora local, se deben de seguir los siguientas pasos
 
 ### Requisitos Previos 
 - Tener instalado node js y npm
@@ -116,7 +123,7 @@ Reporte que muestra cada una de las producciones que se ejecutaron durante el an
 
 <div style="text-align: justify">
 <p align="center">
-  <img src="Imagenes/gramatical.PNG" width="600" alt="IDE">
+  <img src="Imagenes/Gramatical.PNG" width="600" alt="IDE">
 </p>
 </div>
 
