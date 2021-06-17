@@ -741,26 +741,59 @@ class Ejecucion {
                 /*  Falta arreglar cuando se coloca -> //attribute::attrib; y /attribute::attrib; */
                 /*  Falta agregar correción también con //attribute::*; y /attribute::*; */
                 if (etiqueta === '*') {
-                    consulta.forEach(element => {
-                        if (element.listaAtributos.length > 0) {
-                            cons = cons.concat(element);
-                        }
-                    });
-                    this.atributo = false;
-                    this.atributo_nodo = true;
-                    return cons;
-                }
-                else {
-                    this.punto = etiqueta;
-                    consulta.forEach(element => {
-                        element.listaAtributos.forEach(atributo => {
-                            if (atributo.identificador === etiqueta) {
-                                this.atributoTexto = etiqueta;
-                                cons.push(element);
+                    if (this.descendiente) {
+                        this.atributo = true;
+                        this.atributo_nodo_descendiente = true;
+                        consulta.forEach(element => {
+                            if (element.listaAtributos.length > 0) {
+                                cons = cons.concat(element);
+                            }
+                            if (element.listaObjetos.length > 0) {
+                                cons = cons.concat(this.recDescen(element.listaObjetos, etiqueta, true));
                             }
                         });
-                    });
-                    return cons;
+                        //this.atributo_nodo = true; 
+                        return cons;
+                    }
+                    else {
+                        consulta.forEach(element => {
+                            if (element.listaAtributos.length > 0) {
+                                cons = cons.concat(element);
+                            }
+                        });
+                        this.atributo = false;
+                        this.atributo_nodo = true;
+                        return cons;
+                    }
+                }
+                else {
+                    if (this.descendiente) {
+                        this.punto = etiqueta;
+                        consulta.forEach(element => {
+                            element.listaAtributos.forEach(atributo => {
+                                if (atributo.identificador === etiqueta) {
+                                    this.atributoTexto = etiqueta;
+                                    cons.push(element);
+                                }
+                            });
+                            if (element.listaObjetos.length > 0) {
+                                cons = cons.concat(this.recDescen(element.listaObjetos, etiqueta, true));
+                            }
+                        });
+                        return cons;
+                    }
+                    else {
+                        this.punto = etiqueta;
+                        consulta.forEach(element => {
+                            element.listaAtributos.forEach(atributo => {
+                                if (atributo.identificador === etiqueta) {
+                                    this.atributoTexto = etiqueta;
+                                    cons.push(element);
+                                }
+                            });
+                        });
+                        return cons;
+                    }
                 }
             }
             else if (!this.descendiente) {
@@ -946,13 +979,18 @@ class Ejecucion {
         else if (nodo === 'ATRIBUTO_DESCENDIENTES') {
             if (etiqueta === '//@*') {
                 let cons = [];
+                this.atributo = true;
+                this.atributo_nodo_descendiente = true;
                 consulta.forEach(element => {
                     if (element.listaAtributos.length > 0) {
                         cons = cons.concat(element);
                     }
+                    if (element.listaObjetos.length > 0) {
+                        cons = cons.concat(this.recDescen(element.listaObjetos, etiqueta, true));
+                    }
                 });
                 //this.atributo_nodo = true; 
-                return consulta;
+                return cons;
             }
         }
     }
@@ -966,6 +1004,9 @@ class Ejecucion {
                         cons.push(element);
                     }
                 });
+                if (element.listaAtributos.length > 0 && this.atributo_nodo_descendiente) {
+                    cons.push(element);
+                }
                 if (element.listaObjetos.length > 0) {
                     cons = cons.concat(this.recDescen(element.listaObjetos, etiqueta, true));
                 }
@@ -1569,6 +1610,9 @@ class Ejecucion {
                 cadena += '--------------------------------------(' + numero + ')---------------------------------\n';
                 element.cons.listaAtributos.forEach(atributo => {
                     if (element.texto === atributo.identificador) {
+                        cadena += atributo.identificador + '=' + atributo.valor + '\n';
+                    }
+                    else if (this.atributo_nodo_descendiente) {
                         cadena += atributo.identificador + '=' + atributo.valor + '\n';
                     }
                 });

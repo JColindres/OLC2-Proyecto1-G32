@@ -26,11 +26,12 @@ export class Ejecucion {
   posicion: any[];
   nodo_descendente: boolean; //  -> //*
   atributo_nodo: boolean;   // -> /@*
+  atributo_nodo_descendiente: boolean;
   ej_child: boolean;  //::child
   ej_attrib: boolean; //::attribute
-  node_texto : boolean; // -> /node()
-  node_desc : boolean; // -> //node()
-  atributo_desc : boolean;
+  node_texto: boolean; // -> /node()
+  node_desc: boolean; // -> //node()
+  atributo_desc: boolean;
 
   consultaXML: Array<Objeto>;
   pathh: Array<Objeto>;
@@ -165,7 +166,7 @@ export class Ejecucion {
         return 'No se encontró por algun error';
       }
       //console.log(this.atributoIdentificacion);
-      if (this.atributoIdentificacion.length > 0){
+      if (this.atributoIdentificacion.length > 0) {
         return this.traducir();
       }
       else
@@ -367,15 +368,15 @@ export class Ejecucion {
               });
             });
           }
-          if(cons.length > 0){
+          if (cons.length > 0) {
             this.consultaXML.forEach((element) => {
-              cons.forEach(y => {  
-                if (element.identificador === y.identificador && element.linea === y.linea && element.columna === y.columna) {                
+              cons.forEach(y => {
+                if (element.identificador === y.identificador && element.linea === y.linea && element.columna === y.columna) {
                   this.pathh.push(element);
                 }
                 else if (y.listaObjetos.length > 0) {
-                  y.listaObjetos.forEach(yy => {  
-                    if (element.identificador === yy.identificador && element.linea === yy.linea && element.columna === yy.columna) {                
+                  y.listaObjetos.forEach(yy => {
+                    if (element.identificador === yy.identificador && element.linea === yy.linea && element.columna === yy.columna) {
                       this.pathh.push(element);
                     }
                   });
@@ -422,7 +423,7 @@ export class Ejecucion {
                 }
               }
             }
-            else if(es === 'esOrden'){
+            else if (es === 'esOrden') {
               try {
                 if (es === 'esOrden') {
                   val = this.calcular(nodo, element, index);
@@ -508,7 +509,7 @@ export class Ejecucion {
                   this.posicion = [];
                 }
               } catch (error) {
-                
+
               }
             }
           });
@@ -733,15 +734,12 @@ export class Ejecucion {
       //Axes - ::child
       else if (this.ej_child) {
         //Para child::*
-        if(etiqueta === '*')
-        {
+        if (etiqueta === '*') {
           /*  Falta arreglar cuando se coloca -> //child::*; */
-          if(this.esRaiz)
-          {
+          if (this.esRaiz) {
             return consulta;
           }
-          else
-          {
+          else {
             consulta.forEach(element => {
               this.ts.tabla.forEach(padre => {
                 if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
@@ -754,12 +752,11 @@ export class Ejecucion {
             return cons;
           }
         }
-        else
-          {
+        else {
           //Si viene una ruta tipo -> //nodo::child
           if (this.descendiente) {
-              this.punto = etiqueta;
-              consulta.forEach(element => {
+            this.punto = etiqueta;
+            consulta.forEach(element => {
               if (element.identificador === etiqueta) {
                 cons.push(element);
               }
@@ -803,29 +800,60 @@ export class Ejecucion {
       else if (this.ej_attrib) {
         /*  Falta arreglar cuando se coloca -> //attribute::attrib; y /attribute::attrib; */
         /*  Falta agregar correción también con //attribute::*; y /attribute::*; */
-        if(etiqueta === '*')
-        {
-          consulta.forEach(element => {
-            if (element.listaAtributos.length > 0) {
-              cons = cons.concat(element);
-            }
-          });
-          this.atributo = false;
-          this.atributo_nodo = true;
-          return cons;
-        }
-        else
-        {
-          this.punto = etiqueta;
-          consulta.forEach(element => {
-            element.listaAtributos.forEach(atributo => {
-              if (atributo.identificador === etiqueta) {
-                this.atributoTexto = etiqueta;
-                cons.push(element);
+        if (etiqueta === '*') {
+          if (this.descendiente) {
+            this.atributo = true;
+            this.atributo_nodo_descendiente = true;
+            consulta.forEach(element => {
+              if (element.listaAtributos.length > 0) {
+                cons = cons.concat(element);
+              }
+              if (element.listaObjetos.length > 0) {
+                cons = cons.concat(this.recDescen(element.listaObjetos, etiqueta, true));
               }
             });
-          });
-          return cons;
+            //this.atributo_nodo = true; 
+            return cons;
+          }
+          else {
+            consulta.forEach(element => {
+              if (element.listaAtributos.length > 0) {
+                cons = cons.concat(element);
+              }
+            });
+            this.atributo = false;
+            this.atributo_nodo = true;
+            return cons;
+          }
+        }
+        else {
+          if (this.descendiente) {
+            this.punto = etiqueta;
+            consulta.forEach(element => {
+              element.listaAtributos.forEach(atributo => {
+                if (atributo.identificador === etiqueta) {
+                  this.atributoTexto = etiqueta;
+                  cons.push(element);
+                }
+              });
+              if (element.listaObjetos.length > 0) {
+                cons = cons.concat(this.recDescen(element.listaObjetos, etiqueta, true));
+              }
+            });
+            return cons;
+          }
+          else {
+            this.punto = etiqueta;
+            consulta.forEach(element => {
+              element.listaAtributos.forEach(atributo => {
+                if (atributo.identificador === etiqueta) {
+                  this.atributoTexto = etiqueta;
+                  cons.push(element);
+                }
+              });
+            });
+            return cons;
+          }
         }
       }
       else if (!this.descendiente) {
@@ -942,13 +970,11 @@ export class Ejecucion {
     }
     else if (nodo === 'NODO_FUNCION') {
       //Axes - child::func()
-      if (this.ej_child)
-      {
+      if (this.ej_child) {
         let cons: Array<Objeto>;
         cons = [];
-        if(etiqueta === 'text()')
-        {
-          if (!this.esRaiz){
+        if (etiqueta === 'text()') {
+          if (!this.esRaiz) {
             //Falta retornar en caso de: //child::text();
             return consulta;
           }
@@ -961,8 +987,8 @@ export class Ejecucion {
                 } else {
                   //Si no tiene hijos entonces se obtiene el texto
                   this.node_texto = true;
-                  if(element.texto != null)
-                  cons = cons.concat(element);
+                  if (element.texto != null)
+                    cons = cons.concat(element);
                 }
               }
             });
@@ -980,8 +1006,8 @@ export class Ejecucion {
               } else {
                 //arreglar cuando solo viene texto 
                 this.node_texto = true;
-                if(element.texto != null)
-                cons = cons.concat(element);
+                if (element.texto != null)
+                  cons = cons.concat(element);
               }
             }
           });
@@ -989,7 +1015,7 @@ export class Ejecucion {
         this.node_desc = true;
         return cons;
       }
-      else if (etiqueta === 'text()'){
+      else if (etiqueta === 'text()') {
         let cons: Array<Objeto> = [];
         consulta.forEach(element => {
           this.ts.tabla.forEach(padre => {
@@ -998,8 +1024,8 @@ export class Ejecucion {
                 //elemento
               } else {
                 this.node_texto = true;
-                if(element.texto != null)
-                cons = cons.concat(element);
+                if (element.texto != null)
+                  cons = cons.concat(element);
               }
             }
           });
@@ -1007,16 +1033,21 @@ export class Ejecucion {
         return cons;
       }
     }
-    else if(nodo === 'ATRIBUTO_DESCENDIENTES'){
-      if(etiqueta === '//@*'){
+    else if (nodo === 'ATRIBUTO_DESCENDIENTES') {
+      if (etiqueta === '//@*') {
         let cons: Array<Objeto> = [];
+        this.atributo = true;
+        this.atributo_nodo_descendiente = true;
         consulta.forEach(element => {
           if (element.listaAtributos.length > 0) {
             cons = cons.concat(element);
           }
+          if (element.listaObjetos.length > 0) {
+            cons = cons.concat(this.recDescen(element.listaObjetos, etiqueta, true));
+          }
         });
         //this.atributo_nodo = true; 
-        return consulta;
+        return cons;
       }
     }
   }
@@ -1031,6 +1062,9 @@ export class Ejecucion {
             cons.push(element);
           }
         });
+        if (element.listaAtributos.length > 0 && this.atributo_nodo_descendiente) {
+          cons.push(element);
+        }
         if (element.listaObjetos.length > 0) {
           cons = cons.concat(this.recDescen(element.listaObjetos, etiqueta, true));
         }
@@ -1230,20 +1264,22 @@ export class Ejecucion {
             der = this.calcular(element, logica, position);
           }
           else if (op === "" && this.identificar('ORDEN', element)) {
-            if (element.hijos[0] === 'position')
-              {izq = new Primitivo(Number(position), 1, 1);
+            if (element.hijos[0] === 'position') {
+              izq = new Primitivo(Number(position), 1, 1);
               this.posicion.push(Number(position));
-              this.posicion.push(true); 
-              this.posicion.push("izq");}
+              this.posicion.push(true);
+              this.posicion.push("izq");
+            }
             else
               izq = new Primitivo(Number(this.consultaXML.length), 1, 1);
           }
           else if (!(op === "") && this.identificar('ORDEN', element)) {
-            if (element.hijos[0] === 'position')
-              {der = new Primitivo(Number(position), 1, 1);
-                this.posicion.push(Number(position));
-                this.posicion.push(true); 
-                this.posicion.push("der");}
+            if (element.hijos[0] === 'position') {
+              der = new Primitivo(Number(position), 1, 1);
+              this.posicion.push(Number(position));
+              this.posicion.push(true);
+              this.posicion.push("der");
+            }
             else
               der = new Primitivo(Number(this.consultaXML.length), 1, 1);
           }
@@ -1474,12 +1510,12 @@ export class Ejecucion {
           if (!(element === '(') && !(element === ')')) {
             op = element;
           }
-        }                   
-        if(!izq){
-          izq = new Primitivo(Number(-1),1,1);
-        }                   
-        if(!der){
-          der = new Primitivo(Number(-1),1,1);
+        }
+        if (!izq) {
+          izq = new Primitivo(Number(-1), 1, 1);
+        }
+        if (!der) {
+          der = new Primitivo(Number(-1), 1, 1);
         }
       });
       if (izq && der && !(op === "")) {
@@ -1534,10 +1570,10 @@ export class Ejecucion {
           else if (Number.isInteger(parseInt(element.cons.texto[i - 1]))) {
             texto += element.cons.texto[i];
           }
-          else if(element.cons.texto[i] === '.' || element.cons.texto[i] === '!' || element.cons.texto[i] === '?' || element.cons.texto[i] === ',' || element.cons.texto[i] === "'"){
+          else if (element.cons.texto[i] === '.' || element.cons.texto[i] === '!' || element.cons.texto[i] === '?' || element.cons.texto[i] === ',' || element.cons.texto[i] === "'") {
             texto += element.cons.texto[i];
           }
-          else if(element.cons.texto[i-1] === "'"){
+          else if (element.cons.texto[i - 1] === "'") {
             texto += element.cons.texto[i];
           }
           else {
@@ -1639,6 +1675,9 @@ export class Ejecucion {
           if (element.texto === atributo.identificador) {
             cadena += atributo.identificador + '=' + atributo.valor + '\n';
           }
+          else if (this.atributo_nodo_descendiente) {
+            cadena += atributo.identificador + '=' + atributo.valor + '\n';
+          }
         });
       }
     });
@@ -1657,10 +1696,10 @@ export class Ejecucion {
         else if (Number.isInteger(parseInt(element.texto[i - 1]))) {
           texto += element.texto[i];
         }
-        else if(element.texto[i] === '.' || element.texto[i] === '!' || element.texto[i] === '?' || element.texto[i] === ',' || element.texto[i] === "'"){
+        else if (element.texto[i] === '.' || element.texto[i] === '!' || element.texto[i] === '?' || element.texto[i] === ',' || element.texto[i] === "'") {
           texto += element.texto[i];
         }
-        else if(element.texto[i-1] === "'"){
+        else if (element.texto[i - 1] === "'") {
           texto += element.texto[i];
         }
         else {
@@ -1693,7 +1732,7 @@ export class Ejecucion {
   }
 
   enISO: string;
-  encode(texto: string): string{
+  encode(texto: string): string {
     var buf = new Buffer(texto)
     var buf2 = 'ay :(';
     //console.log(JSON.stringify(this.prologoXml))
@@ -1704,9 +1743,9 @@ export class Ejecucion {
     else if (JSON.stringify(this.prologoXml).includes("ISO-8859-1")) {
       try {
         buf2 = unescape(encodeURIComponent(texto));
-        
+
       } catch (error) {
-        buf2 = '(ISO falló) '+texto;
+        buf2 = '(ISO falló) ' + texto;
       }
     }
     else if (JSON.stringify(this.prologoXml).includes("ASCII")) {
