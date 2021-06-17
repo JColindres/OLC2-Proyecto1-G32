@@ -13,7 +13,6 @@
 //<!--(.*?)-->                    return 'COMENTARIO';
 <comment>[<]!--[\s\S\n]*?-->      return 'COMENTARIO';
 
-
 /***Palabras reservadas***/ 
 /*  < > & ' "  */
 "&lt;"                      return 'LT'
@@ -21,6 +20,8 @@
 "&amp;"                     return 'AMP'
 "&apos;"                    return 'APOS'
 "&quot;"                    return 'QUOT'
+//"<!--"                      return 'INCOM'
+//"-->"                       return 'OUTCOM'
 
 /***Caracteres del lenguaje***/
 "="                         return 'ASIGN';
@@ -99,6 +100,8 @@ NODORAIZ
     : OBJETO            { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'NODORAIZ -> OBJETO', 
                         reglas:'NODORAIZ.lista = OBJETO.lista;'}));
                         $$ = $1; }
+    /*| error             { tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Sintáctico', linea: `${yylineno + 1}`, 
+                        descripcion: `Se esperaba un objeto. Columna: ${this._$.first_column + 1}.`})); }*/
 ;
 
 OBJETO
@@ -121,6 +124,8 @@ OBJETO
     | ETABRE IDENTIFICADOR LISTAATRIBUTOS BARRA ETCIERRE                                            { RepoGram.RepGramAscXML.getInstance().push(new ValAsc.ValAscendente({produccion:'OBJETO -> ETABRE IDENTIFICADOR LISTAATRIBUTOS BARRA ETCIERRE', 
                                                                                                     reglas:'OBJETO.Objeto = new Objeto(IDENTIFICADOR.val, \'  \', linea.val, columna.val, LISTAATRIBUTOS.lista, [], false);'}));
                                                                                                     $$ = new Objeto($2,'',@1.first_line, @1.first_column,$3,[],false); }
+    | ETABRE error ETCIERRE                                                                         { tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Sintáctico', linea: `${yylineno + 1}`, 
+                                                                                                    descripcion: `Error detectado en una etiqueta, elemento con conflicto: ' ${yytext} '. Columna: ${this._$.first_column + 1}.`}));}
 ;
 
 OBJETOS
