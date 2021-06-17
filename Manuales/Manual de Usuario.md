@@ -60,6 +60,22 @@ Al iniciar a ejecutarse la aplicación se abrirá una pestaña en el navegador q
 </p>
 </div>
 
+### Componentes
+
+- Limpiar : este apartado permite limpiar el área de texto del XML y la consola de salida. 
+  
+- Ejecutar XML ASC : Permite realizar el analisis ascendente de la entrada XML 
+  
+- Ejecutar XML DES : Permite realizar el analisis descendente de la entrada XML 
+  
+- CST - XML DESC : Al hacer click en este botón se puede observar el arbol generado siempre que se ejecute el analisis descendente
+
+- CST - XML ASC : Al hacer click en este botón se puede observar el arbol generado cuando se ejecute el analisis ascendente
+  
+- Ejecutar XPATH ASC : Se realiza el analisis ascendente de la consulta 
+  
+- Ejecutar XPÁTH DES : Permite realizar el analisis descendente de la consulta
+
 ## **REPORTES**<a name="id5"></a>
 ***
 
