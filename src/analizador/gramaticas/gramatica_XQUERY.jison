@@ -163,15 +163,15 @@ FOR : FOR_1 FOR_2 L_CONDICION RETURN
     ;
 
 FOR_1 : for dolar id  in 
-            { $$ = new NodoAST({label: 'FOR_1', hijos: [$1,($2+$3),$4], linea: yylineno}); }
+            { $$ = new NodoAST({label: 'FOR_1', hijos: [($2+$3),$4], linea: yylineno}); }
        | for dolar id  at dolar id in 
-            { $$ = new NodoAST({label: 'FOR_1', hijos: [$1,($2+$3),$4,($5+$6),$7], linea: yylineno}); }
+            { $$ = new NodoAST({label: 'FOR_1', hijos: [($2+$3),$4,($5+$6),$7], linea: yylineno}); }
        ;
 
 FOR_2 : INSTRUCCIONES 
             { $$ = new NodoAST({label: 'FOR_2', hijos: [$1], linea: yylineno}); }
         | par_izq integer to integer par_der
-            { $$ = new NodoAST({label: 'FOR', hijos: [$1,$2,$3,$4,$5], linea: yylineno}); }
+            { $$ = new NodoAST({label: 'FOR', hijos: [$2,$3,$4], linea: yylineno}); }
         ;
 
 L_CONDICION : L_CONDICION CONDICION 
@@ -187,23 +187,23 @@ CONDICION: WHERE
          ; 
 
 WHERE : where dolar id diagonal EXPR  // diagonal EXPR (operaciones)
-            { $$ = new NodoAST({label: 'WHERE', hijos: [$1,($2+$3),$4,...$5.hijos], linea: yylineno}); }
+            { $$ = new NodoAST({label: 'WHERE', hijos: [($2+$3),$4,...$5.hijos], linea: yylineno}); }
         ; 
 
 ORDER: order by L_VALOR   //diagonal EXPR (id)
-            { $$ = new NodoAST({label: 'ORDER', hijos: [$1,$2,...$3.hijos], linea: yylineno}); }
+            { $$ = new NodoAST({label: 'ORDER BY', hijos: [...$3.hijos], linea: yylineno}); }
        | order by dolar id   //order by $x
-            { $$ = new NodoAST({label: 'ORDER', hijos: [$1,$2,($3+$4)], linea: yylineno}); }
+            { $$ = new NodoAST({label: 'ORDER BY', hijos: [($3+$4)], linea: yylineno}); }
        ;
 
 RETURN : return L_VALOR 
-            { $$ = new NodoAST({label: 'RETURN', hijos: [$1,...$2.hijos], linea: yylineno}); }
+            { $$ = new NodoAST({label: 'RETURN', hijos: [...$2.hijos], linea: yylineno}); }
         | return dolar id 
-            { $$ = new NodoAST({label: 'RETURN', hijos: [$1,($2+$3)], linea: yylineno}); }
+            { $$ = new NodoAST({label: 'RETURN', hijos: [($2+$3)], linea: yylineno}); }
         | return HTML
-            { $$ = new NodoAST({label: 'RETURN', hijos: [$1,...$2.hijos], linea: yylineno}); }
+            { $$ = new NodoAST({label: 'RETURN', hijos: [...$2.hijos], linea: yylineno}); }
         | return IF
-            { $$ = new NodoAST({label: 'RETURN', hijos: [$1,$2], linea: yylineno}); }
+            { $$ = new NodoAST({label: 'RETURN', hijos: [$2], linea: yylineno}); }
         ; 
 
 L_VALOR : L_VALOR coma VALOR
@@ -229,29 +229,29 @@ HTML :  menor id mayor llave_izq  FOR llave_der menor diagonal id mayor
         ;
 
 IF : if par_izq dolar id diagonal EXPR par_der THEN ELSE
-    { $$ = new NodoAST({label: 'IF', hijos: [$1,($3+$4),$5,...$6.hijos,$8,$9], linea: yylineno}); }
+    { $$ = new NodoAST({label: 'IF', hijos: [($3+$4),$5,...$6.hijos,$8,$9], linea: yylineno}); }
 ;
 
 THEN : then HTML 
-        { $$ = new NodoAST({label: 'THEN', hijos: [$1,$2], linea: yylineno}); }
+        { $$ = new NodoAST({label: 'THEN', hijos: [...$2.hijos], linea: yylineno}); }
 ; 
 
 ELSE : else HTML 
-        { $$ = new NodoAST({label: 'ELSE', hijos: [$1,$2], linea: yylineno}); }
+        { $$ = new NodoAST({label: 'ELSE', hijos: [...$2.hijos], linea: yylineno}); }
     ;
 
 COMPARACION_XQUERY : EXPR eq EXPR
-                        { $$ = new NodoAST({label: 'COMPARA_XQUERY', hijos: [...$1.hijos,$2,...$3.hijos], linea: yylineno}); }
+                        { $$ = new NodoAST({label: 'eq', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }
                     | EXPR ne EXPR
-                        { $$ = new NodoAST({label: 'COMPARA_XQUERY', hijos: [...$1.hijos,$2,...$3.hijos], linea: yylineno}); }
+                        { $$ = new NodoAST({label: 'ne', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }
                     | EXPR lt EXPR 
-                        { $$ = new NodoAST({label: 'COMPARA_XQUERY', hijos: [...$1.hijos,$2,...$3.hijos], linea: yylineno}); }
+                        { $$ = new NodoAST({label: 'lt', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }
                     | EXPR le EXPR 
-                        { $$ = new NodoAST({label: 'COMPARA_XQUERY', hijos: [...$1.hijos,$2,...$3.hijos], linea: yylineno}); }
+                        { $$ = new NodoAST({label: 'le', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }
                     | EXPR gt EXPR 
-                        { $$ = new NodoAST({label: 'COMPARA_XQUERY', hijos: [...$1.hijos,$2,...$3.hijos], linea: yylineno}); }
+                        { $$ = new NodoAST({label: 'gt', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }
                     | EXPR ge EXPR 
-                        { $$ = new NodoAST({label: 'COMPARA_XQUERY', hijos: [...$1.hijos,$2,...$3.hijos], linea: yylineno}); }
+                        { $$ = new NodoAST({label: 'ge', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }
                     ;
 
 
