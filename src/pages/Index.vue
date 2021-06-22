@@ -98,6 +98,37 @@
           </q-card>
         </q-dialog>
 
+        <!-- Q-DIALOG  para el AST XPATH descendente -->
+        <q-dialog
+          v-model="darkDialog55"
+          persistent
+          :maximized="maximizedToggle"
+          transition-show="slide-up"
+          transition-hide="slide-down"
+        >
+          <q-card class="bg-primary text-white">
+            <q-bar>
+              <div>AST - XQUERY</div>
+
+              <q-space />
+
+              <q-btn dense flat icon="minimize" @click="maximizedToggle = false" :disable="!maximizedToggle">
+                <q-tooltip v-if="maximizedToggle" content-class="bg-white text-primary">Minimize</q-tooltip>
+              </q-btn>
+              <q-btn dense flat icon="crop_square" @click="maximizedToggle = true" :disable="maximizedToggle">
+                <q-tooltip v-if="!maximizedToggle" content-class="bg-white text-primary">Maximize</q-tooltip>
+              </q-btn>
+              <q-btn dense flat icon="close" v-close-popup>
+                <q-tooltip content-class="bg-white text-primary">Close</q-tooltip>
+              </q-btn>
+            </q-bar>
+            
+            <q-card-section class="q-pt-none">
+              <ast :dot="dot5" />
+            </q-card-section>
+          </q-card>
+        </q-dialog>
+
         <!-- Q-DIALOG para el CST XML descendente -->
         <q-dialog
           v-model="darkDialog3"
@@ -165,11 +196,14 @@
                       <q-item clickable>
                         <q-item-section @click="darkDialog4 = true">Descendente</q-item-section>
                       </q-item>
+                      <q-item clickable>
+                        <q-item-section @click="darkDialog55 = true">Xquery</q-item-section>
+                      </q-item>
                     </q-list>
                   </q-menu>
                 </div>  
               <q-space />
-                <q-btn push label="Ejecutar XQUERY" icon="play_arrow" @click="limpiarXP" />
+                <q-btn push label="Ejecutar XQUERY" icon="play_arrow" @click="ejecutarXQuery" />
               <q-space />
               <q-btn push label="Limpiar" icon="cleaning_services" @click="limpiarXP" />
             </q-bar>              
@@ -368,6 +402,7 @@ import AXMLTree from '../analizador/gramaticas/GramAscXMLTree'
 import AXMLDesc from '../analizador/gramaticas/GramDescXML';
 import AXpath from '../analizador/gramaticas/gramatica_ASC_XPATH';
 import DXpath from '../analizador/gramaticas/gramatica_DESC_XPATH';
+import AXQUERY from '../analizador/gramaticas/gramatica_XQUERY';
 //Ejecucion
 import { Errores } from "../analizador/arbol/errores";
 import { Error as InstanciaError } from "../analizador/arbol/error";
@@ -388,6 +423,7 @@ export default {
       darkDialog2: false,
       darkDialog3: false,
       darkDialog4: false,
+      darkDialog55: false,
       maximizedToggle: true,
       codeXP: "",
       cmOptionsXP: {
@@ -434,6 +470,7 @@ export default {
       dot2: "",
       dot3: "",
       dot4: "",
+      dot5: "",
       salida: [],
       errores: [],
       columns: [
@@ -621,6 +658,36 @@ export default {
       this.errores = Errores.getInstance().lista;
       this.repgramdescxml = RepGramDescXML.getInstance().lista;
     },
+    ejecutarXQuery() {
+      if (this.codeXP.trim() == "") {
+        this.notificar("primary", `El editor está vacío, escriba algo.`);
+        return;
+      }
+      this.inicializarValores5();
+      try {
+        const raiz = AXQUERY.parse(this.codeXP);
+
+        //Validacion de raiz
+        if (raiz == null) {
+          this.notificar(
+            "negative",
+            "No se pudo ejecutar"
+          );
+          return;
+        }
+        //this.dot5 = ejecucion.getDot();
+
+        /*ejecucion.verObjetos();
+        this.dataTS(ejecucion.ts.tabla);
+        this.codeS = ejecucion.recorrer();*/
+
+        this.notificar("primary", "Ejecución realizada con éxito");
+      } catch (error) {
+        this.validarError(error);
+      }
+      this.errores = Errores.getInstance().lista;
+      //this.entornos = Entornos.getInstance().lista;
+    },
     /*inicializarValores corresponde a ejecutar*/
     inicializarValores() {
       Errores.getInstance().clear();
@@ -652,6 +719,13 @@ export default {
       this.dot4 = '';
       this.repgramdescxml = [];
     },
+ /*inicializarValores5 corresponde a ejecutarXQuery*/
+    inicializarValores5() {
+      Errores.getInstance().clear();
+      this.errores = [];
+      this.dot5 = '';
+    }
+    ,
     validarError(error) {
       const json = JSON.stringify(error);
       this.notificar(
