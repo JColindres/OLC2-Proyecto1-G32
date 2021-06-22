@@ -142,31 +142,71 @@
           <div class="col-md-12" style="width:100%">
           <q-card class="editorXML" style="width:auto">
             <q-bar class="bg-black text-white" style="width:auto">
-              <q-btn push label="Ejecutar XPATH ASC" icon="play_arrow" @click="ejecutarXPath"/>
-              <q-btn push label="Ejecutar XPATH DESC" icon="play_arrow" @click="ejecutarXPath_DESC"/>
+                <div class="q-ml-md cursor-pointer non-selectable">
+                  <q-btn push label="Ejecutar XPATH" icon="play_arrow" />
+                  <q-menu auto-close>
+                    <q-list dense style="min-width: 100px">
+                      <q-item clickable>
+                        <q-item-section @click="ejecutarXPath">Ascendente</q-item-section>
+                      </q-item>
+                      <q-item clickable>
+                        <q-item-section @click="ejecutarXPath_DESC">Descendente</q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-menu>
+                </div>   
+                <div class="q-ml-md cursor-pointer non-selectable">
+                  <q-btn push label="AST-XPATH" icon="account_tree" />
+                  <q-menu auto-close>
+                    <q-list dense style="min-width: 100px">
+                      <q-item clickable>
+                        <q-item-section @click="darkDialog2 = true">Ascendente</q-item-section>
+                      </q-item>
+                      <q-item clickable>
+                        <q-item-section @click="darkDialog4 = true">Descendente</q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-menu>
+                </div>  
               <q-space />
-              <q-btn push label="" icon="cleaning_services" @click="limpiarXP" />
+                <q-btn push label="Ejecutar XQUERY" icon="play_arrow" @click="limpiarXP" />
+              <q-space />
+              <q-btn push label="Limpiar" icon="cleaning_services" @click="limpiarXP" />
             </q-bar>              
             <codemirror v-model="codeXP" :options="cmOptionsXP" />              
           </q-card>
           </div>
         </div>
         <div class="row">
-          <div class="col-md-12" style="width:100%">
-            <q-bar class="text-white" style="background-color: #002B88; width:auto">           
-              <q-btn push label="AST - XPATH Asc" @click="darkDialog2 = true" />
-              <q-btn push label="AST - XPATH Desc" @click="darkDialog4 = true" />
-              <q-btn push label="CST - XML Asc" @click="darkDialog = true" />
-              <q-btn push label="CST - XML Desc" @click="darkDialog3 = true" />
-            </q-bar>
-          </div>
-        </div>
-        <div class="row">
           <div class="col-md-6" style="width:50%">
             <q-card class="editorXML" style="width:auto">
               <q-bar class="bg-black text-white" style="width:auto">
-                <q-btn push label="Ejecutar XML ASC" icon="play_arrow" @click="ejecutar" />                
-                <q-btn push label="Ejecutar XML DESC" icon="play_arrow" @click="ejecutarXMLDesc" />                
+                <div class="q-ml-md cursor-pointer non-selectable">
+                  <q-btn push label="Ejecutar XML" icon="play_arrow" />
+                  <q-menu auto-close>
+                    <q-list dense style="min-width: 100px">
+                      <q-item clickable>
+                        <q-item-section @click="ejecutar">Ascendente</q-item-section>
+                      </q-item>
+                      <q-item clickable>
+                        <q-item-section @click="ejecutarXMLDesc">Descendente</q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-menu>
+                </div>   
+                <div class="q-ml-md cursor-pointer non-selectable">
+                  <q-btn push label="CST-XML" icon="account_tree" />
+                  <q-menu auto-close>
+                    <q-list dense style="min-width: 100px">
+                      <q-item clickable>
+                        <q-item-section @click="darkDialog = true">Ascendente</q-item-section>
+                      </q-item>
+                      <q-item clickable>
+                        <q-item-section @click="darkDialog3 = true">Descendente</q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-menu>
+                </div>                
                 <q-space />
                 <q-btn push label="Limpiar" icon="cleaning_services" @click="limpiar" />
               </q-bar>              
@@ -176,7 +216,25 @@
           <div class="col-md-6" style="width:50%">
             <q-card class="salidaXML" style="width:auto">
               <q-bar class="text-white" style="background-color: #008803; width:auto">           
-                <q-btn push label="Salida" icon="thumb_up_alt"/>
+                <div class="text-weight-bold" icon="done">
+                  Salida
+                </div>
+                <div class="q-ml-md cursor-pointer non-selectable">
+                  <q-btn push label="Traducir" icon="translate" />
+                  <q-menu auto-close>
+                    <q-list dense style="min-width: 100px">
+                      <q-item clickable>
+                        <q-item-section @click="0">XML</q-item-section>
+                      </q-item>
+                      <q-item clickable>
+                        <q-item-section @click="0">XPATH</q-item-section>
+                      </q-item>
+                      <q-item clickable>
+                        <q-item-section @click="0">XQUERY</q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-menu>
+                </div>    
               </q-bar>              
               <codemirror v-model="codeS" :options="cmOptionsS" />              
             </q-card>
