@@ -675,15 +675,17 @@ export default {
           );
           return;
         }
-        //this.dot5 = ejecucion.getDot();
+        let ejecucion = new Ejecucion(this.xmlXP.prologo, this.xmlXP.cuerpo, this.code, raiz);
+        this.dot5 = ejecucion.getDot();
 
-        /*ejecucion.verObjetos();
-        this.dataTS(ejecucion.ts.tabla);
-        this.codeS = ejecucion.recorrer();*/
+        //ejecucion.verObjetos();
+        //this.dataTS(ejecucion.ts.tabla);
+        //this.codeS = ejecucion.recorrer();
 
         this.notificar("primary", "Ejecución realizada con éxito");
       } catch (error) {
         this.validarError(error);
+       // console.log(error);
       }
       this.errores = Errores.getInstance().lista;
       //this.entornos = Entornos.getInstance().lista;
