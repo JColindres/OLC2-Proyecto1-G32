@@ -140,7 +140,7 @@
 %left 'doble_diagonal'
 %left 'cor_izq' 'cor_der'
 %left 'dos_pts'
-%left 'diagonal_dos_pts' 'dolar'
+%left 'diagonal_dos_pts' 'dolar' 'to'
 
 // Produccion Inicial
 %start XQUERY 
@@ -180,12 +180,19 @@ FOR_1 : for dolar id  in
             { $$ = new NodoAST({label: 'FOR_1', hijos: [($2+$3),$4], linea: yylineno}); }
        | for dolar id  at dolar id in 
             { $$ = new NodoAST({label: 'FOR_1', hijos: [($2+$3),$4,($5+$6),$7], linea: yylineno}); }
-       ;
+      ;
 
-FOR_2 : INSTRUCCIONES 
+FOR_P : dolar id in par_izq L_PARAM par_der
+            { $$ = new NodoAST({label: 'FOR_P', hijos: [($1+$2),...$5.hijos], linea: yylineno}); }
+;
+
+FOR_2 : { $$ = new NodoAST({label: 'FOR_2', hijos: [], linea: yylineno}); }
+        | INSTRUCCIONES 
             { $$ = new NodoAST({label: 'FOR_2', hijos: [$1], linea: yylineno}); }
         | par_izq integer to integer par_der
             { $$ = new NodoAST({label: 'FOR', hijos: [$2,$3,$4], linea: yylineno}); }
+        | par_izq L_PARAM par_der coma FOR_P
+            { $$ = new NodoAST({label: 'FOR_2', hijos: [$2,$5], linea: yylineno}); }
         ;
 
 L_CONDICION : L_CONDICION CONDICION 
@@ -228,6 +235,10 @@ L_VALOR : L_VALOR coma VALOR
 
 VALOR : dolar id diagonal id
             { $$ = new NodoAST({label: 'VALOR', hijos: [($1+$2),$3,$4], linea: yylineno}); }
+        | dolar id diagonal arroba id
+            { $$ = new NodoAST({label: 'VALOR', hijos: [($1+$2),$3,$4,$5], linea: yylineno}); }
+        | par_izq EXPR par_der
+            { $$ = new NodoAST({label: 'VALOR', hijos: [$2], linea: yylineno}); }
         ;
 
 HTML :  menor id mayor llave_izq  FOR llave_der menor diagonal id mayor
@@ -270,24 +281,26 @@ COMPARACION_XQUERY : EXPR eq EXPR
                         { $$ = new NodoAST({label: 'gt', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }
                     | EXPR ge EXPR 
                         { $$ = new NodoAST({label: 'ge', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }
+                    | EXPR to EXPR 
+                        { $$ = new NodoAST({label: 'to', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }
                     ;
 
 LLAMADA_FUNCION : id par_izq L_PARAM par_der 
-                    { $$ = new NodoAST({label: 'LLAMADA_FUNCION', hijos: [$1,$2,$3,$4], linea: yylineno}); }   
+                    { $$ = new NodoAST({label: 'LLAMADA_FUNCION', hijos: [$1,$3], linea: yylineno}); }   
                 | number par_izq VALORES par_der 
-                    { $$ = new NodoAST({label: 'F_NUMBER', hijos: [$1,$2,...$3.hijos,$4], linea: yylineno}); }  
+                    { $$ = new NodoAST({label: 'F_NUMBER', hijos: [$1,...$3.hijos], linea: yylineno}); }  
                 | tk_string par_izq VALORES par_der
-                    { $$ = new NodoAST({label: 'F_STRING', hijos: [$1,$2,...$3.hijos,$4], linea: yylineno}); }
+                    { $$ = new NodoAST({label: 'F_STRING', hijos: [$1,...$3.hijos], linea: yylineno}); }
                 | substring par_izq VALOR_LLAMADA coma integer par_der
-                    { $$ = new NodoAST({label: 'F_SUBSTRING', hijos: [$1,$2,...$3.hijos,$5,$6], linea: yylineno}); }
+                    { $$ = new NodoAST({label: 'F_SUBSTRING', hijos: [...$3.hijos,$5], linea: yylineno}); }
                 | substring par_izq VALOR_LLAMADA coma integer coma integer par_der
-                    { $$ = new NodoAST({label: 'F_SUBSTRING', hijos: [$1,$2,...$3.hijos,$5,$7,$8], linea: yylineno}); }
-                | lower menos case par_izq string par_der
-                    { $$ = new NodoAST({label: 'F_LOWERCASE', hijos: [($1+'-'+$3),$4,$5,$6], linea: yylineno}); }
-                | upper menos case par_izq string par_der
-                    { $$ = new NodoAST({label: 'F_UPPERCASE', hijos: [($1+'-'+$3),$4,$5,$6], linea: yylineno}); }
-                | menor id mayor llave_izq id doble_pto id par_izq L_PARAM par_der llave_der menor diagonal id mayor 
-                    { $$ = new NodoAST({label: 'F_HTML', hijos: [$2,$4,$5,$7,$8,...$9.hijos,$10,$14], linea: yylineno}); }
+                    { $$ = new NodoAST({label: 'F_SUBSTRING', hijos: [...$3.hijos,$5,$7], linea: yylineno}); }
+                | lower menos case par_izq VALOR_LLAMADA par_der
+                    { $$ = new NodoAST({label: 'F_LOWERCASE', hijos: [$5], linea: yylineno}); }
+                | upper menos case par_izq VALOR_LLAMADA par_der
+                    { $$ = new NodoAST({label: 'F_UPPERCASE', hijos: [$5], linea: yylineno}); }
+                | id doble_pto id par_izq L_PARAM par_der  
+                    { $$ = new NodoAST({label: 'F_LLAMADA', hijos: [$1,$3,$5], linea: yylineno}); }
                 ; 
 
 VALOR_LLAMADA : dolar id 
@@ -309,7 +322,9 @@ LET :  let dolar id doble_pto igual EXPR RETURN
          { $$ = new NodoAST({label: 'LET', hijos: [($2+$3),$5,$6], linea: yylineno}); } 
     ;
 
-FUNCION : declare function id doble_pto id par_izq PARAMETROS par_der  as xs doble_pto TIPO llave_izq FLWOR llave_der pto_coma ;
+FUNCION : declare function id doble_pto id par_izq PARAMETROS par_der  as xs doble_pto TIPO llave_izq FLWOR llave_der pto_coma 
+         { $$ = new NodoAST({label: 'FUNCION', hijos: [$3,$5,$7,$12,$14], linea: yylineno}); } 
+;
 
 PARAMETROS: PARAMETROS coma PARAM
             { $$ = new NodoAST({label: 'PARAMETROS', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }
@@ -318,7 +333,7 @@ PARAMETROS: PARAMETROS coma PARAM
         ;
 
 PARAM : dolar id as xs doble_pto TIPO
-        { $$ = new NodoAST({label: 'PARAMETRO', hijos: [($1+$2),$3,$4,$5,...$6.hijos], linea: yylineno}); } 
+        { $$ = new NodoAST({label: 'PARAMETRO', hijos: [($1+$2),$4,...$6.hijos], linea: yylineno}); } 
     ;
 
 TIPO : tk_string
