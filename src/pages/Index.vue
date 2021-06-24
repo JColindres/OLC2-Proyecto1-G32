@@ -165,10 +165,10 @@
 
     
 
-    <!-- Editor de codigo -->
-    
+    <!-- Editor de codigo -->    
     <div class="row justify-content-center q-ma-lg">
       <div class="col-12">
+        <!-- ROW correspondiente al Xpath -->
         <div class="row">
           <div class="col-md-12" style="width:100%">
           <q-card class="editorXML" style="width:auto">
@@ -211,7 +211,9 @@
           </q-card>
           </div>
         </div>
+        <!-- ROW correspondiente al XML y resultados -->
         <div class="row">
+          <!-- COL del XML -->
           <div class="col-md-6" style="width:50%">
             <q-card class="editorXML" style="width:auto">
               <q-bar class="bg-black text-white" style="width:auto">
@@ -247,18 +249,29 @@
               <codemirror v-model="code" :options="cmOptions" @input="codigoEditado" />              
             </q-card>
           </div>
+          <!-- COL del resultado de consultas -->
           <div class="col-md-6" style="width:50%">
             <q-card class="salidaXML" style="width:auto">
               <q-bar class="text-white" style="background-color: #008803; width:auto">           
                 <div class="text-weight-bold" icon="done">
                   Salida
                 </div>
-                <div class="q-ml-md cursor-pointer non-selectable">
+              </q-bar>              
+              <codemirror v-model="codeS" :options="cmOptionsS" />              
+            </q-card>
+          </div>
+        </div>
+        <!-- ROW correspondiente al C3D -->
+        <div class="row">
+          <div class="col-md-12" style="width:100%">
+          <q-card class="editorXML" style="width:auto">
+            <q-bar class="bg-black text-white" style="width:auto">
+              <div class="q-ml-md cursor-pointer non-selectable">
                   <q-btn push label="Traducir" icon="translate" />
                   <q-menu auto-close>
                     <q-list dense style="min-width: 100px">
                       <q-item clickable>
-                        <q-item-section @click="0">XML</q-item-section>
+                        <q-item-section @click="traduccionXML">XML</q-item-section>
                       </q-item>
                       <q-item clickable>
                         <q-item-section @click="0">XPATH</q-item-section>
@@ -268,10 +281,13 @@
                       </q-item>
                     </q-list>
                   </q-menu>
-                </div>    
-              </q-bar>              
-              <codemirror v-model="codeS" :options="cmOptionsS" />              
-            </q-card>
+                </div>
+                <q-space />
+                <q-space />
+              <q-btn push label="Limpiar" icon="cleaning_services" @click="limpiar3D" />
+            </q-bar>              
+            <codemirror v-model="code3D" :options="cmOptions3D" />              
+          </q-card>
           </div>
         </div>
         <q-card class="my-card2">
@@ -393,9 +409,13 @@ import "codemirror/lib/codemirror.css";
 import "codemirror/theme/abcdef.css";
 import "codemirror/theme/the-matrix.css";
 import "codemirror/theme/paraiso-dark.css";
+import 'codemirror/theme/xq-dark.css';
+import 'codemirror/theme/seti.css';
+import 'codemirror/theme/midnight.css';
 // import language js
 import "codemirror/mode/xml/xml.js";
 import "codemirror/mode/xquery/xquery.js";
+import "codemirror/mode/clike/clike.js";
 // Analizador
 import AXml from '../analizador/gramaticas/GramAscXML';
 import AXMLTree from '../analizador/gramaticas/GramAscXMLTree'
@@ -464,6 +484,19 @@ export default {
         lineWrapping: true,
         fixedGutter: false,
       },
+      code3D: "",
+      cmOptions3D: {
+        tabSize: 4,
+        matchBrackets: true,
+        styleActiveLine: true,
+        mode: "text/x-c++src",
+        theme: "seti",
+        lineNumbers: true,
+        line: false,
+        indentWithTabs: true,
+        lineWrapping: true,
+        fixedGutter: true,
+      },
       output: "salida de ejemplo",
       tab: "editor",
       dot: "",
@@ -492,6 +525,7 @@ export default {
         { name: "tipo", label: "Tipo", field: "tipo", align: "left" },
         { name: "linea", label: "Linea", field: "linea", align: "left" },
         { name: "columna", label: "Columna", field: "columna", align: "left" },
+        //{ name: "direccion", label: "Direccion", field: "columna", align: "left" },
       ],
       repgramascxml: [],
       repgramdescxml: [],
@@ -765,6 +799,9 @@ export default {
       this.inicializarValores2();
       this.inicializarValores3();
     },
+    limpiar3D(){
+      this.code3D = '';
+    },
     dataTS(arreglo){
       arreglo.forEach(element => {
         let a = ""
@@ -776,6 +813,9 @@ export default {
         }
         this.simbolos.push({identificador: element[0], valor: a, ambito: element[2], tipo: element[3], linea: element[4], columna: element[5]});
       });
+    },
+    traduccionXML(){
+      this.code3D="ASDF";
     }
   },
 };
