@@ -376,72 +376,72 @@ class Ejecucion {
                                         switch (this.posicion[4]) {
                                             case '<':
                                                 if (this.posicion[2] === 'izq') {
-                                                    if (index === this.posicion[3] && this.posicion[3] < this.posicion[5]) {
+                                                    if (index === this.posicion[0] && this.posicion[3] < this.posicion[5]) {
                                                         cons.push(element);
                                                     }
                                                 }
                                                 else {
-                                                    if (index === this.posicion[5] && this.posicion[3] > this.posicion[5]) {
+                                                    if (index === this.posicion[0] && this.posicion[3] > this.posicion[5]) {
                                                         cons.push(element);
                                                     }
                                                 }
                                                 break;
                                             case '>':
                                                 if (this.posicion[2] === 'izq') {
-                                                    if (index === this.posicion[3] && this.posicion[3] > this.posicion[5]) {
+                                                    if (index === this.posicion[0] && this.posicion[3] > this.posicion[5]) {
                                                         cons.push(element);
                                                     }
                                                 }
                                                 else {
-                                                    if (index === this.posicion[5] && this.posicion[3] < this.posicion[5]) {
+                                                    if (index === this.posicion[0] && this.posicion[3] < this.posicion[5]) {
                                                         cons.push(element);
                                                     }
                                                 }
                                                 break;
                                             case '<=':
                                                 if (this.posicion[2] === 'izq') {
-                                                    if (index === this.posicion[3] && this.posicion[3] <= this.posicion[5]) {
+                                                    if (index === this.posicion[0] && this.posicion[3] <= this.posicion[5]) {
                                                         cons.push(element);
                                                     }
                                                 }
                                                 else {
-                                                    if (index === this.posicion[5] && this.posicion[3] >= this.posicion[5]) {
+                                                    if (index === this.posicion[0] && this.posicion[3] >= this.posicion[5]) {
                                                         cons.push(element);
                                                     }
                                                 }
                                                 break;
                                             case '>=':
                                                 if (this.posicion[2] === 'izq') {
-                                                    if (index === this.posicion[3] && this.posicion[3] >= this.posicion[5]) {
+                                                    if (index === this.posicion[0] && this.posicion[3] >= this.posicion[5]) {
                                                         cons.push(element);
                                                     }
                                                 }
                                                 else {
-                                                    if (index === this.posicion[5] && this.posicion[3] <= this.posicion[5]) {
+                                                    if (index === this.posicion[0] && this.posicion[3] <= this.posicion[5]) {
                                                         cons.push(element);
                                                     }
                                                 }
                                                 break;
                                             case '=':
                                                 if (this.posicion[2] === 'izq') {
-                                                    if (index === this.posicion[3] && this.posicion[3] === this.posicion[5]) {
+                                                    if (index === this.posicion[0] && this.posicion[3] === this.posicion[5]) {
                                                         cons.push(element);
                                                     }
                                                 }
                                                 else {
-                                                    if (index === this.posicion[5] && this.posicion[3] === this.posicion[5]) {
+                                                    if (index === this.posicion[0] && this.posicion[3] === this.posicion[5]) {
                                                         cons.push(element);
                                                     }
                                                 }
                                                 break;
                                             case '!=':
                                                 if (this.posicion[2] === 'izq') {
-                                                    if (index === this.posicion[3] && !(this.posicion[3] === this.posicion[5])) {
+                                                    if (index === this.posicion[0] && !(this.posicion[3] === this.posicion[5])) {
                                                         cons.push(element);
                                                     }
                                                 }
                                                 else {
-                                                    if (index === this.posicion[5] && !(this.posicion[3] === this.posicion[5])) {
+                                                    if (index === this.posicion[0] && !(this.posicion[3] === this.posicion[5])) {
                                                         cons.push(element);
                                                     }
                                                 }
@@ -457,9 +457,10 @@ class Ejecucion {
                             }
                         }
                     });
-                //console.log(cons.length)
+                console.log(cons.length, cons);
                 if (cons.length > 0) {
                     this.consultaXML = cons;
+                    console.log(this.consultaXML);
                 }
                 else {
                     this.consultaXML = [];
@@ -515,6 +516,65 @@ class Ejecucion {
                     }
                     else if (typeof element === 'string') {
                         this.consultaXML = this.reducir(this.consultaXML, element, 'NODO_FUNCION');
+                    }
+                });
+            }
+            if (this.identificar('XQUERY', nodo)) {
+                nodo.hijos.forEach((element) => {
+                    if (element instanceof Object) {
+                        this.recorrido(element);
+                    }
+                    else if (typeof element === 'string') {
+                    }
+                });
+            }
+            if (this.identificar('HTML', nodo)) {
+                nodo.hijos.forEach((element) => {
+                    if (element instanceof Object) {
+                        this.recorrido(element);
+                    }
+                    else if (typeof element === 'string') {
+                    }
+                });
+            }
+            if (this.identificar('FOR', nodo)) {
+                nodo.hijos.forEach((element) => {
+                    if (element instanceof Object) {
+                        this.recorrido(element);
+                    }
+                    else if (typeof element === 'string') {
+                    }
+                });
+                this.atributoIdentificacion = [];
+                this.consultaXML.forEach(element => {
+                    this.atributoIdentificacion.push({ cons: element, atributo: this.atributo, texto: this.atributoTexto });
+                });
+                //this.atributoIdentificacion = this.atributoIdentificacion.filter(item => this.consultaXML.includes(item.cons))
+            }
+            if (this.identificar('WHERE', nodo)) {
+                nodo.hijos.forEach((element) => {
+                    if (element instanceof Object) {
+                        this.recorrido(element);
+                    }
+                    else if (typeof element === 'string') {
+                    }
+                });
+            }
+            if (this.identificar('RETURN', nodo)) {
+                nodo.hijos.forEach((element) => {
+                    if (element instanceof Object) {
+                        this.recorrido(element);
+                    }
+                    else if (typeof element === 'string') {
+                        if (element === '$x') {
+                            this.consultaXML;
+                        }
+                        else if (element === '/') {
+                            this.consultaXML = this.reducir(this.consultaXML, element, 'RAIZ');
+                        }
+                        else {
+                            this.consultaXML = this.reducir(this.consultaXML, element, 'INSTRUCCIONES');
+                        }
                     }
                 });
             }
