@@ -525,7 +525,7 @@ export default {
         { name: "tipo", label: "Tipo", field: "tipo", align: "left" },
         { name: "linea", label: "Linea", field: "linea", align: "left" },
         { name: "columna", label: "Columna", field: "columna", align: "left" },
-        //{ name: "direccion", label: "Direccion", field: "columna", align: "left" },
+        { name: "direccion", label: "Direccion", field: "direccion", align: "left" },
       ],
       repgramascxml: [],
       repgramdescxml: [],
@@ -668,6 +668,9 @@ export default {
       }
       this.inicializarValores4();
       try {
+        //Para validar la ejecución
+        const raiz = AXml.parse(this.code);
+
         //Llamado al parser XML - Desc
         const raizdesc = AXMLDesc.parse(this.code);
 
@@ -681,10 +684,16 @@ export default {
           return;
         }
 
+        //Para la funcionalidad
+        this.xmlXP = raiz;
+        let ejecucion = new Ejecucion(this.xmlXP.prologo, this.xmlXP.cuerpo, this.code);
+
         //Se llama a Ejecución para conseguir el dot
         let exec = new Ejecucion(raizdesc.prologo, raizdesc.cuerpo, this.code, raizdesc);
         this.dot4 = exec.getDot();
 
+        ejecucion.verObjetos();
+        this.dataTS(ejecucion.ts.tabla);
         this.notificar("primary", "Ejecución realizada con éxito");
       } catch (error) {
         this.validarError(error);

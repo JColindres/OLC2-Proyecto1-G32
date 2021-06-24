@@ -22,10 +22,10 @@ class Ejecucion {
             if (!element.doble) {
                 etiqueta = "única";
             }
-            this.ts.agregar(element.identificador, element.texto, "Raiz", "Etiqueta " + etiqueta, element.linea, element.columna, null);
+            this.ts.agregar(element.identificador, element.texto, "Raiz", "Etiqueta " + etiqueta, element.linea, element.columna, null, null);
             if (element.listaAtributos.length > 0) {
                 element.listaAtributos.forEach(atributos => {
-                    this.ts.agregar(atributos.identificador, atributos.valor, element.identificador, "Atributo", atributos.linea, atributos.columna, this.cuerpoXml[index]);
+                    this.ts.agregar(atributos.identificador, atributos.valor, element.identificador, "Atributo", atributos.linea, atributos.columna, this.cuerpoXml[index], null);
                 });
             }
             if (element.listaObjetos.length > 0) {
@@ -52,10 +52,10 @@ class Ejecucion {
                     texto += " " + element.texto[i];
                 }
             }
-            this.ts.agregar(element.identificador, texto, entorno, "Etiqueta " + etiqueta, element.linea, element.columna, padre[indice]);
+            this.ts.agregar(element.identificador, texto, entorno, "Etiqueta " + etiqueta, element.linea, element.columna, padre[indice], null);
             if (element.listaAtributos.length > 0) {
                 element.listaAtributos.forEach(atributos => {
-                    this.ts.agregar(atributos.identificador, atributos.valor, element.identificador, "Atributo", atributos.linea, atributos.columna, elemento[index]);
+                    this.ts.agregar(atributos.identificador, atributos.valor, element.identificador, "Atributo", atributos.linea, atributos.columna, elemento[index], null);
                 });
             }
             if (element.listaObjetos.length > 0) {
