@@ -155,9 +155,7 @@ XQUERY : INSTRUCCIONES EOF //PATH EXPRESSIONS Y PREDICATES
         ; 
 
 FLWOR : FOR 
-            { $$ = new NodoAST({label: 'FLWOR', hijos: [$1], linea: yylineno}); }   
-        | HTML 
-            { $$ = new NodoAST({label: 'FLWOR', hijos: [$1], linea: yylineno}); }
+            { $$ = new NodoAST({label: 'FLWOR', hijos: [$1], linea: yylineno}); }  
         | LET
             { $$ = new NodoAST({label: 'FLWOR', hijos: [$1], linea: yylineno}); }
         | FUNCION
@@ -221,8 +219,6 @@ RETURN : return L_VALOR
             { $$ = new NodoAST({label: 'RETURN', hijos: [...$2.hijos], linea: yylineno}); }
         | return dolar id 
             { $$ = new NodoAST({label: 'RETURN', hijos: [($2+$3)], linea: yylineno}); }
-        | return HTML
-            { $$ = new NodoAST({label: 'RETURN', hijos: [...$2.hijos], linea: yylineno}); }
         | return IF
             { $$ = new NodoAST({label: 'RETURN', hijos: [$2], linea: yylineno}); }
         ; 
@@ -241,31 +237,15 @@ VALOR : dolar id diagonal id
             { $$ = new NodoAST({label: 'VALOR', hijos: [$2], linea: yylineno}); }
         ;
 
-HTML :  menor id mayor llave_izq  FOR llave_der menor diagonal id mayor
-            { $$ = new NodoAST({label: 'HTML', hijos: [$2,$5,$9], linea: yylineno}); }
-        | menor id mayor llave_izq data par_izq dolar id par_der llave_der menor diagonal id mayor  //data inside
-            { $$ = new NodoAST({label: 'HTML', hijos: [$2,$5,$8,$13], linea: yylineno}); }
-        | menor id mayor llave_izq data par_izq dolar id diagonal id par_der llave_der menor diagonal id mayor  //data inside
-            { $$ = new NodoAST({label: 'HTML', hijos: [$2,$5,$8,$10,$15], linea: yylineno}); }
-        | menor child mayor llave_izq data par_izq dolar id diagonal id par_der llave_der menor diagonal child mayor  //data inside
-            { $$ = new NodoAST({label: 'HTML', hijos: [$2,$5,$8,$10,$15], linea: yylineno}); }
-        | menor id mayor llave_izq dolar id llave_der menor diagonal id mayor //html list
-            { $$ = new NodoAST({label: 'HTML', hijos: [$2,$6,$10], linea: yylineno}); }
-        ;
-
 IF : if par_izq dolar id diagonal EXPR par_der THEN ELSE
     { $$ = new NodoAST({label: 'IF', hijos: [($3+$4),$5,...$6.hijos,$8,$9], linea: yylineno}); }
 ;
 
-THEN : then HTML 
-        { $$ = new NodoAST({label: 'THEN', hijos: [...$2.hijos], linea: yylineno}); }
-      |  then EXPR
+THEN : then EXPR
         { $$ = new NodoAST({label: 'THEN', hijos: [$2], linea: yylineno}); }
 ; 
 
-ELSE : else HTML 
-        { $$ = new NodoAST({label: 'ELSE', hijos: [...$2.hijos], linea: yylineno}); }
-     |   else EXPR 
+ELSE :  else EXPR 
         { $$ = new NodoAST({label: 'ELSE', hijos: [$2], linea: yylineno}); }  
     ;
 
