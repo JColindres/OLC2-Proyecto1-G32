@@ -29,14 +29,19 @@
 'declare' return 'declare';
 'as' return 'as';
 'function' return 'function';
+'true' return 'true';
+'false' return 'false';
+'number' return 'number';
+'string' return 'tk_string';
+'double' return 'tk_double';
+'integer' return 'tk_integer';
+'boolean' return 'tk_boolean';
+'substring' return 'substring';
+'upper' return 'upper';
+'case' return 'case';
+'lower' return 'lower';
+'xs' return 'xs';
 
-//html 
-/*'html' return 'html';
-'body' return 'body';
-'h1' return 'h1';
-'ul' return 'ul';
-'li' return 'li';
-'class' return 'class';*/
 
 //Seleccion de Nodos
 'last' return 'last';
@@ -70,6 +75,7 @@
 '>' return 'mayor';
 '$' return 'dolar';
 ',' return 'coma';
+';' return 'pto_coma';
 
 '[' return 'cor_izq';
 "]" return 'cor_der';
@@ -134,7 +140,7 @@
 %left 'doble_diagonal'
 %left 'cor_izq' 'cor_der'
 %left 'dos_pts'
-%left 'diagonal_dos_pts'
+%left 'diagonal_dos_pts' 'dolar'
 
 // Produccion Inicial
 %start XQUERY 
@@ -152,7 +158,15 @@ FLWOR : FOR
             { $$ = new NodoAST({label: 'FLWOR', hijos: [$1], linea: yylineno}); }   
         | HTML 
             { $$ = new NodoAST({label: 'FLWOR', hijos: [$1], linea: yylineno}); }
-        ; 
+        | LET
+            { $$ = new NodoAST({label: 'FLWOR', hijos: [$1], linea: yylineno}); }
+        | FUNCION
+            { $$ = new NodoAST({label: 'FLWOR', hijos: [$1], linea: yylineno}); }
+        | IF 
+            { $$ = new NodoAST({label: 'FLWOR', hijos: [$1], linea: yylineno}); }
+        | LLAMADA_FUNCION
+            { $$ = new NodoAST({label: 'FLWOR', hijos: [$1], linea: yylineno}); }
+        ;  
 
 FOR : FOR_1 FOR_2 L_CONDICION RETURN 
         { $$ = new NodoAST({label: 'FOR', hijos: [...$1.hijos,...$2.hijos,...$3.hijos,$4], linea: yylineno}); }
@@ -234,10 +248,14 @@ IF : if par_izq dolar id diagonal EXPR par_der THEN ELSE
 
 THEN : then HTML 
         { $$ = new NodoAST({label: 'THEN', hijos: [...$2.hijos], linea: yylineno}); }
+      |  then EXPR
+        { $$ = new NodoAST({label: 'THEN', hijos: [$2], linea: yylineno}); }
 ; 
 
 ELSE : else HTML 
         { $$ = new NodoAST({label: 'ELSE', hijos: [...$2.hijos], linea: yylineno}); }
+     |   else EXPR 
+        { $$ = new NodoAST({label: 'ELSE', hijos: [$2], linea: yylineno}); }  
     ;
 
 COMPARACION_XQUERY : EXPR eq EXPR
@@ -254,6 +272,64 @@ COMPARACION_XQUERY : EXPR eq EXPR
                         { $$ = new NodoAST({label: 'ge', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }
                     ;
 
+LLAMADA_FUNCION : id par_izq L_PARAM par_der 
+                    { $$ = new NodoAST({label: 'LLAMADA_FUNCION', hijos: [$1,$2,$3,$4], linea: yylineno}); }   
+                | number par_izq VALORES par_der 
+                    { $$ = new NodoAST({label: 'F_NUMBER', hijos: [$1,$2,...$3.hijos,$4], linea: yylineno}); }  
+                | tk_string par_izq VALORES par_der
+                    { $$ = new NodoAST({label: 'F_STRING', hijos: [$1,$2,...$3.hijos,$4], linea: yylineno}); }
+                | substring par_izq VALOR_LLAMADA coma integer par_der
+                    { $$ = new NodoAST({label: 'F_SUBSTRING', hijos: [$1,$2,...$3.hijos,$5,$6], linea: yylineno}); }
+                | substring par_izq VALOR_LLAMADA coma integer coma integer par_der
+                    { $$ = new NodoAST({label: 'F_SUBSTRING', hijos: [$1,$2,...$3.hijos,$5,$7,$8], linea: yylineno}); }
+                | lower menos case par_izq string par_der
+                    { $$ = new NodoAST({label: 'F_LOWERCASE', hijos: [($1+'-'+$3),$4,$5,$6], linea: yylineno}); }
+                | upper menos case par_izq string par_der
+                    { $$ = new NodoAST({label: 'F_UPPERCASE', hijos: [($1+'-'+$3),$4,$5,$6], linea: yylineno}); }
+                | menor id mayor llave_izq id doble_pto id par_izq L_PARAM par_der llave_der menor diagonal id mayor 
+                    { $$ = new NodoAST({label: 'F_HTML', hijos: [$2,$4,$5,$7,$8,...$9.hijos,$10,$14], linea: yylineno}); }
+                ; 
+
+VALOR_LLAMADA : dolar id 
+                     { $$ = new NodoAST({label: 'dolar id', hijos: [($1+$2)], linea: yylineno}); }
+                | string 
+                    { $$ = new NodoAST({label: 'string', hijos: [$1], linea: yylineno}); }
+                | id
+                    { $$ = new NodoAST({label: 'id', hijos: [$1], linea: yylineno}); }; 
+
+L_PARAM : L_PARAM coma VALORES 
+            { $$ = new NodoAST({label: 'PARAMETROS', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }  
+        | VALORES 
+            { $$ = new NodoAST({label: 'PARAMETROS', hijos: [...$1.hijos], linea: yylineno}); }  
+        ; 
+
+LET :  let dolar id doble_pto igual EXPR RETURN
+         { $$ = new NodoAST({label: 'LET', hijos: [($2+$3),$5,$6,$7], linea: yylineno}); } 
+     | let dolar id doble_pto igual EXPR
+         { $$ = new NodoAST({label: 'LET', hijos: [($2+$3),$5,$6], linea: yylineno}); } 
+    ;
+
+FUNCION : declare function id doble_pto id par_izq PARAMETROS par_der  as xs doble_pto TIPO llave_izq FLWOR llave_der pto_coma ;
+
+PARAMETROS: PARAMETROS coma PARAM
+            { $$ = new NodoAST({label: 'PARAMETROS', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }
+        | PARAM
+            { $$ = new NodoAST({label: 'PARAMETROS', hijos: [...$1.hijos], linea: yylineno}); }   
+        ;
+
+PARAM : dolar id as xs doble_pto TIPO
+        { $$ = new NodoAST({label: 'PARAMETRO', hijos: [($1+$2),$3,$4,$5,...$6.hijos], linea: yylineno}); } 
+    ;
+
+TIPO : tk_string
+        { $$ = new NodoAST({label: 'TIPO', hijos: [$1], linea: yylineno}); }  
+    | tk_double
+         { $$ = new NodoAST({label: 'TIPO', hijos: [$1], linea: yylineno}); }  
+    | tk_integer
+         { $$ = new NodoAST({label: 'TIPO', hijos: [$1], linea: yylineno}); }  
+    | tk_boolean
+         { $$ = new NodoAST({label: 'TIPO', hijos: [$1], linea: yylineno}); }  
+    ; 
 
 //XPATH 
 
@@ -437,6 +513,8 @@ EXPR : ATRIBUTO_PREDICADO
        { $$ = new NodoAST({label: 'EXPR', hijos: [$1,...$2.hijos,$3], linea: yylineno}); } 
      | COMPARACION_XQUERY
        { $$ = new NodoAST({label: 'EXPR', hijos: [$1], linea: yylineno}); }
+    | LLAMADA_FUNCION 
+        { $$ = new NodoAST({label: 'EXPR', hijos: [$1], linea: yylineno}); }
      ;
 
 PATH : EXPR doble_diagonal EXPR
@@ -518,5 +596,11 @@ VALORES : integer
               { $$ = new NodoAST({label: 'punto', hijos: [$1], linea: yylineno}); }
         | dos_pts
              { $$ = new NodoAST({label: 'dos_pts', hijos: [$1], linea: yylineno}); }
-        ; 
+        | true
+             { $$ = new NodoAST({label: 'boolean', hijos: [$1], linea: yylineno}); }
+        | false
+             { $$ = new NodoAST({label: 'boolean', hijos: [$1], linea: yylineno}); }
+        | dolar INSTRUCCIONES
+            { $$ = new NodoAST({label: 'xquery', hijos: [$1,...$2.hijos], linea: yylineno}); }
+        ;
 
