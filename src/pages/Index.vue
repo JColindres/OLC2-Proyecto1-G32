@@ -428,7 +428,9 @@ import { Errores } from "../analizador/arbol/errores";
 import { Error as InstanciaError } from "../analizador/arbol/error";
 import { Ejecucion } from "../analizador/ejecucion";
 import { RepGramAscXML } from '../analizador/Reportes/RepGramAscXML';
-import { RepGramDescXML } from '../analizador/Reportes/RepGramDescXML'
+import { RepGramDescXML } from '../analizador/Reportes/RepGramDescXML';
+//Traducción
+import { Traduccion } from "../analizador/Traduccion";
 
 export default {
   components: {
@@ -820,11 +822,42 @@ export default {
         else{
           a = element[1];
         }
-        this.simbolos.push({identificador: element[0], valor: a, ambito: element[2], tipo: element[3], linea: element[4], columna: element[5]});
+        this.simbolos.push({identificador: element[0], valor: a, ambito: element[2], tipo: element[3], linea: element[4], columna: element[5], direccion: element[7]});
       });
     },
     traduccionXML(){
-      this.code3D="ASDF";
+      //Se realiza lo mismo que en el análisis ascendente del XML
+      if (this.code.trim() == "") {
+        this.notificar("primary", `El editor está vacío, escriba algo.`);
+        return;
+      }
+      this.inicializarValores();
+      try {
+        const raiz = AXml.parse(this.code);
+
+        //Validacion de raiz
+        if (raiz == null) {
+          this.notificar(
+            "negative",
+            "No se pudo ejecutar"
+          );
+          return;
+        }
+
+        this.xmlXP = raiz;
+        let ejecucion = new Ejecucion(this.xmlXP.prologo, this.xmlXP.cuerpo, this.code);
+        ejecucion.verObjetos();
+
+        //Se llama al método traducir
+        let traductor = new Traduccion(ejecucion.ts);
+        this.code3D = traductor.Traducir();
+        this.dataTS(traductor.ts.tabla);
+        
+        this.notificar("primary", "Ejecución realizada con éxito");
+      } catch (error) {
+        this.validarError(error);
+      }
+      this.errores = Errores.getInstance().lista;
     }
   },
 };
