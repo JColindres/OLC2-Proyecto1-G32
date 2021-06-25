@@ -32,10 +32,10 @@
 'true' return 'true';
 'false' return 'false';
 'number' return 'number';
-'string' return 'tk_string';
+/*'string' return 'tk_string';
 'double' return 'tk_double';
 'integer' return 'tk_integer';
-'boolean' return 'tk_boolean';
+'boolean' return 'tk_boolean';*/
 'substring' return 'substring';
 'upper' return 'upper';
 'case' return 'case';
@@ -140,7 +140,7 @@
 %left 'doble_diagonal'
 %left 'cor_izq' 'cor_der'
 %left 'dos_pts'
-%left 'diagonal_dos_pts' 'dolar' 'to'
+%left 'diagonal_dos_pts' 'dolar' 'to'  'id' 'integer'
 
 // Produccion Inicial
 %start XQUERY 
@@ -239,14 +239,25 @@ VALOR : dolar id diagonal id
 
 IF : if par_izq dolar id diagonal EXPR par_der THEN ELSE
     { $$ = new NodoAST({label: 'IF', hijos: [($3+$4),$5,...$6.hijos,$8,$9], linea: yylineno}); }
+   | if par_izq dolar id diagonal EXPR par_der THEN ELSE_IF ELSE
+    { $$ = new NodoAST({label: 'IF', hijos: [($3+$4),$5,...$6.hijos,$8,$9,$10], linea: yylineno}); }
+   | if EXPR THEN ELSE
+    { $$ = new NodoAST({label: 'IF', hijos: [...$2.hijos,$3,$4], linea: yylineno}); }
+   | if EXPR THEN ELSE_IF ELSE
+    { $$ = new NodoAST({label: 'IF', hijos: [...$2.hijos,$3,$4,$5], linea: yylineno}); }
 ;
 
+ELSE_IF : else if EXPR THEN
+        { $$ = new NodoAST({label: 'ELSE_IF', hijos: [...$3.hijos,$4], linea: yylineno}); }
+;
+
+
 THEN : then EXPR
-        { $$ = new NodoAST({label: 'THEN', hijos: [$2], linea: yylineno}); }
+        { $$ = new NodoAST({label: 'THEN', hijos: [...$2.hijos,], linea: yylineno}); }
 ; 
 
 ELSE :  else EXPR 
-        { $$ = new NodoAST({label: 'ELSE', hijos: [$2], linea: yylineno}); }  
+        { $$ = new NodoAST({label: 'ELSE', hijos: [...$2.hijos], linea: yylineno}); }  
     ;
 
 COMPARACION_XQUERY : EXPR eq EXPR
@@ -290,9 +301,9 @@ VALOR_LLAMADA : dolar id
                 | id
                     { $$ = new NodoAST({label: 'id', hijos: [$1], linea: yylineno}); }; 
 
-L_PARAM : L_PARAM coma VALORES 
+L_PARAM : L_PARAM coma EXPR
             { $$ = new NodoAST({label: 'PARAMETROS', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }  
-        | VALORES 
+        | EXPR
             { $$ = new NodoAST({label: 'PARAMETROS', hijos: [...$1.hijos], linea: yylineno}); }  
         ; 
 
@@ -313,18 +324,22 @@ PARAMETROS: PARAMETROS coma PARAM
         ;
 
 PARAM : dolar id as xs doble_pto TIPO
-        { $$ = new NodoAST({label: 'PARAMETRO', hijos: [($1+$2),$4,...$6.hijos], linea: yylineno}); } 
-    ;
+        { $$ = new NodoAST({label: 'PARAMETRO', hijos: [($1+$2),$4,...$6.hijos], linea: yylineno}); }    ;
 
-TIPO : tk_string
-        { $$ = new NodoAST({label: 'TIPO', hijos: [$1], linea: yylineno}); }  
-    | tk_double
-         { $$ = new NodoAST({label: 'TIPO', hijos: [$1], linea: yylineno}); }  
-    | tk_integer
-         { $$ = new NodoAST({label: 'TIPO', hijos: [$1], linea: yylineno}); }  
-    | tk_boolean
-         { $$ = new NodoAST({label: 'TIPO', hijos: [$1], linea: yylineno}); }  
-    ; 
+TIPO : id
+         {
+             if ($1 == 'string'){
+                 $$ = new NodoAST({label: 'TIPO', hijos: [$1], linea: yylineno}); }  
+             else if ($1 == 'boolean'){
+                 $$ = new NodoAST({label: 'TIPO', hijos: [$1], linea: yylineno}); }  
+            else if ($1 == 'integer'){
+                 $$ = new NodoAST({label: 'TIPO', hijos: [$1], linea: yylineno}); }  
+            else if ($1 == 'double'){
+                 $$ = new NodoAST({label: 'TIPO', hijos: [$1], linea: yylineno}); }  
+            else{
+                 tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Semántico', linea: `${yylineno + 1}`, descripcion: `No es un tipo valido "${$1}"  Columna: ${this._$.first_column + 1}.`}));
+             }
+        }; 
 
 //XPATH 
 
