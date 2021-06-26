@@ -4,6 +4,7 @@ export class Generador{
     temporal: number;
     etiqueta: number;
     codigo: string[];
+    cod_funcs: string[];
     cadxml: string[];
     tempsave: string[];
     ptrh: number;
@@ -15,6 +16,7 @@ export class Generador{
         this.temporal = 0;
         this.etiqueta = 0;
         this.codigo = [];
+        this.cod_funcs = [];
         this.tempsave = [];
         this.cadxml = [];
         this.ptrh = 0;
@@ -34,6 +36,7 @@ export class Generador{
         this.temporal = 0;
         this.etiqueta = 0;
         this.codigo = [];
+        this.cod_funcs = [];
         this.tempsave = [];
         this.cadxml = [];
         this.ptrh = 0;
@@ -62,7 +65,7 @@ export class Generador{
         return label;
     }
 
-    /*Sección para agregar elementos al código*/
+    /*Sección para agregar elementos a las listas de código*/
     //Los métodos identados tienen un \t al inicio del texto
     public Addcodigo(texto: string)
     {
@@ -72,12 +75,7 @@ export class Generador{
     public Addcodigoidentado(texto: string)
     {
         this.codigo.push(`\t${texto}`);
-    }
-
-    public Addxml(texto:string)
-    {
-        this.cadxml.push(`\t${texto}`);
-    }
+    }    
 
     public Addcomentario(texto: string) 
     {
@@ -91,13 +89,33 @@ export class Generador{
         this.codigo.push(`\t/*********** ${texto} ***********/`);
     }
 
+    public Addxml(texto:string)
+    {
+        this.cadxml.push(`\t${texto}`);
+    }
+    
     public Addcomentarioxml(texto: string)
     {
         //Se agrega un comentario al código
         this.cadxml.push(`\t/*********** ${texto} ***********/`);
     }
 
-    public Addcodxml()
+    /*Sección para concatenar las listas a la cadena de código final*/
+    public Jointemporales()
+    {
+        let cad = 'double ';
+        //Se guarda el código de temporales declarados
+        if(this.tempsave.length != 0)
+        {
+            //Se concatena de la forma T0, T1, ... Tn;
+            cad = cad + this.tempsave.join(', ');
+            cad = cad + ';\n';
+
+            this.codigo.push(cad);
+        }
+    }
+
+    public Joincodxml()
     {
         let cadena = this.cadxml.join('\n');
 
@@ -106,7 +124,6 @@ export class Generador{
     }
 
     /*Modificaciones de registros*/
-    //Incremento del sp
     public Incph(cant: number)
     {
         this.ptrh = this.ptrh + cant;
@@ -132,21 +149,6 @@ export class Generador{
     public GetStackpos(): number
     {
         return this.ptrs;
-    }
-    
-    //Agrega la lista de temporales a la cadena de codigo
-    public Gettemporales()
-    {
-        let cad = 'double ';
-        //Se guarda el código de temporales declarados
-        if(this.tempsave.length != 0)
-        {
-            //Se concatena de la forma T0, T1, ... Tn;
-            cad = cad + this.tempsave.join(', ');
-            cad = cad + ';\n';
-
-            this.codigo.push(cad);
-        }
     }
 
     //Retorna el código ya completo

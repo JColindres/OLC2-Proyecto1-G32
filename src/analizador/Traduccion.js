@@ -13,8 +13,6 @@ class Traduccion {
         generador.ResetGenerador();
         //Arreglar tabla de símbolos y crear heap y stack
         this.Crearestructuras();
-        this.cadena = generador.Creartemp();
-        console.log(this.ts);
         //Formular código
         this.Crearcadena();
         return this.cadena;
@@ -115,6 +113,9 @@ class Traduccion {
             }
         });
     }
+    TraducirXpath() {
+        return this.cadena;
+    }
     Crearcadena() {
         //Recuperar instancia del generador
         const generador = Generador_1.Generador.GetInstance();
@@ -126,7 +127,7 @@ class Traduccion {
         generador.Addcodigo('double S;');
         generador.Addcodigo('double H;\n');
         //Se agregan las declaraciones iniciales
-        generador.Gettemporales();
+        generador.Jointemporales();
         //Se agrega el inicio del main
         generador.Addcomentario('Agregando main');
         generador.Addcodigo(`int main() \n{`);
@@ -134,7 +135,7 @@ class Traduccion {
         generador.Addcomentarioidentado('Inicializar registros');
         generador.Addcodigoidentado('S = 0;');
         generador.Addcodigoidentado('H = 0;\n');
-        generador.Addcodxml();
+        generador.Joincodxml();
         //Se agrega el final del main
         generador.Addcodigoidentado(`return 0; \n}\n`);
         //Retorno del código
@@ -146,6 +147,8 @@ exports.Traduccion = Traduccion;
 Estructura C:
  -> HEADER
  -> DECLARACIONES INICIALES
+    ->LISTA DE TEMPORALES
+    ->LISTA DE FUNCIONES NATIVAS
  -> MAIN
     ->CODIGO X
     ->RETURN

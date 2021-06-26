@@ -274,7 +274,7 @@
                         <q-item-section @click="traduccionXML">XML</q-item-section>
                       </q-item>
                       <q-item clickable>
-                        <q-item-section @click="0">XPATH</q-item-section>
+                        <q-item-section @click="traduccionXPATH">XPATH</q-item-section>
                       </q-item>
                       <q-item clickable>
                         <q-item-section @click="0">XQUERY</q-item-section>
@@ -750,6 +750,7 @@ export default {
     inicializarValores2() {
       Errores.getInstance().clear();
       this.errores = [];
+      this.simbolos = [];
       this.dot2 = '';
     },
     /*inicializarValores corresponde a ejecutarXPath_DESC*/
@@ -763,6 +764,7 @@ export default {
       Errores.getInstance().clear();
       RepGramDescXML.getInstance().clear();
       this.errores = [];
+      this.simbolos = [];
       this.dot4 = '';
       this.repgramdescxml = [];
     },
@@ -851,6 +853,8 @@ export default {
         //Se llama al método traducir
         let traductor = new Traduccion(ejecucion.ts);
         this.code3D = traductor.Traducir();
+
+        //Se actualiza la tabla de simbolos a mostrar
         this.dataTS(traductor.ts.tabla);
         
         this.notificar("primary", "Ejecución realizada con éxito");
@@ -858,6 +862,43 @@ export default {
         this.validarError(error);
       }
       this.errores = Errores.getInstance().lista;
+    },
+    traduccionXPATH(){
+      //Se realiza lo mismo que en el análisis ascendente del XPATH
+      if (this.codeXP.trim() == "") {
+        this.notificar("primary", `El editor está vacío, escriba algo.`);
+        return;
+      }
+      this.inicializarValores2();
+      try {
+        const raiz = AXml.parse(this.code);
+        const raizxpath = AXpath.parse(this.codeXP);
+
+        //Validacion de raiz
+        if (raizxpath == null) {
+          this.notificar(
+            "negative",
+            "No se pudo ejecutar"
+          );
+          return;
+        }
+
+        this.xmlXP = raiz;
+        let ejecucion = new Ejecucion(this.xmlXP.prologo, this.xmlXP.cuerpo, this.code, raizxpath);
+        ejecucion.verObjetos();
+
+        //Se llama al método traducir
+        let traductor = new Traduccion(ejecucion.ts);
+        this.code3D = traductor.TraducirXpath();
+
+        this.dataTS(traductor.ts.tabla);
+
+        this.notificar("primary", "Ejecución realizada con éxito");
+      } catch (error) {
+        this.validarError(error);
+      }
+      this.errores = Errores.getInstance().lista;
+      //this.entornos = Entornos.getInstance().lista;
     }
   },
 };

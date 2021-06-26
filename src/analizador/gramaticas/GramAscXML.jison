@@ -4,14 +4,23 @@
 
 %options case-sensitive
 
-%s                          comment
+/*%s                          comment*/
+%x                          Comentario
 %%
 /*********Área de reglas léxicas*********/
 
 /***ER***/ 
 //<!--(([^-])|(-([^-])))*-->      return 'COMENTARIO';
 //<!--(.*?)-->                    return 'COMENTARIO';
-<comment>[<]!--[\s\S\n]*?-->      return 'COMENTARIO';
+//<comment>[<]!--[\s\S\n]*?-->      return 'COMENTARIO';
+
+/***Comentario con estados***/
+<INITIAL,Comentario>
+"<!--"                { console.log("Inicio comentario"); this.begin("Comentario"); }
+<Comentario>[ \r\t]+  { }
+<Comentario>\n        { }
+<Comentario>"-->"     { console.log("Fin comentario"); this.popState(); }
+<Comentario>[^"-->"]+ { console.log("Texto del comentario: "+yytext) }
 
 /***Palabras reservadas***/ 
 /*  < > & ' "  */
@@ -20,8 +29,7 @@
 "&amp;"                     return 'AMP'
 "&apos;"                    return 'APOS'
 "&quot;"                    return 'QUOT'
-//"<!--"                      return 'INCOM'
-//"-->"                       return 'OUTCOM'
+
 
 /***Caracteres del lenguaje***/
 "="                         return 'ASIGN';
