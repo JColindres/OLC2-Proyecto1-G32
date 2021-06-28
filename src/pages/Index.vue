@@ -889,7 +889,7 @@ export default {
 
         //Se llama al método traducir
         let traductor = new Traduccion(ejecucion.ts);
-        this.code3D = traductor.TraducirXpath();
+        this.code3D = traductor.TraducirXpath(this.xmlXP.prologo, this.xmlXP.cuerpo, raizxpath);
 
         this.dataTS(traductor.ts.tabla);
 

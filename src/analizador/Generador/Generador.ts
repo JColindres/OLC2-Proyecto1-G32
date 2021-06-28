@@ -9,6 +9,8 @@ export class Generador{
     tempsave: string[];
     ptrh: number;
     ptrs: number;
+    ptrhxpath: number;
+    ptrsxpath: number;
     
     /*Sección de inicio del generador*/
     private constructor()
@@ -21,6 +23,8 @@ export class Generador{
         this.cadxml = [];
         this.ptrh = 0;
         this.ptrs = 0;
+        this.ptrhxpath = 0;
+        this.ptrsxpath = 0;
     }
 
     public static GetInstance(): Generador
@@ -41,6 +45,8 @@ export class Generador{
         this.cadxml = [];
         this.ptrh = 0;
         this.ptrs = 0;
+        this.ptrhxpath = 0;
+        this.ptrsxpath = 0;
     }
 
     /*Sección de creación de etiquetas, temporales, labels...*/
@@ -100,6 +106,22 @@ export class Generador{
         this.cadxml.push(`\t/*********** ${texto} ***********/`);
     }
 
+    public Addcodfunc(texto:string)
+    {
+        this.cod_funcs.push(`${texto}`);
+    }
+
+    public Addcodfuncidentado(texto:string)
+    {
+        this.cod_funcs.push(`\t${texto}`);
+    }
+
+    public Addcomentariofunc(texto:string)
+    {
+        //Se agrega un comentario al código
+        this.cod_funcs.push(`\t/*********** ${texto} ***********/`);
+    }
+
     /*Sección para concatenar las listas a la cadena de código final*/
     public Jointemporales()
     {
@@ -123,6 +145,14 @@ export class Generador{
         this.codigo.push(cadena);
     }
 
+    public Joinfunc()
+    {
+        let cadena = this.cod_funcs.join('\n');
+
+        //Se agrega al código inicial
+        this.codigo.push(cadena);
+    }
+
     /*Modificaciones de registros*/
     public Incph(cant: number)
     {
@@ -139,6 +169,21 @@ export class Generador{
         this.ptrs = this.ptrs - cant;
     }
 
+    public Incphxpath(cant: number)
+    {
+        this.ptrhxpath = this.ptrhxpath + cant;
+    }
+
+    public Incpsxpath(cant: number)
+    {
+        this.ptrsxpath = this.ptrsxpath + cant;
+    }
+
+    public Decpsxpath(cant: number)
+    {
+        this.ptrsxpath = this.ptrsxpath - cant;
+    }
+
     /*Sección de retornos*/
     //Retornos de registros
     public GetHeappos(): number
@@ -149,6 +194,16 @@ export class Generador{
     public GetStackpos(): number
     {
         return this.ptrs;
+    }
+
+    public GetHeapposxpath(): number
+    {
+        return this.ptrhxpath;
+    }
+
+    public GetStackposxpath(): number
+    {
+        return this.ptrsxpath;
     }
 
     //Retorna el código ya completo
@@ -166,15 +221,83 @@ export class Generador{
         return fullcodigo;
     }
 
-    public nuevoprint(cont:any): string
+    //Funciones nativas
+    public Printf()
     {
-        /*
-        Para imprimir un ascii se utiliza el type: %c
-        printf("%c", (char)64)  ->   Resultado de impresión: @
-        */
-        switch(cont){
-            case 0:
-                return ('printf(\"%c\", (char) )')
-        }
+        //Temporal para almacenar la posición del stack con el contenido
+        let temp_stack_cont = this.Creartemp();
+        //Temporal para obtener la posición del contenido dentro de la función nativa
+        let temp_sp_pos = this.Creartemp();
+        //Temporal para el contenido referenciado por el puntero stack
+        let temp_sp_cont = this.Creartemp();
+        //Temporal de contenido del heap
+        let temp_heap = this.Creartemp();
+        //Temporal para el almacenamiento del cambio de ámbito
+        let temp_entorno = this.Creartemp();
+        //Temporal para el return
+        let temp_return = this.Creartemp();
+
+        //Etiquetas de control
+        let lbl_init = this.Crearetiqueta();
+        let lbl_cond = this.Crearetiqueta();
+
+        this.Addcomentarioxml('Impresión de la consulta');
+        this.Addcomentarioxml('Ajuste de punteros y estructuras');
+
+        //Se obtiene la posición en el stackxpath donde está el contenido del heapxpath
+        this.Addxml(`${temp_stack_cont} = stackxpath[(int)${this.GetStackposxpath()-1}];`);
+
+        //Se realiza el cambio de entorno de acuerdo a la cantidad de elementos de la función
+        this.Addxml(`${temp_entorno} = Sxpath + ${this.GetStackposxpath()};`);
+        //Se deja una posición vacía para el retorno
+        this.Addxml(`${temp_entorno} = ${temp_entorno} + 1;`)
+
+        //Asignamos en el stackxpath en la nueva posición lo que se desea imprimir
+        this.Addxml(`stackxpath[(int)${temp_entorno}] = ${temp_stack_cont};`);
+
+        //Ajustamos el puntero
+        this.Addxml(`Sxpath = Sxpath + ${this.GetStackposxpath()};`)
+
+        //Llamado de función
+        this.Addxml('Printconsulta();\n')
+
+        this.Addcomentario('Funciones nativas');
+
+        this.Addcodfunc('void Printconsulta() {');
+
+        //En la posición del puntero + 1 está el contenido a imprimir (colocado antes del llamado a la función)
+        this.Addcodfuncidentado(`${temp_sp_pos} = Sxpath + 1;`);
+
+        //Se obtiene el contenido referenciado por el puntero stack (posición del heap)
+        this.Addcodfuncidentado(`${temp_sp_cont} = stackxpath[(int)${temp_sp_pos}];`);
+
+        //Etiqueta de inicio
+        this.Addcodfuncidentado(`${lbl_init}:\n`);
+        
+        //Se obtiene lo que hay en el heap en la posición que tiene el stack
+        this.Addcodfuncidentado(`${temp_heap} = heapxpath[(int)${temp_sp_cont}];`);
+
+        this.Addcodfuncidentado(`if(${temp_heap} == -1) goto ${lbl_cond};`);
+
+        this.Addcodfuncidentado(`printf("%c", (char)${temp_heap});`);
+
+        //Se aumenta el temp de la posición del heap
+        this.Addcodfuncidentado(`${temp_sp_cont} = ${temp_sp_cont} + 1;`);
+
+        this.Addcodfuncidentado(`goto ${lbl_init};`);
+        this.Addcodfuncidentado(`${lbl_cond}:\n`);
+        this.Addcodfuncidentado(`return;\n}\n`);
+
+        //Parte final del llamado en el main
+        this.Addcomentarioxml('Ajustes luego del llamado a la función');
+
+        //Se obtiene el posible retorno
+        this.Addxml(`${temp_return} = stackxpath[(int)Sxpath];`);
+
+        //Se regresa el puntero
+        this.Addxml(`Sxpath = Sxpath - ${this.GetStackposxpath()};`);
+
+        //Imprimir un salto de linea
+        this.Addxml(`printf("%c", (char)10);\n`)
     }
 }
