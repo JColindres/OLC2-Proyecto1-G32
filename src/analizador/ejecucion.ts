@@ -630,7 +630,82 @@ export class Ejecucion {
         });
       }
 
+      if (this.identificar('ORDER BY', nodo)){
+        let regresar: boolean = false;
+        nodo.hijos.forEach((element: any) => {
+          if (element instanceof Object) {
+            this.recorrido(element);
+          }
+          else if (typeof element === 'string') {
+            if (element === '$x'){
+              this.consultaXML;
+            }
+            else if (element === '/'){
+              this.consultaXML = this.reducir(this.consultaXML, element, 'RAIZ');
+            }
+            else if (!(element === ',')){
+              this.consultaXML = this.reducir(this.consultaXML, element, 'INSTRUCCIONES');
+              regresar = true;
+            }
+          }
+          this.consultaXML.sort((n1, n2) => {
+            if (n1.texto > n2.texto) {
+              return 1;
+            }
+  
+            if (n1.texto < n2.texto) {
+              return -1;
+            }
+  
+            return 0;
+          });
+          if(regresar){
+            console.log('regresar' , regresar, this.consultaXML, element)
+            this.consultaXML = this.reducir(this.consultaXML, '/..', 'PADRE')
+            regresar = false;
+          }
+        });
+      }
+
       if (this.identificar('RETURN', nodo)){
+        nodo.hijos.forEach((element: any) => {
+          if (element instanceof Object) {
+            this.recorrido(element);
+          }
+          else if (typeof element === 'string') {
+            if (element === '$x'){
+              this.consultaXML;
+            }
+            else if (element === '/'){
+              this.consultaXML = this.reducir(this.consultaXML, element, 'RAIZ');
+            }
+            else {
+              this.consultaXML = this.reducir(this.consultaXML, element, 'INSTRUCCIONES');
+            }
+          }
+        });
+      }
+
+      if (this.identificar('IF', nodo)){
+        nodo.hijos.forEach((element: any) => {
+          if (element instanceof Object) {
+            this.recorrido(element);
+          }
+          else if (typeof element === 'string') {
+            if (element === '$x'){
+              this.consultaXML;
+            }
+            else if (element === '/'){
+              this.consultaXML = this.reducir(this.consultaXML, element, 'RAIZ');
+            }
+            else {
+              this.consultaXML = this.reducir(this.consultaXML, element, 'INSTRUCCIONES');
+            }
+          }
+        });
+      }
+
+      if (this.identificar('THEN', nodo)){
         nodo.hijos.forEach((element: any) => {
           if (element instanceof Object) {
             this.recorrido(element);
