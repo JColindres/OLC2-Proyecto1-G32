@@ -282,6 +282,7 @@
                     </q-list>
                   </q-menu>
                 </div>
+                <q-btn push label="Optimizar" icon="code" @click="Optimizar" />
                 <q-space />
                 <q-space />
               <q-btn push label="Limpiar" icon="cleaning_services" @click="limpiar3D" />
@@ -310,6 +311,7 @@
                 />
                 <q-tab label="Reporte Gramatical XML Asc" name="rep_gram"></q-tab>
                 <q-tab label="Reporte Gramatical XML Desc" name="rep_gram_desc"></q-tab>
+                <q-tab label="Reporte Optimizacion" name="rep_optimizacion"></q-tab>
               </q-tabs>
             </template>
 
@@ -386,6 +388,22 @@
                     />
                   </div>
                 </q-tab-panel>
+
+                 <q-tab-panel name="rep_optimizacion" v-if="repoptimizar != null && repoptimizar.length > 0">
+                  <div class="q-pa-md">
+                    <q-table
+                      title="Reporte de Optimización"
+                      :data="repoptimizar"
+                      :columns="colOptimizar"
+                      row-key="name"
+                      dark
+                      color="amber"
+                      dense
+                      :pagination="{ rowsPerPage: 0 }"
+                      rows-per-page-label="Reporte de Optimización"
+                    />
+                  </div>
+                </q-tab-panel>
                 
               </q-tab-panels>
             </template>
@@ -431,6 +449,10 @@ import { RepGramAscXML } from '../analizador/Reportes/RepGramAscXML';
 import { RepGramDescXML } from '../analizador/Reportes/RepGramDescXML';
 //Traducción
 import { Traduccion } from "../analizador/Traduccion";
+//Optimización 
+import AXOPTIMIZAR from "../analizador/gramaticas/gramatica_Optimizacion";
+import {Rep_Optimizar} from '../analizador/Reportes/Rep_Optimizar';
+import {Optimizar} from "../analizador/optimizar";
 
 export default {
   components: {
@@ -538,6 +560,14 @@ export default {
       coldescxml: [
         { name: "produccion", label: "Producción", field: "produccion", align: "left"},
         { name: "reglas", label: "Reglas", field: "reglas", align: "left" },
+      ],
+      repoptimizar:[],
+      colOptimizar : [
+        {name: "tipo", label: "Tipo", field: "tipo", align: "left"},
+        {name: "regla", label: "Regla", field: "regla", align: "left"},
+        {name: "eliminado", label: "Codigo Eliminado", field: "eliminado", align: "left"},
+        {name: "nuevo", label: "Codigo Agregado", field: "nuevo", align: "left"},
+        {name: "fila", label: "Fila", field: "fila", align: "left"},
       ],
       xmlXP: null,
       xmlXPDesc: null
@@ -899,6 +929,43 @@ export default {
       }
       this.errores = Errores.getInstance().lista;
       //this.entornos = Entornos.getInstance().lista;
+    },
+     Optimizar(){
+      if (this.code3D.trim() == "") 
+      {
+        this.notificar("primary", `El editor está vacío, traduzca algo.`);
+        return;
+      }
+      this.inicializarValores6();
+      try {
+
+        const raiz = AXOPTIMIZAR.parse(this.code3D);
+        console.log(raiz);
+        //Validacion de raiz
+        if (raiz == null) {
+          this.notificar(
+            "negative",
+            "No se pudo ejecutar"
+          );
+          return;
+        }
+        let optimizar = new Optimizar(raiz);
+        this.code3D = beautify_js(optimizar.recorrer(), { indent_size: 2 });
+
+        this.notificar("primary", "Ejecución realizada con éxito");
+      } catch (error) {
+        console.log(error);
+        this.validarError(error); 
+      }
+      this.errores = Errores.getInstance().lista;
+      this.repoptimizar = Rep_Optimizar.getInstance().lista;
+    },
+     /*inicializarValores4 corresponde a Optimizar*/
+    inicializarValores6() {
+      Errores.getInstance().clear();
+      Rep_Optimizar.getInstance().clear();
+      this.errores = [];
+      this.repoptimizar = [];
     }
   },
 };
