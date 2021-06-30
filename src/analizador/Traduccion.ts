@@ -1,5 +1,9 @@
 import { Objeto } from "./abstractas/objeto";
 import { XmlTS } from "./arbol/xmlTS";
+import { Operacion, Operador } from "./expresiones/operacion";
+import { Primitivo } from "./expresiones/primitivo";
+import { Relacion } from "./expresiones/relacional";
+import { Expresion } from "./Interfaces/Expresion";
 import { Generador } from "./Generador/Generador";
 
 export class Traduccion {
@@ -440,6 +444,34 @@ export class Traduccion {
               });
             }
 
+            if (this.identificar('ORDEN', nodo)) {
+              nodo.hijos.forEach((element: any) => {
+                if (element instanceof Object) {
+                  this.recorrido(element);
+                }
+                else if (typeof element === 'string' && element === 'last') {
+                  let cons: Array<Objeto>;
+                  cons = [];
+                  this.consultaXML.forEach((element, index) => {
+                    if (index === this.consultaXML.length - 1) {
+                      cons.push(element);
+                    }
+                  });
+                  this.consultaXML = cons;
+                }
+              });
+            }
+
+            if (this.identificar('ARITMETICAS', nodo) || this.identificar('integer', nodo)) {
+              if (this.identificar('integer', nodo)) {
+                this.consultaXML = this.reducir(this.consultaXML, nodo.hijos[0], 'INSTRUCCIONES');
+              }
+              else {
+                let val: Expresion = null;
+                val = this.calcular(nodo, null, 0);
+                this.consultaXML = this.reducir(this.consultaXML, val.getValorImplicito(val), 'INSTRUCCIONES');
+              }
+            }
 
 
             if (this.identificar('HIJOS', nodo)) {
@@ -885,7 +917,403 @@ export class Traduccion {
           }
         });
         return cons;
+    }
+
+
+
+    calcular(nodo: any, logica: Objeto, position: number): Expresion {
+      if (this.identificar('ARITMETICAS', nodo)) {
+        let izq: Expresion, der: Expresion = null;
+        let op = "";
+        nodo.hijos.forEach((element: any) => {
+          if (element instanceof Object) {
+            if (op === "" && this.identificar('integer', element)) {
+              izq = new Primitivo(Number(element.hijos[0]), 1, 1);
+            }
+            else if (!(op === "") && this.identificar('integer', element)) {
+              der = new Primitivo(Number(element.hijos[0]), 1, 1);
+            }
+            else if (op === "" && this.identificar('double', element)) {
+              izq = new Primitivo(Number(parseInt(element.hijos[0])), 1, 1);
+            }
+            else if (!(op === "") && this.identificar('double', element)) {
+              der = new Primitivo(Number(parseInt(element.hijos[0])), 1, 1);
+            }
+            else if (op === "" && this.identificar('ARITMETICAS', element)) {
+              izq = this.calcular(element, null, position);
+            }
+            else if (!(op === "") && this.identificar('ARITMETICAS', element)) {
+              der = this.calcular(element, null, position);
+            }
+            else if (op === "" && this.identificar('ORDEN', element)) {
+              izq = new Primitivo(Number(this.consultaXML.length), 1, 1);
+            }
+            else if (!(op === "") && this.identificar('ORDEN', element)) {
+              der = new Primitivo(Number(this.consultaXML.length), 1, 1);
+            }
+          }
+          else if (typeof element === 'string') {
+            if (!(element === '(') && !(element === ')')) {
+              op = element;
+            }
+          }
+        });
+        if (izq && der && !(op === "")) {
+          let a: Operacion;
+          if (op === '+') {
+            a = new Operacion(izq, der, Operador.SUMA, 1, 1);
+          }
+          else if (op === '-') {
+            a = new Operacion(izq, der, Operador.RESTA, 1, 1);
+          }
+          else if (op === '*') {
+            a = new Operacion(izq, der, Operador.MULTIPLICACION, 1, 1);
+          }
+          else if (op === 'div') {
+            a = new Operacion(izq, der, Operador.DIVISION, 1, 1);
+          }
+          else if (op === 'mod') {
+            a = new Operacion(izq, der, Operador.MODULO, 1, 1);
+          }
+          return a;
+        }
       }
+  
+      if (this.identificar('RELACIONALES', nodo)) {
+        let izq: Expresion, der: Expresion = null;
+        let op = "";
+        //console.log("entró relacional")
+        nodo.hijos.forEach((element: any) => {
+          if (element instanceof Object) {
+            if (op === "" && this.identificar('integer', element)) {
+              izq = new Primitivo(Number(element.hijos[0]), 1, 1);
+            }
+            else if (!(op === "") && this.identificar('integer', element)) {
+              der = new Primitivo(Number(element.hijos[0]), 1, 1);
+            }
+            else if (op === "" && this.identificar('double', element)) {
+              izq = new Primitivo(Number(parseInt(element.hijos[0])), 1, 1);
+            }
+            else if (!(op === "") && this.identificar('double', element)) {
+              der = new Primitivo(Number(parseInt(element.hijos[0])), 1, 1);
+            }
+            else if (op === "" && this.identificar('string', element)) {
+              let texto = element.hijos[0].slice(1, -1);
+              let t = texto.split(" ");
+              texto = '';
+              for (var i = 0; i < t.length; i++) {
+                texto += t[i];
+              }
+              izq = new Primitivo(texto, 1, 1);
+            }
+            else if (!(op === "") && this.identificar('string', element)) {
+              //console.log("entró string derecho");
+              let texto = element.hijos[0].slice(1, -1);
+              let t = texto.split(" ");
+              texto = '';
+              for (var i = 0; i < t.length; i++) {
+                texto += t[i];
+              }
+              //console.log(texto);
+              der = new Primitivo(texto, 1, 1);
+            }
+            else if (op === "" && this.identificar('ARITMETICAS', element)) {
+              izq = this.calcular(element, logica, position);
+            }
+            else if (!(op === "") && this.identificar('ARITMETICAS', element)) {
+              der = this.calcular(element, logica, position);
+            }
+            else if (op === "" && this.identificar('ORDEN', element)) {
+              if (element.hijos[0] === 'position') {
+                izq = new Primitivo(Number(position), 1, 1);
+                this.posicion.push(Number(position));
+                this.posicion.push(true);
+                this.posicion.push("izq");
+              }
+              else
+                izq = new Primitivo(Number(this.consultaXML.length), 1, 1);
+            }
+            else if (!(op === "") && this.identificar('ORDEN', element)) {
+              if (element.hijos[0] === 'position') {
+                der = new Primitivo(Number(position), 1, 1);
+                this.posicion.push(Number(position));
+                this.posicion.push(true);
+                this.posicion.push("der");
+              }
+              else
+                der = new Primitivo(Number(this.consultaXML.length), 1, 1);
+            }
+            else if (op === "" && this.identificar('ATRIBUTO_PREDICADO', element)) {
+              logica.listaAtributos.forEach(atri => {
+                if (atri.identificador === element.hijos[1]) {
+                  let valor = atri.valor.slice(1, -1);
+                  if (Number.isInteger(parseInt(valor)) && !valor.includes("/") && !valor.includes("-")) {
+                    //console.log(parseInt(valor));
+                    izq = new Primitivo(Number(parseInt(valor)), 1, 1);
+                  }
+                  else {
+                    let texto = valor;
+                    let t = texto.split(" ");
+                    texto = '';
+                    for (var i = 0; i < t.length; i++) {
+                      texto += t[i];
+                    }
+                    izq = new Primitivo(texto, 1, 1);
+                  }
+                }
+              });
+            }
+            else if (!(op === "") && this.identificar('ATRIBUTO_PREDICADO', element)) {
+              logica.listaAtributos.forEach(atri => {
+                if (atri.identificador === element.hijos[1]) {
+                  let valor = atri.valor.slice(1, -1);
+                  if (Number.isInteger(parseInt(valor)) && !valor.includes("/") && !valor.includes("-")) {
+                    der = new Primitivo(Number(parseInt(valor)), 1, 1);
+                  }
+                  else {
+                    let texto = valor;
+                    let t = texto.split(" ");
+                    texto = '';
+                    for (var i = 0; i < t.length; i++) {
+                      texto += t[i];
+                    }
+                    der = new Primitivo(texto, 1, 1);
+                  }
+                }
+              });
+            }
+            else if (op === "" && this.identificar('id', element)) {
+              //console.log("entró id");
+              logica.listaObjetos.forEach(ob => {
+                if (ob.identificador === element.hijos[0]) {
+                  let texto = "";
+                  for (var i = 0; i < ob.texto.length; i++) {
+                    texto += ob.texto[i];
+                  }
+                  if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
+                    //console.log(parseInt(texto));
+                    izq = new Primitivo(Number(parseInt(texto)), 1, 1);
+                  }
+                  else {
+                    //console.log(texto);
+                    izq = new Primitivo(texto, 1, 1);
+                  }
+                }
+              });
+            }
+            else if (!(op === "") && this.identificar('id', element)) {
+              logica.listaObjetos.forEach(ob => {
+                if (ob.identificador === element.hijos[0]) {
+                  //console.log(ob.texto);
+                  let texto = "";
+                  for (var i = 0; i < ob.texto.length; i++) {
+                    texto += ob.texto[i];
+                  }
+                  if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
+                    //console.log(parseInt(texto));
+                    der = new Primitivo(Number(parseInt(texto)), 1, 1);
+                  }
+                  else {
+                    //console.log(texto);
+                    der = new Primitivo(texto, 1, 1);
+                  }
+                }
+              });
+            }
+            else if (op === "" && this.identificar('punto', element)) {
+              //console.log("at " + this.atributo);
+              if (logica.identificador === this.punto && !this.atributo) {
+                let texto = "";
+                for (var i = 0; i < logica.texto.length; i++) {
+                  texto += logica.texto[i];
+                }
+                if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
+                  //console.log(parseInt(texto));
+                  izq = new Primitivo(Number(parseInt(texto)), 1, 1);
+                }
+                else {
+                  //console.log(texto);
+                  izq = new Primitivo(texto, 1, 1);
+                }
+              }
+              else {
+                logica.listaAtributos.forEach(atri => {
+                  if (atri.identificador === this.punto) {
+                    let valor = atri.valor.slice(1, -1);
+                    if (Number.isInteger(parseInt(valor)) && !valor.includes("/") && !valor.includes("-")) {
+                      izq = new Primitivo(Number(parseInt(valor)), 1, 1);
+                    }
+                    else {
+                      let texto = valor;
+                      let t = texto.split(" ");
+                      texto = '';
+                      for (var i = 0; i < t.length; i++) {
+                        texto += t[i];
+                      }
+                      izq = new Primitivo(texto, 1, 1);
+                    }
+                  }
+                });
+              }
+            }
+            else if (!(op === "") && this.identificar('punto', element)) {
+              if (logica.identificador === this.punto && !this.atributo) {
+                //console.log(logica.texto);
+                let texto = "";
+                for (var i = 0; i < logica.texto.length; i++) {
+                  texto += logica.texto[i];
+                }
+                if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
+                  //console.log(parseInt(texto));
+                  der = new Primitivo(Number(parseInt(texto)), 1, 1);
+                }
+                else {
+                  //console.log(texto);
+                  der = new Primitivo(texto, 1, 1);
+                }
+              }
+              else {
+                logica.listaAtributos.forEach(atri => {
+                  if (atri.identificador === this.punto) {
+                    let valor = atri.valor.slice(1, -1);
+                    if (Number.isInteger(parseInt(valor)) && !valor.includes("/") && !valor.includes("-")) {
+                      der = new Primitivo(Number(parseInt(valor)), 1, 1);
+                    }
+                    else {
+                      let texto = valor;
+                      let t = texto.split(" ");
+                      texto = '';
+                      for (var i = 0; i < t.length; i++) {
+                        texto += t[i];
+                      }
+                      der = new Primitivo(texto, 1, 1);
+                    }
+                  }
+                });
+              }
+            }
+            else if (op === "" && this.identificar('PATH', element)) {
+              //console.log("at " + this.atributo);
+              if (logica.identificador === this.punto && !this.atributo) {
+                let texto = "";
+                for (var i = 0; i < logica.texto.length; i++) {
+                  texto += logica.texto[i];
+                }
+                if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
+                  //console.log(parseInt(texto));
+                  izq = new Primitivo(Number(parseInt(texto)), 1, 1);
+                }
+                else {
+                  //console.log(texto);
+                  izq = new Primitivo(texto, 1, 1);
+                }
+              }
+              else {
+                logica.listaAtributos.forEach(atri => {
+                  if (atri.identificador === this.punto) {
+                    let valor = atri.valor.slice(1, -1);
+                    //console.log(valor);
+                    if (Number.isInteger(parseInt(valor)) && !valor.includes("/") && !valor.includes("-")) {
+                      izq = new Primitivo(Number(parseInt(valor)), 1, 1);
+                    }
+                    else {
+                      let texto = valor;
+                      let t = texto.split(" ");
+                      texto = '';
+                      for (var i = 0; i < t.length; i++) {
+                        texto += t[i];
+                      }
+                      izq = new Primitivo(texto, 1, 1);
+                    }
+                  }
+                });
+              }
+            }
+            else if (!(op === "") && this.identificar('PATH', element)) {
+              if (logica.identificador === this.punto && !this.atributo) {
+                //console.log(logica.texto);
+                let texto = "";
+                for (var i = 0; i < logica.texto.length; i++) {
+                  texto += logica.texto[i];
+                }
+                if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
+                  //console.log(parseInt(texto));
+                  der = new Primitivo(Number(parseInt(texto)), 1, 1);
+                }
+                else {
+                  //console.log(texto);
+                  der = new Primitivo(texto, 1, 1);
+                }
+              }
+              else {
+                logica.listaAtributos.forEach(atri => {
+                  if (atri.identificador === this.punto) {
+                    let valor = atri.valor.slice(1, -1);
+                    if (Number.isInteger(parseInt(valor)) && !valor.includes("/") && !valor.includes("-")) {
+                      der = new Primitivo(Number(parseInt(valor)), 1, 1);
+                    }
+                    else {
+                      let texto = valor;
+                      let t = texto.split(" ");
+                      texto = '';
+                      for (var i = 0; i < t.length; i++) {
+                        texto += t[i];
+                      }
+                      der = new Primitivo(texto, 1, 1);
+                    }
+                  }
+                });
+              }
+            }
+          }
+          else if (typeof element === 'string') {
+            if (!(element === '(') && !(element === ')')) {
+              op = element;
+            }
+          }
+          if (!izq) {
+            izq = new Primitivo(Number(-1), 1, 1);
+          }
+          if (!der) {
+            der = new Primitivo(Number(-1), 1, 1);
+          }
+        });
+        if (izq && der && !(op === "")) {
+          console.log(izq.getValorImplicito(izq) + ',' + der.getValorImplicito(der));
+          let a: Relacion;
+          if (op === '<') {
+            a = new Relacion(izq, der, Operador.MENOR_QUE, 1, 1);
+          }
+          else if (op === '>') {
+            a = new Relacion(izq, der, Operador.MAYOR_QUE, 1, 1);
+          }
+          else if (op === '<=') {
+            a = new Relacion(izq, der, Operador.MENOR_IGUA_QUE, 1, 1);
+          }
+          else if (op === '>=') {
+            a = new Relacion(izq, der, Operador.MAYOR_IGUA_QUE, 1, 1);
+          }
+          else if (op === '=') {
+            a = new Relacion(izq, der, Operador.IGUAL_IGUAL, 1, 1);
+          }
+          else if (op === '!=') {
+            a = new Relacion(izq, der, Operador.DIFERENTE_QUE, 1, 1);
+          }
+          else if (op === '!') {
+            a = new Relacion(izq, null, Operador.NOT, 1, 1);
+          }
+          if (this.posicion) {
+            if (this.posicion[1]) {
+              this.posicion.push(izq.getValorImplicito(izq) - 1);
+              this.posicion.push(op);
+              this.posicion.push(der.getValorImplicito(der) - 1);
+            }
+          }
+          console.log(a.getValorImplicito(a))
+          return a;
+        }
+      }
+    }
 
     traducir() {
         const generador = Generador.GetInstance();
@@ -904,6 +1332,7 @@ export class Traduccion {
 
         this.atributoIdentificacion.forEach(element => {
             numero++;
+            console.log(element);
             if (!element.atributo) {
                 let texto = "";
                 for (var i = 0; i < element.cons.texto.length; i++) {
@@ -940,7 +1369,7 @@ export class Traduccion {
                   /*
                   Se introduce el elemento.cons.identificador
                   */
-                  this.Concat_id_ET(element.cons.identificador);
+                  this.Concat_id_ET(element.cons.identificador, element.cons.linea, element.cons.columna);
 
                   if(element.cons.listaAtributos.length > 0) {
                     generador.Addcomentarioxml('Agregando atributos de la etiqueta');
@@ -957,7 +1386,7 @@ export class Traduccion {
                       /*
                       Se introduce atributos.identificador
                       */
-                      this.Concat_id_ET(atributos.identificador);
+                      this.Concat_id_ET(atributos.identificador, atributos.linea, atributos.columna);
 
                       /*
                       Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '=' 
@@ -969,7 +1398,7 @@ export class Traduccion {
                       /*
                       Se introduce atributos.valor, se le envía el ID
                       */
-                      this.Concat_id_Atrib(atributos.identificador);
+                      this.Concat_id_Atrib(atributos.identificador, atributos.linea, atributos.columna);
                     });
                   }
                   if (element.cons.doble) {
@@ -1016,7 +1445,7 @@ export class Traduccion {
                     /*
                     Se introduce element.identificador para obtener el texto
                     */
-                    this.Concat_id_text(element.cons.identificador);
+                    this.Concat_id_text(element.cons.identificador, element.cons.linea, element.cons.columna);
 
                     /*
                     Se introduce al heapxpath en la posición Hxpath el caracter ascii: '\n' 
@@ -1046,7 +1475,7 @@ export class Traduccion {
                     /*
                     Se introduce el elemento.cons.identificador
                     */
-                    this.Concat_id_ET(element.cons.identificador);
+                    this.Concat_id_ET(element.cons.identificador, element.cons.linea, element.cons.columna);
 
                     /*
                     Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '>' 
@@ -1082,7 +1511,7 @@ export class Traduccion {
                       /*
                       Se introduce atributos.identificador
                       */
-                      this.Concat_id_ET(atributos.identificador);
+                      this.Concat_id_ET(atributos.identificador, atributos.linea, atributos.columna);
 
                       /*
                       Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '=' 
@@ -1094,7 +1523,7 @@ export class Traduccion {
                       /*
                       Se introduce atributos.valor, se le envía el ID
                       */
-                      this.Concat_id_Atrib(atributos.identificador);
+                      this.Concat_id_Atrib(atributos.identificador, atributos.linea, atributos.columna);
 
                       /*
                       Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '\n' 
@@ -1122,7 +1551,7 @@ export class Traduccion {
                   /*
                   Se introduce el elemento.cons.identificador
                   */
-                  this.Concat_id_ET(element.cons.identificador);
+                  this.Concat_id_ET(element.cons.identificador, element.cons.linea, element.cons.columna);
 
                   if(element.cons.listaAtributos.length > 0) {
                     generador.Addcomentarioxml('Agregando atributos de la etiqueta');
@@ -1139,7 +1568,7 @@ export class Traduccion {
                       /*
                       Se introduce atributos.identificador
                       */
-                      this.Concat_id_ET(atributos.identificador);
+                      this.Concat_id_ET(atributos.identificador, atributos.linea, atributos.columna);
 
                       /*
                       Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '=' 
@@ -1151,7 +1580,7 @@ export class Traduccion {
                       /*
                       Se introduce atributos.valor, se le envía el ID
                       */
-                      this.Concat_id_Atrib(atributos.identificador);
+                      this.Concat_id_Atrib(atributos.identificador, atributos.linea, atributos.columna);
                     });
                   }
                   if (element.cons.doble) {
@@ -1198,7 +1627,7 @@ export class Traduccion {
                     /*
                     Se introduce element.identificador para obtener el texto
                     */
-                    this.Concat_id_text(element.cons.identificador);
+                    this.Concat_id_text(element.cons.identificador, element.cons.linea, element.cons.columna);
 
                     /*
                     Se introduce al heapxpath en la posición Hxpath el caracter ascii: '\n' 
@@ -1228,7 +1657,7 @@ export class Traduccion {
                     /*
                     Se introduce el elemento.cons.identificador
                     */
-                    this.Concat_id_ET(element.cons.identificador);
+                    this.Concat_id_ET(element.cons.identificador, element.cons.linea, element.cons.columna);
 
                     /*
                     Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '>' 
@@ -1257,7 +1686,7 @@ export class Traduccion {
                   /*
                   Se introduce atributos.identificador
                   */
-                  this.Concat_id_ET(atributo.identificador);
+                  this.Concat_id_ET(atributo.identificador, atributo.linea, atributo.columna);
 
                   /*
                   Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '=' 
@@ -1269,7 +1698,7 @@ export class Traduccion {
                   /*
                   Se introduce atributos.valor, se le envía el ID
                   */
-                  this.Concat_id_Atrib(atributo.identificador);
+                  this.Concat_id_Atrib(atributo.identificador, atributo.linea, atributo.columna);
 
                   /*
                   Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '\n' 
@@ -1282,7 +1711,7 @@ export class Traduccion {
                   /*
                   Se introduce atributos.identificador
                   */
-                  this.Concat_id_ET(atributo.identificador);
+                  this.Concat_id_ET(atributo.identificador, atributo.linea, atributo.columna);
 
                   /*
                   Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '=' 
@@ -1294,7 +1723,7 @@ export class Traduccion {
                   /*
                   Se introduce atributos.valor, se le envía el ID
                   */
-                  this.Concat_id_Atrib(atributo.identificador);
+                  this.Concat_id_Atrib(atributo.identificador, atributo.linea, atributo.columna);
 
                   /*
                   Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '\n' 
@@ -1357,7 +1786,7 @@ export class Traduccion {
         Se introduce el elemento.cons.identificador
         */
         generador.Addcomentarioxml('Agregando ID de la etiqueta');
-        this.Concat_id_ET(element.identificador);
+        this.Concat_id_ET(element.identificador, element.linea, element.columna);
 
         if(element.listaAtributos.length > 0) {
           generador.Addcomentarioxml('Agregando atributos de la etiqueta');
@@ -1374,7 +1803,7 @@ export class Traduccion {
             /*
             Se introduce atributos.identificador
             */
-            this.Concat_id_ET(atributos.identificador);
+            this.Concat_id_ET(atributos.identificador, atributos.linea, atributos.columna);
 
             /*
             Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '=' 
@@ -1386,7 +1815,7 @@ export class Traduccion {
             /*
             Se introduce atributos.valor, se le envía el ID
             */
-            this.Concat_id_Atrib(atributos.identificador);
+            this.Concat_id_Atrib(atributos.identificador, atributos.linea, atributos.columna);
           });
         }
         if (element.doble) {
@@ -1433,7 +1862,7 @@ export class Traduccion {
           /*
           Se introduce atributos.identificador
           */
-          this.Concat_id_text(element.identificador);
+          this.Concat_id_text(element.identificador, element.linea, element.columna);
 
           /*
           Se introduce al heapxpath en la posición Hxpath el caracter ascii: '\n' 
@@ -1465,7 +1894,7 @@ export class Traduccion {
           /*
           Se introduce el element.identificador
           */
-          this.Concat_id_ET(element.identificador);
+          this.Concat_id_ET(element.identificador, element.linea, element.columna);
 
           /*
           Se introduce al heapxpath en la posición Hxpath el caracter ascii: '>' 
@@ -1524,12 +1953,14 @@ export class Traduccion {
         console.log(objeto);
     }
 
-    Getid_etiqueta(atrib: string): string
+    Getid_etiqueta(atrib: string, linea: any, columna: any): string
     {
+      //elem[0] = identificador, elem[4] = linea, elem[5] = columna
+      //Se compara con todos los valores por si viene un dato con el mismo ID
       let val = "";
 
       this.ts.tabla.forEach(element => {
-        if(element[0] === atrib)
+        if(element[0] === atrib && element[4] === linea && element[5] === columna)
         {
           val = element[7];
         }
@@ -1537,7 +1968,7 @@ export class Traduccion {
       return val;
     }
 
-    Concat_id_ET(val: string){
+    Concat_id_ET(val: string, linea: any, columna: any){
       const generador = Generador.GetInstance();
 
       let id: string;
@@ -1549,7 +1980,7 @@ export class Traduccion {
       let etfalse: string;
 
       //Se obtiene la posición en el stack de la tabla de símbolos
-      id = this.Getid_etiqueta(val);
+      id = this.Getid_etiqueta(val, linea, columna);
 
       //Se crea un temporal y se le asigna el valor que tiene el stack en la posición id (referencia al heap)
       tempo = generador.Creartemp();
@@ -1593,7 +2024,7 @@ export class Traduccion {
       generador.Addxml('');
     }
 
-    Concat_id_Atrib(val: string){
+    Concat_id_Atrib(val: string, linea: any, columna: any){
       const generador = Generador.GetInstance();
 
       let id: string;
@@ -1605,7 +2036,7 @@ export class Traduccion {
       let etfalse: string;
 
       //Se obtiene la posición en el stack de la tabla de símbolos
-      id = this.Getid_etiqueta(val);
+      id = this.Getid_etiqueta(val, linea, columna);
       //Los valores del atributo están una posición arriba
       id = id + 1;
 
@@ -1652,7 +2083,7 @@ export class Traduccion {
       generador.Addcomentarioxml('Fin ciclo');
       generador.Addxml('');
     }
-    Concat_id_text(val: string){
+    Concat_id_text(val: string, linea: any, columna: any){
       const generador = Generador.GetInstance();
 
       let id: string;
@@ -1664,7 +2095,7 @@ export class Traduccion {
       let etfalse: string;
 
       //Se obtiene la posición en el stack de la tabla de símbolos
-      id = this.Getid_etiqueta(val);
+      id = this.Getid_etiqueta(val, linea, columna);
       //Los valores del atributo están una posición arriba
       id = id + 1;
 
