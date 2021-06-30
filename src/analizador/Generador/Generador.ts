@@ -106,6 +106,44 @@ export class Generador{
         this.cadxml.push(`\t/*********** ${texto} ***********/`);
     }
 
+    public Addnumconsulta(num: number)
+    {
+        let cast = num.toString();
+
+        /*
+        Se introduce al heapxpath en la posición Hxpath la cadena ' -----(num_consulta)-----\n '
+        */
+        for(let i = 0; i<15; i++)
+        {
+            this.Addxml(`heapxpath[(int)Hxpath] = ${"-".charCodeAt(0)};`);
+            this.Addxml('Hxpath = Hxpath + 1;');
+            this.Incphxpath(1);
+        }
+
+        this.Addxml(`heapxpath[(int)Hxpath] = ${"(".charCodeAt(0)};`);
+        this.Addxml('Hxpath = Hxpath + 1;');
+        this.Incphxpath(1);
+
+        this.Addxml(`heapxpath[(int)Hxpath] = ${cast.charCodeAt(0)};`);
+        this.Addxml('Hxpath = Hxpath + 1;');
+        this.Incphxpath(1);
+
+        this.Addxml(`heapxpath[(int)Hxpath] = ${")".charCodeAt(0)};`);
+        this.Addxml('Hxpath = Hxpath + 1;');
+        this.Incphxpath(1);
+
+        for(let i = 0; i<15; i++)
+        {
+            this.Addxml(`heapxpath[(int)Hxpath] = ${"-".charCodeAt(0)};`);
+            this.Addxml('Hxpath = Hxpath + 1;');
+            this.Incphxpath(1);
+        }
+
+        this.Addxml(`heapxpath[(int)Hxpath] = ${"\n".charCodeAt(0)};`);
+        this.Addxml('Hxpath = Hxpath + 1;');
+        this.Incphxpath(1);
+    }
+
     public Addcodfunc(texto:string)
     {
         this.cod_funcs.push(`${texto}`);

@@ -7,6 +7,9 @@ export class Traduccion {
     ts: XmlTS;
     //Cadena principal
     cadena:String;
+    //Control de errores
+    Unerror: boolean;
+    caderror: String;
 
     //Variables para el manejo xpath
     prologoXml: JSON;
@@ -40,6 +43,7 @@ export class Traduccion {
     {
         this.ts = tablasim;
         this.cadena = "";
+        this.Unerror = false;
     }
 
     Traducir(): String 
@@ -228,7 +232,6 @@ export class Traduccion {
         this.cuerpoXml = cuerpo;
         Object.assign(this, { raiz, contador: 0, dot: '' });
 
-        //Instancia del generador y limpieza de variables
         const generador = Generador.GetInstance();
         generador.ResetGenerador();
             
@@ -239,7 +242,10 @@ export class Traduccion {
         this.recorrer();
 
         //Se agregan funciones
-        generador.Printf();
+        if(!this.Unerror)
+        {
+          generador.Printf();
+        }        
 
         //Formular código
         this.Crearcadenaxpath();
@@ -317,16 +323,25 @@ export class Traduccion {
           try {
             this.recorrido(this.raiz);
           } catch (error) {
-            generador.Addcomentarioxml('No se encontró por algún error');
+            generador.Addcomentarioxml('No se encontró por algún error en la consulta :(');
+            this.Unerror = true;
+            this.caderror = "No se encontró por algún error en la consulta";
+            generador.Addxml(`printf("${this.caderror}");`);
           }
           if (this.atributoIdentificacion.length > 0) {              
             this.traducir();
           }
           else
-            generador.Addcomentarioxml('No se encontró');
+            generador.Addcomentarioxml('No se encontró la información');
+            this.Unerror = true;
+            this.caderror = "No se encontró la información";
+            generador.Addxml(`printf("${this.caderror}");`);
         }
         else{
           generador.Addcomentarioxml('No se pudo generar C3D del Xpath');
+          this.Unerror = true;
+          this.caderror = "No se pudo generar C3D del Xpath :(";
+          generador.Addxml(`printf("${this.caderror}");`);
         }
         
     }
@@ -356,7 +371,6 @@ export class Traduccion {
                       this.consultaXML = this.cuerpoXml;
                     }
                     else if (!(element === '[') && !(element === ']') && !(element === '(') && !(element === ')')) {
-                        /*Aquí se podría reconocer el id de cada elemento de la tabla de símbolos */
                       this.consultaXML = this.reducir(this.consultaXML, element, 'INSTRUCCIONES');
                     }
                   }
@@ -397,6 +411,17 @@ export class Traduccion {
                     this.consultaXML = this.reducir(this.consultaXML, element, 'DESCENDIENTES_NODO');
                   }
                 });
+            }
+
+            if (this.identificar('PADRE', nodo)) {
+              nodo.hijos.forEach((element: any) => {
+                if (element instanceof Object) {
+                  this.recorrido(element);
+                }
+                else if (typeof element === 'string') {
+                  this.consultaXML = this.reducir(this.consultaXML, element, 'PADRE');
+                }
+              });
             }
         }
     }
@@ -459,6 +484,83 @@ export class Traduccion {
               });
               return cons;
             }*/
+        }
+        else if (nodo === 'DESCENDIENTES_NODO') {
+          if (etiqueta === '//') {
+            this.descendiente = true;
+            this.esRaiz = false;
+            return consulta;
+          }
+          else if (etiqueta === '@') {
+            this.atributo = true;
+            return consulta;
+          }
+          else if (this.atributo) {
+            this.punto = etiqueta;
+            let cons: Array<Objeto> = [];
+            consulta.forEach(element => {
+              element.listaAtributos.forEach(atributo => {
+                if (atributo.identificador === etiqueta) {
+                  this.atributoTexto = etiqueta;
+                  cons.push(element);
+                }
+              });
+              if (element.listaObjetos.length > 0) {
+                cons = cons.concat(this.recDescen(element.listaObjetos, etiqueta, true));
+              }
+            });
+            return cons;
+          }
+          else if (etiqueta === '//*') {
+            let cons: Array<Objeto> = [];
+            consulta.forEach(element => {
+              this.ts.tabla.forEach(padre => {
+                if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+                  if (element.listaObjetos.length > 0) {
+                    cons = cons.concat(element.listaObjetos);
+                  }
+                }
+              });
+            });
+            this.nodo_descendente = true;
+            return cons;
+          }
+          else if (etiqueta === 'node()') {
+            let cons: Array<Objeto> = [];
+            consulta.forEach(element => {
+              this.ts.tabla.forEach(padre => {
+                if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+                  if (element.listaObjetos.length > 0) {
+                    cons = cons.concat(element.listaObjetos);
+                  } else {
+                    //arreglar cuando solo viene texto 
+                    this.node_texto = true;
+                    if (element.texto != null)
+                      cons = cons.concat(element);
+                  }
+                }
+              });
+            });
+            this.node_desc = true;
+            return cons;
+          }
+          else if (etiqueta === 'text()') {
+            let cons: Array<Objeto> = [];
+            consulta.forEach(element => {
+              this.ts.tabla.forEach(padre => {
+                if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+                  if (element.listaObjetos.length > 0) {
+                    if (element.texto != null) {
+                      this.node_texto = true;
+                      cons = cons.concat(element.listaObjetos);
+                    }
+                  } else {
+                  }
+                }
+              });
+            });
+            return cons;
+          }
         }
         else if (nodo === 'INSTRUCCIONES') {
             let cons: Array<Objeto>;
@@ -622,7 +724,7 @@ export class Traduccion {
                 return cons;
               }
             }
-            else {
+            else { //descendiente = true;
               this.punto = etiqueta;
               consulta.forEach(element => {
                 if (element.identificador === etiqueta) {
@@ -634,6 +736,35 @@ export class Traduccion {
               });
               return cons;
             }
+        }
+        else if (nodo === 'PADRE') {
+          if (etiqueta === '/..') {
+            if (this.atributo) {
+              this.descendiente = false;
+              this.atributo = false;
+              return consulta;
+            }
+            this.descendiente = false;
+            this.atributo = false;
+            let cons: Array<Objeto> = [];
+            consulta.forEach(element => {
+              this.ts.tabla.forEach(padre => {
+                if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+                  let a = padre[6];
+                  let b = false;
+                  cons.forEach(element => {
+                    if (element == a) {
+                      b = true;
+                    }
+                  });
+                  if (!b) {
+                    cons.push(a);
+                  }
+                }
+              });
+            });
+            return cons;
+          }
         }
     }
 
@@ -670,13 +801,19 @@ export class Traduccion {
       }
 
     traducir() {
-        //Instancia del generador
         const generador = Generador.GetInstance();
 
         let cadena = '';
         let numero: number = 0;
         let cadaux: string;
         let tempo: string;
+
+        generador.Addcomentarioxml('Iniciando apartado de consultas');
+
+        //Se obtiene la posición del puntero Hxpath y se asigna a un nuevo temporal (el cual servirá para el stackxpath)
+        tempo = generador.Creartemp();
+        cadaux = tempo + ' = Hxpath;\n';
+        generador.Addxml(cadaux);
 
         this.atributoIdentificacion.forEach(element => {
             numero++;
@@ -700,8 +837,8 @@ export class Traduccion {
                     }
                 }
 
-                cadena += '--------------------------------------(' + numero + ')---------------------------------\n';
                 generador.Addcomentarioxml('Generación resultado: '+ numero);
+                generador.Addnumconsulta(numero);
 
                 if(this.nodo_descendente){
                 }
@@ -711,32 +848,15 @@ export class Traduccion {
                 }
                 else if (this.node_texto) {
                 }
-                else {
-                  generador.Addcomentarioxml('Agregando elementos al Heapxpath');
-
-                  //Se obtiene la posición del puntero Hxpath y se asigna a un nuevo temporal (el cual servirá para el stackxpath)
-                  tempo = generador.Creartemp();
-                  cadaux = tempo + ' = Hxpath;';
-                  generador.Addxml(cadaux);
-
+                else {                  
                   /*
-                  Se introduce al heapxpath en la posición Hxpath el caracter ascii
-                  <
+                  Se introduce al heapxpath en la posición Hxpath el caracter ascii: <
                   */
                   generador.Addxml(`heapxpath[(int)Hxpath] = ${"<".charCodeAt(0)};`);
-
-                  //Se incrementa el registro Hxpath
-                  generador.Addxml('Hxpath = Hxpath + 1;');
+                  generador.Addxml('Hxpath = Hxpath + 1;\n');
                   generador.Incphxpath(1);
 
                   generador.Addcomentarioxml('Agregando ID de la etiqueta');
-
-                  //Se referencia al stackxpath el inicio del heapxpath
-                  let st: number = generador.GetStackposxpath();
-                  generador.Addxml(`stackxpath[(int)${st}] = ${tempo};\n`);
-
-                  //Se incrementa el stackxpath
-                  generador.Incpsxpath(1);
 
                   /*
                   Se introduce el elemento.cons.identificador
@@ -747,13 +867,10 @@ export class Traduccion {
                     generador.Addcomentarioxml('Agregando atributos de la etiqueta');
                     element.cons.listaAtributos.forEach(atributos => {
                       /*
-                      Se introduce al heapxpath en la posición Hxpath el caracter ascii
-                      ' ' 
+                      Se introduce al heapxpath en la posición Hxpath el caracter ascii:  ' ' 
                       */
                       generador.Addxml(`heapxpath[(int)Hxpath] = ${" ".charCodeAt(0)};`);
-
-                      //Se incrementa el registro Hxpath
-                      generador.Addxml('Hxpath = Hxpath + 1;');
+                      generador.Addxml('Hxpath = Hxpath + 1;\n');
                       generador.Incphxpath(1);
 
                       generador.Addcomentarioxml('Atributo');
@@ -764,12 +881,9 @@ export class Traduccion {
                       this.Concat_id_ET(atributos.identificador);
 
                       /*
-                      Se introduce al heapxpath en la posición Hxpath el caracter ascii
-                      '=' 
+                      Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '=' 
                       */
                       generador.Addxml(`heapxpath[(int)Hxpath] = ${"=".charCodeAt(0)};`);
-
-                      //Se incrementa el registro Hxpath
                       generador.Addxml('Hxpath = Hxpath + 1;');
                       generador.Incphxpath(1);
 
@@ -781,54 +895,39 @@ export class Traduccion {
                   }
                   if (element.cons.doble) {
                     /*
-                    Se introduce al heapxpath en la posición Hxpath el caracter ascii
-                    '>' 
+                    Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '>' 
                     */
                     generador.Addxml(`heapxpath[(int)Hxpath] = ${">".charCodeAt(0)};`);
-
-                    //Se incrementa el registro Hxpath
                     generador.Addxml('Hxpath = Hxpath + 1;');
                     generador.Incphxpath(1);
 
                     /*
-                    Se introduce al heapxpath en la posición Hxpath el caracter ascii
-                    '\n' 
+                    Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '\n' 
                     */
                     generador.Addxml(`heapxpath[(int)Hxpath] = ${"\n".charCodeAt(0)};`);
-
-                    //Se incrementa el registro Hxpath
-                    generador.Addxml('Hxpath = Hxpath + 1;');
+                    generador.Addxml('Hxpath = Hxpath + 1;\n');
                     generador.Incphxpath(1);
                   }
                   else {
                     /*
-                    Se introduce al heapxpath en la posición Hxpath el caracter ascii
-                    '/' 
+                    Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '/' 
                     */
                     generador.Addxml(`heapxpath[(int)Hxpath] = ${"/".charCodeAt(0)};`);
-
-                    //Se incrementa el registro Hxpath
                     generador.Addxml('Hxpath = Hxpath + 1;');
                     generador.Incphxpath(1);
 
                     /*
-                    Se introduce al heapxpath en la posición Hxpath el caracter ascii
-                    '>' 
+                    Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '>' 
                     */
                     generador.Addxml(`heapxpath[(int)Hxpath] = ${">".charCodeAt(0)};`);
-
-                    //Se incrementa el registro Hxpath
                     generador.Addxml('Hxpath = Hxpath + 1;');
                     generador.Incphxpath(1);
 
                     /*
-                    Se introduce al heapxpath en la posición Hxpath el caracter ascii
-                    '\n' 
+                    Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '\n' 
                     */
                     generador.Addxml(`heapxpath[(int)Hxpath] = ${"\n".charCodeAt(0)};`);
-
-                    //Se incrementa el registro Hxpath
-                    generador.Addxml('Hxpath = Hxpath + 1;');
+                    generador.Addxml('Hxpath = Hxpath + 1;\n');
                     generador.Incphxpath(1);
                   }
                   if (texto != '') {
@@ -836,17 +935,14 @@ export class Traduccion {
                     //cadena += this.encode(texto) +  '\n';
 
                     /*
-                    Se introduce atributos.identificador
+                    Se introduce element.identificador para obtener el texto
                     */
-                    this.Concat_id_ET(element.cons.identificador);
+                    this.Concat_id_text(element.cons.identificador);
 
                     /*
-                    Se introduce al heapxpath en la posición Hxpath el caracter ascii
-                    '\n' 
+                    Se introduce al heapxpath en la posición Hxpath el caracter ascii: '\n' 
                     */
                     generador.Addxml(`heapxpath[(int)Hxpath] = ${"\n".charCodeAt(0)};`);
-
-                    //Se incrementa el registro Hxpath
                     generador.Addxml('Hxpath = Hxpath + 1;');
                     generador.Incphxpath(1);
                   }
@@ -855,22 +951,16 @@ export class Traduccion {
                   }
                   if (element.cons.doble) {
                     /*
-                    Se introduce al heapxpath en la posición Hxpath el caracter ascii
-                    <
+                    Se introduce al heapxpath en la posición Hxpath el caracter ascii:  <
                     */
                     generador.Addxml(`heapxpath[(int)Hxpath] = ${"<".charCodeAt(0)};`);
-
-                    //Se incrementa el registro Hxpath
                     generador.Addxml('Hxpath = Hxpath + 1;');
                     generador.Incphxpath(1);
 
                     /*
-                    Se introduce al heapxpath en la posición Hxpath el caracter ascii
-                    '/' 
+                    Se introduce al heapxpath en la posición Hxpath el caracter ascii: '/' 
                     */
                     generador.Addxml(`heapxpath[(int)Hxpath] = ${"/".charCodeAt(0)};`);
-
-                    //Se incrementa el registro Hxpath
                     generador.Addxml('Hxpath = Hxpath + 1;');
                     generador.Incphxpath(1);
 
@@ -880,57 +970,85 @@ export class Traduccion {
                     this.Concat_id_ET(element.cons.identificador);
 
                     /*
-                    Se introduce al heapxpath en la posición Hxpath el caracter ascii
-                    '>' 
+                    Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '>' 
                     */
                     generador.Addxml(`heapxpath[(int)Hxpath] = ${">".charCodeAt(0)};`);
-
-                    //Se incrementa el registro Hxpath
                     generador.Addxml('Hxpath = Hxpath + 1;');
                     generador.Incphxpath(1);
 
                     /*
-                    Se introduce al heapxpath en la posición Hxpath el caracter ascii
-                    '\n' 
+                    Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '\n' 
                     */
                     generador.Addxml(`heapxpath[(int)Hxpath] = ${"\n".charCodeAt(0)};`);
-
-                    //Se incrementa el registro Hxpath
-                    generador.Addxml('Hxpath = Hxpath + 1;');
+                    generador.Addxml('Hxpath = Hxpath + 1;\n');
                     generador.Incphxpath(1);
                   }
-
-                    /*cadena += '<' + element.cons.identificador + this.Getid_etiqueta(element.cons.identificador);
-                    if (element.cons.listaAtributos.length > 0) {
-                        element.cons.listaAtributos.forEach(atributos => {
-                        cadena += ' ' + atributos.identificador + '=' + atributos.valor;
-                        });
-                    }
-                    if (element.cons.doble) {
-                        cadena += '>\n';
-                    }
-                    else {
-                        cadena += '/>\n';
-                    }
-                    if (texto != '') {
-                        cadena += this.encode(texto) + '\n';
-                    }
-                    if (element.cons.listaObjetos.length > 0) {
-                        cadena += this.traducirRecursiva(element.cons.listaObjetos);
-                    }
-                    if (element.cons.doble) {
-                        cadena += '</' + element.cons.identificador + '>\n';
-                    }*/
                 }
             }
             else {
-                
+              generador.Addcomentarioxml('Generación resultado: '+ numero);
+              generador.Addnumconsulta(numero);
+
+              element.cons.listaAtributos.forEach(atributo => {
+                generador.Addcomentarioxml('Atributo');
+
+                if (element.texto === atributo.identificador) {
+                  /*
+                  Se introduce atributos.identificador
+                  */
+                  this.Concat_id_ET(atributo.identificador);
+
+                  /*
+                  Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '=' 
+                  */
+                  generador.Addxml(`heapxpath[(int)Hxpath] = ${"=".charCodeAt(0)};`);
+                  generador.Addxml('Hxpath = Hxpath + 1;');
+                  generador.Incphxpath(1);
+
+                  /*
+                  Se introduce atributos.valor, se le envía el ID
+                  */
+                  this.Concat_id_Atrib(atributo.identificador);
+
+                  /*
+                  Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '\n' 
+                  */
+                  generador.Addxml(`heapxpath[(int)Hxpath] = ${"\n".charCodeAt(0)};`);
+                  generador.Addxml('Hxpath = Hxpath + 1;\n');
+                  generador.Incphxpath(1);
+                }
+                else if (this.atributo_nodo_descendiente) {
+                  /*
+                  Se introduce atributos.identificador
+                  */
+                  this.Concat_id_ET(atributo.identificador);
+
+                  /*
+                  Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '=' 
+                  */
+                  generador.Addxml(`heapxpath[(int)Hxpath] = ${"=".charCodeAt(0)};`);
+                  generador.Addxml('Hxpath = Hxpath + 1;');
+                  generador.Incphxpath(1);
+
+                  /*
+                  Se introduce atributos.valor, se le envía el ID
+                  */
+                  this.Concat_id_Atrib(atributo.identificador);
+
+                  /*
+                  Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '\n' 
+                  */
+                  generador.Addxml(`heapxpath[(int)Hxpath] = ${"\n".charCodeAt(0)};`);
+                  generador.Addxml('Hxpath = Hxpath + 1;\n');
+                  generador.Incphxpath(1);
+                }
+              });           
             }
         })
 
         //Al finalizar la cadena se introduce un -1 para indicar final
         generador.Addxml(`heapxpath[(int)Hxpath] = -1;`);
-        generador.Addxml('Hxpath = Hxpath + 1;');
+        generador.Addxml('Hxpath = Hxpath + 1;\n');
         generador.Incphxpath(1);
 
         generador.Addcomentarioxml('Se agrega la posición de inicio del heapxpath en el stackxpath');
@@ -968,32 +1086,25 @@ export class Traduccion {
         }
 
         /*
-        Se introduce al heapxpath en la posición Hxpath el caracter ascii
-        <
+        Se introduce al heapxpath en la posición Hxpath el caracter ascii <
         */
         generador.Addxml(`heapxpath[(int)Hxpath] = ${"<".charCodeAt(0)};`);
-
-        //Se incrementa el registro Hxpath
-        generador.Addxml('Hxpath = Hxpath + 1;');
-        generador.Incphxpath(1);
-
-        generador.Addcomentarioxml('Agregando ID de la etiqueta');
+        generador.Addxml('Hxpath = Hxpath + 1;\n');
+        generador.Incphxpath(1);        
 
         /*
         Se introduce el elemento.cons.identificador
         */
+        generador.Addcomentarioxml('Agregando ID de la etiqueta');
         this.Concat_id_ET(element.identificador);
 
         if(element.listaAtributos.length > 0) {
           generador.Addcomentarioxml('Agregando atributos de la etiqueta');
           element.listaAtributos.forEach(atributos => {
             /*
-            Se introduce al heapxpath en la posición Hxpath el caracter ascii
-            ' ' 
+            Se introduce al heapxpath en la posición Hxpath el caracter ascii:  ' ' 
             */
             generador.Addxml(`heapxpath[(int)Hxpath] = ${" ".charCodeAt(0)};`);
-
-            //Se incrementa el registro Hxpath
             generador.Addxml('Hxpath = Hxpath + 1;');
             generador.Incphxpath(1);
 
@@ -1005,12 +1116,9 @@ export class Traduccion {
             this.Concat_id_ET(atributos.identificador);
 
             /*
-            Se introduce al heapxpath en la posición Hxpath el caracter ascii
-            '=' 
+            Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '=' 
             */
             generador.Addxml(`heapxpath[(int)Hxpath] = ${"=".charCodeAt(0)};`);
-
-            //Se incrementa el registro Hxpath
             generador.Addxml('Hxpath = Hxpath + 1;');
             generador.Incphxpath(1);
 
@@ -1022,53 +1130,38 @@ export class Traduccion {
         }
         if (element.doble) {
           /*
-          Se introduce al heapxpath en la posición Hxpath el caracter ascii
-          '>' 
+          Se introduce al heapxpath en la posición Hxpath el caracter ascii: '>' 
           */
           generador.Addxml(`heapxpath[(int)Hxpath] = ${">".charCodeAt(0)};`);
-
-          //Se incrementa el registro Hxpath
           generador.Addxml('Hxpath = Hxpath + 1;');
           generador.Incphxpath(1);
 
           /*
-          Se introduce al heapxpath en la posición Hxpath el caracter ascii
-          '\n' 
+          Se introduce al heapxpath en la posición Hxpath el caracter ascii: '\n' 
           */
           generador.Addxml(`heapxpath[(int)Hxpath] = ${"\n".charCodeAt(0)};`);
-
-          //Se incrementa el registro Hxpath
-          generador.Addxml('Hxpath = Hxpath + 1;');
+          generador.Addxml('Hxpath = Hxpath + 1;\n');
           generador.Incphxpath(1);
         }
         else {
           /*
-          Se introduce al heapxpath en la posición Hxpath el caracter ascii
-          '/' 
+          Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '/' 
           */
           generador.Addxml(`heapxpath[(int)Hxpath] = ${"/".charCodeAt(0)};`);
-
-          //Se incrementa el registro Hxpath
           generador.Addxml('Hxpath = Hxpath + 1;');
           generador.Incphxpath(1);
 
           /*
-          Se introduce al heapxpath en la posición Hxpath el caracter ascii
-          '>' 
+          Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '>' 
           */
           generador.Addxml(`heapxpath[(int)Hxpath] = ${">".charCodeAt(0)};`);
-
-          //Se incrementa el registro Hxpath
           generador.Addxml('Hxpath = Hxpath + 1;');
           generador.Incphxpath(1);
 
           /*
-          Se introduce al heapxpath en la posición Hxpath el caracter ascii
-          '\n' 
+          Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '\n' 
           */
           generador.Addxml(`heapxpath[(int)Hxpath] = ${"\n".charCodeAt(0)};`);
-
-          //Se incrementa el registro Hxpath
           generador.Addxml('Hxpath = Hxpath + 1;');
           generador.Incphxpath(1);
         }
@@ -1079,11 +1172,10 @@ export class Traduccion {
           /*
           Se introduce atributos.identificador
           */
-          this.Concat_id_ET(element.identificador);
+          this.Concat_id_text(element.identificador);
 
           /*
-          Se introduce al heapxpath en la posición Hxpath el caracter ascii
-          '\n' 
+          Se introduce al heapxpath en la posición Hxpath el caracter ascii: '\n' 
           */
           generador.Addxml(`heapxpath[(int)Hxpath] = ${"\n".charCodeAt(0)};`);
 
@@ -1096,72 +1188,38 @@ export class Traduccion {
         }
         if (element.doble) {
           /*
-          Se introduce al heapxpath en la posición Hxpath el caracter ascii
-          <
+          Se introduce al heapxpath en la posición Hxpath el caracter ascii: <
           */
           generador.Addxml(`heapxpath[(int)Hxpath] = ${"<".charCodeAt(0)};`);
-
-          //Se incrementa el registro Hxpath
           generador.Addxml('Hxpath = Hxpath + 1;');
           generador.Incphxpath(1);
 
           /*
-          Se introduce al heapxpath en la posición Hxpath el caracter ascii
-          '/' 
+          Se introduce al heapxpath en la posición Hxpath el caracter ascii: '/' 
           */
           generador.Addxml(`heapxpath[(int)Hxpath] = ${"/".charCodeAt(0)};`);
-
-          //Se incrementa el registro Hxpath
           generador.Addxml('Hxpath = Hxpath + 1;');
           generador.Incphxpath(1);
 
           /*
-          Se introduce el elemento.cons.identificador
+          Se introduce el element.identificador
           */
           this.Concat_id_ET(element.identificador);
 
           /*
-          Se introduce al heapxpath en la posición Hxpath el caracter ascii
-          '>' 
+          Se introduce al heapxpath en la posición Hxpath el caracter ascii: '>' 
           */
           generador.Addxml(`heapxpath[(int)Hxpath] = ${">".charCodeAt(0)};`);
-
-          //Se incrementa el registro Hxpath
           generador.Addxml('Hxpath = Hxpath + 1;');
           generador.Incphxpath(1);
 
           /*
-          Se introduce al heapxpath en la posición Hxpath el caracter ascii
-          '\n' 
+          Se introduce al heapxpath en la posición Hxpath el caracter ascii: '\n' 
           */
           generador.Addxml(`heapxpath[(int)Hxpath] = ${"\n".charCodeAt(0)};`);
-
-          //Se incrementa el registro Hxpath
           generador.Addxml('Hxpath = Hxpath + 1;');
           generador.Incphxpath(1);
         }
-
-        /*cadena += '<' + element.identificador + this.Getid_etiqueta(element.identificador);
-        if (element.listaAtributos.length > 0) {
-          element.listaAtributos.forEach(atributos => {
-            cadena += ' ' + atributos.identificador + '=' + atributos.valor;
-          });
-        }
-        if (element.doble) {
-          cadena += '>\n';
-        }
-        else {
-          cadena += '/>\n';
-        }
-        if (texto != '') {
-          cadena += this.encode(texto) + '\n';
-        }
-        if (element.listaObjetos.length > 0) {
-          this.traducirRecursiva(element.listaObjetos);
-        }
-        if (element.doble) {
-          cadena += '</' + element.identificador + '>\n';
-        }*/
       });
     }
 
@@ -1237,8 +1295,6 @@ export class Traduccion {
       cadaux = `${tempo} = stack[(int)${id}];`;
       generador.Addxml(cadaux);
 
-      generador.Addcomentarioxml('Ciclo para ir pasando de heap a heapxpath');
-
       //Etiquetas
       etinicio = generador.Crearetiqueta();
       ettrue = generador.Crearetiqueta();
@@ -1248,7 +1304,7 @@ export class Traduccion {
       cadaux = etinicio + ':';
       generador.Addxml(cadaux);
       
-      //Validación obteniendo el valor que hay en el heap
+      //Validación obteniendo el valor que hay en el heap (-1 = fin de cadena)
       tempocomp = generador.Creartemp();
       cadaux = `${tempocomp} = heap[(int)${tempo}];`;
       generador.Addxml(cadaux);
@@ -1259,7 +1315,7 @@ export class Traduccion {
       generador.Addxml(cadaux);
 
       //Etiqueta true e instrucciones
-      cadaux = ettrue + ':\n';
+      cadaux = ettrue + ':';
       generador.Addxml(cadaux);
 
       generador.Addxml(`heapxpath[(int)Hxpath] = ${tempocomp};`);
@@ -1270,9 +1326,10 @@ export class Traduccion {
       generador.Addxml(`goto ${etinicio};`);
 
       //Etiqueta false
-      generador.Addxml(`${etfalse}:\n`);
+      generador.Addxml(`${etfalse}:`);
 
       generador.Addcomentarioxml('Fin ciclo');
+      generador.Addxml('');
     }
 
     Concat_id_Atrib(val: string){
@@ -1293,10 +1350,10 @@ export class Traduccion {
 
       //Se crea un temporal y se le asigna el valor que tiene el stack en la posición id (referencia al heap)
       tempo = generador.Creartemp();
-      cadaux = `${tempo} = stack[(int)${id}];`;
+      cadaux = `${tempo} = stack[(int)${id}];\n`;
       generador.Addxml(cadaux);
 
-      generador.Addcomentarioxml('Ciclo para ir pasando de heap a heapxpath');
+      generador.Addcomentarioxml('Ciclo para guardar el valor del atributo');
 
       //Etiquetas
       etinicio = generador.Crearetiqueta();
@@ -1318,7 +1375,7 @@ export class Traduccion {
       generador.Addxml(cadaux);
 
       //Etiqueta true e instrucciones
-      cadaux = ettrue + ':\n';
+      cadaux = ettrue + ':';
       generador.Addxml(cadaux);
 
       generador.Addxml(`heapxpath[(int)Hxpath] = ${tempocomp};`);
@@ -1329,9 +1386,10 @@ export class Traduccion {
       generador.Addxml(`goto ${etinicio};`);
 
       //Etiqueta false
-      generador.Addxml(`${etfalse}:\n`);
+      generador.Addxml(`${etfalse}:`);
 
       generador.Addcomentarioxml('Fin ciclo');
+      generador.Addxml('');
     }
     Concat_id_text(val: string){
       const generador = Generador.GetInstance();
@@ -1351,10 +1409,10 @@ export class Traduccion {
 
       //Se crea un temporal y se le asigna el valor que tiene el stack en la posición id (referencia al heap)
       tempo = generador.Creartemp();
-      cadaux = `${tempo} = stack[(int)${id}];`;
+      cadaux = `${tempo} = stack[(int)${id}];\n`;
       generador.Addxml(cadaux);
 
-      generador.Addcomentarioxml('Ciclo para ir pasando de heap a heapxpath');
+      generador.Addcomentarioxml('Ciclo para enviar datos del heap al heapxpath');
 
       //Etiquetas
       etinicio = generador.Crearetiqueta();
@@ -1376,7 +1434,7 @@ export class Traduccion {
       generador.Addxml(cadaux);
 
       //Etiqueta true e instrucciones
-      cadaux = ettrue + ':\n';
+      cadaux = ettrue + ':';
       generador.Addxml(cadaux);
 
       generador.Addxml(`heapxpath[(int)Hxpath] = ${tempocomp};`);
@@ -1387,9 +1445,10 @@ export class Traduccion {
       generador.Addxml(`goto ${etinicio};`);
 
       //Etiqueta false
-      generador.Addxml(`${etfalse}:\n`);
+      generador.Addxml(`${etfalse}:`);
 
       generador.Addcomentarioxml('Fin ciclo');
+      generador.Addxml('');
     }
 }
 /*

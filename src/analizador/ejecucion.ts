@@ -1024,7 +1024,7 @@ export class Ejecucion {
           return cons;
         }
       }
-      else {
+      else { //descendiente = true;
         this.punto = etiqueta;
         consulta.forEach(element => {
           if (element.identificador === etiqueta) {

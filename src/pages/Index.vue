@@ -277,7 +277,7 @@
                         <q-item-section @click="traduccionXPATH">XPATH</q-item-section>
                       </q-item>
                       <q-item clickable>
-                        <q-item-section @click="0">XQUERY</q-item-section>
+                        <q-item-section @click="traduccionXQUERY">XQUERY</q-item-section>
                       </q-item>
                     </q-list>
                   </q-menu>
@@ -966,6 +966,11 @@ export default {
       Rep_Optimizar.getInstance().clear();
       this.errores = [];
       this.repoptimizar = [];
+    },
+    traduccionXQUERY(){
+      let variable = "ñ";
+      console.log(variable.codePointAt(0));
+      console.log(variable.charCodeAt(0));
     }
   },
 };
