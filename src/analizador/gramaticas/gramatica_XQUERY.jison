@@ -139,8 +139,8 @@
 %left 'diagonal'
 %left 'doble_diagonal'
 %left 'cor_izq' 'cor_der'
-%left 'dos_pts'
-%left 'diagonal_dos_pts' 'dolar' 'to'  'id' 'integer'
+%left 'dos_pts' 
+%left 'diagonal_dos_pts' 'dolar' 'to'  'id' 'integer' 
 
 // Produccion Inicial
 %start XQUERY 
@@ -156,15 +156,23 @@ XQUERY : INSTRUCCIONES EOF //PATH EXPRESSIONS Y PREDICATES
 
 FLWOR : FOR 
             { $$ = new NodoAST({label: 'FLWOR', hijos: [$1], linea: yylineno}); }  
-        | LET
-            { $$ = new NodoAST({label: 'FLWOR', hijos: [$1], linea: yylineno}); }
-        | FUNCION
+        | L_LET
             { $$ = new NodoAST({label: 'FLWOR', hijos: [$1], linea: yylineno}); }
         | IF 
             { $$ = new NodoAST({label: 'FLWOR', hijos: [$1], linea: yylineno}); }
         | LLAMADA_FUNCION
             { $$ = new NodoAST({label: 'FLWOR', hijos: [$1], linea: yylineno}); }
+        | FUNCIONES FOR
+            { $$ = new NodoAST({label: 'FLWOR', hijos: [$1,$2], linea: yylineno}); } 
+        | FUNCIONES LLAMADA_FUNCION
+            { $$ = new NodoAST({label: 'FLWOR', hijos: [$1,$2], linea: yylineno}); }
         ;  
+
+FUNCIONES : FUNCIONES FUNCION { $$ = new NodoAST({label: 'FUNCION', hijos: [...$1.hijos,$2], linea: yylineno}); }
+          | FUNCION { $$ = new NodoAST({label: 'FUNCION', hijos: [$1], linea: yylineno}); }; 
+
+L_LET: L_LET LET { $$ = new NodoAST({label: 'LET', hijos: [...$1.hijos,$2], linea: yylineno}); }
+     | LET { $$ = new NodoAST({label: 'LET', hijos: [$1], linea: yylineno});};
 
 FOR : FOR_1 FOR_2 L_CONDICION RETURN 
         { $$ = new NodoAST({label: 'FOR', hijos: [...$1.hijos,...$2.hijos,...$3.hijos,$4], linea: yylineno}); }
@@ -313,9 +321,16 @@ LET :  let dolar id doble_pto igual EXPR RETURN
          { $$ = new NodoAST({label: 'LET', hijos: [($2+$3),$5,$6], linea: yylineno}); } 
     ;
 
-FUNCION : declare function id doble_pto id par_izq PARAMETROS par_der  as xs doble_pto TIPO llave_izq FLWOR llave_der pto_coma 
+FUNCION : declare function id doble_pto id par_izq PARAMETROS par_der  as xs doble_pto TIPO llave_izq SENTENCIAS llave_der pto_coma 
          { $$ = new NodoAST({label: 'FUNCION', hijos: [$3,$5,$7,$12,$14], linea: yylineno}); } 
+         | declare function id doble_pto id par_izq PARAMETROS par_der  SENTENCIAS llave_der pto_coma 
 ;
+
+SENTENCIAS : FLWOR { $$ = new NodoAST({label: 'FLWOR', hijos: [...$1.hijos], linea: yylineno}); }
+            | L_LET IF { $$ = new NodoAST({label: 'FLWOR', hijos: [...$1.hijos,$2], linea: yylineno}); }
+            | L_LET FOR { $$ = new NodoAST({label: 'FLWOR', hijos: [...$1.hijos,$2], linea: yylineno}); }
+            | L_LET IF RETURN{ $$ = new NodoAST({label: 'FLWOR', hijos: [...$1.hijos,$2,$3], linea: yylineno}); }
+            | L_LET FOR RETURN { $$ = new NodoAST({label: 'FLWOR', hijos: [...$1.hijos,$2,$3], linea: yylineno}); }; 
 
 PARAMETROS: PARAMETROS coma PARAM
             { $$ = new NodoAST({label: 'PARAMETROS', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }
@@ -613,4 +628,3 @@ VALORES : integer
         | dolar INSTRUCCIONES
             { $$ = new NodoAST({label: 'xquery', hijos: [$1,...$2.hijos], linea: yylineno}); }
         ;
-
