@@ -7,6 +7,7 @@ class Traduccion {
         this.ts = tablasim;
         this.cadena = "";
         this.Unerror = false;
+        this.caderror = "";
     }
     Traducir() {
         //Instancia del generador y limpieza de variables
@@ -149,8 +150,8 @@ class Traduccion {
         this.Crearestructuras();
         //Crear codigo de consulta
         this.recorrer();
-        //Se agregan funciones
-        if (!this.Unerror) {
+        //Se agregan funciones si no hay errores
+        if (this.Unerror == false) {
             generador.Printf();
         }
         //Formular código
@@ -202,6 +203,8 @@ class Traduccion {
     recorrer() {
         //Instancia del generador
         const generador = Generador_1.Generador.GetInstance();
+        this.Unerror = false;
+        this.caderror = "";
         if (this.raiz != null) {
             this.esRaiz = true;
             this.descendiente = false;
@@ -223,11 +226,12 @@ class Traduccion {
             if (this.atributoIdentificacion.length > 0) {
                 this.traducir();
             }
-            else
+            else {
                 generador.Addcomentarioxml('No se encontró la información');
-            this.Unerror = true;
-            this.caderror = "No se encontró la información";
-            generador.Addxml(`printf("${this.caderror}");`);
+                this.Unerror = true;
+                this.caderror = "No se encontró la información";
+                generador.Addxml(`printf("${this.caderror}");`);
+            }
         }
         else {
             generador.Addcomentarioxml('No se pudo generar C3D del Xpath');
@@ -307,6 +311,38 @@ class Traduccion {
                     }
                 });
             }
+            if (this.identificar('ATRIBUTO_PREDICADO', nodo)) {
+                nodo.hijos.forEach((element) => {
+                    if (element instanceof Object) {
+                        this.recorrido(element);
+                    }
+                    else if (typeof element === 'string') {
+                        //console.log(element);
+                        this.consultaXML = this.reducir(this.consultaXML, element, 'ATRIBUTO_PREDICADO');
+                    }
+                });
+            }
+            if (this.identificar('HIJOS', nodo)) {
+                nodo.hijos.forEach((element) => {
+                    if (element instanceof Object) {
+                        this.recorrido(element);
+                    }
+                    else if (typeof element === 'string') {
+                        //console.log(this.consultaXML);
+                        this.consultaXML = this.reducir(this.consultaXML, element, 'HIJOS');
+                    }
+                });
+            }
+            if (this.identificar('ATRIBUTO_NODO', nodo)) {
+                nodo.hijos.forEach((element) => {
+                    if (element instanceof Object) {
+                        this.recorrido(element);
+                    }
+                    else if (typeof element === 'string') {
+                        this.consultaXML = this.reducir(this.consultaXML, element, 'ATRIBUTO_NODO');
+                    }
+                });
+            }
         }
     }
     reducir(consulta, etiqueta, nodo) {
@@ -332,41 +368,43 @@ class Traduccion {
                 });
                 return cons;
             }
-            /*else if (etiqueta === 'node()') {
-              let cons: Array<Objeto> = [];
-              consulta.forEach(element => {
-                this.ts.tabla.forEach(padre => {
-                  if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
-                    if (element.listaObjetos.length > 0) {
-                      cons = cons.concat(element.listaObjetos);
-                    } else {
-                      //arreglar cuando solo viene texto
-                      this.node_texto = true;
-                      if (element.texto != null)
-                        cons = cons.concat(element);
-                    }
-                  }
+            else if (etiqueta === 'node()') {
+                let cons = [];
+                consulta.forEach(element => {
+                    this.ts.tabla.forEach(padre => {
+                        if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+                            if (element.listaObjetos.length > 0) {
+                                cons = cons.concat(element.listaObjetos);
+                            }
+                            else {
+                                //arreglar cuando solo viene texto 
+                                this.node_texto = true;
+                                if (element.texto != null)
+                                    cons = cons.concat(element);
+                            }
+                        }
+                    });
                 });
-              });
-              return cons;
+                return cons;
             }
             else if (etiqueta === 'text()') {
-              let cons: Array<Objeto> = [];
-              consulta.forEach(element => {
-                this.ts.tabla.forEach(padre => {
-                  if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
-                    if (element.listaObjetos.length > 0) {
-                      //elemento
-                    } else {
-                      this.node_texto = true;
-                      if (element.texto != null)
-                        cons = cons.concat(element);
-                    }
-                  }
+                let cons = [];
+                consulta.forEach(element => {
+                    this.ts.tabla.forEach(padre => {
+                        if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+                            if (element.listaObjetos.length > 0) {
+                                //elemento
+                            }
+                            else {
+                                this.node_texto = true;
+                                if (element.texto != null)
+                                    cons = cons.concat(element);
+                            }
+                        }
+                    });
                 });
-              });
-              return cons;
-            }*/
+                return cons;
+            }
         }
         else if (nodo === 'DESCENDIENTES_NODO') {
             if (etiqueta === '//') {
@@ -649,6 +687,52 @@ class Traduccion {
                 return cons;
             }
         }
+        else if (nodo === 'ATRIBUTO_PREDICADO') {
+            if (etiqueta === '@') {
+                this.atributo = true;
+                return consulta;
+            }
+            else if (this.atributo) {
+                this.atributo = false;
+                let cons = [];
+                consulta.forEach(element => {
+                    element.listaAtributos.forEach(atributo => {
+                        if (atributo.identificador === etiqueta) {
+                            this.atributoTexto = etiqueta;
+                            cons.push(element);
+                        }
+                    });
+                });
+                return cons;
+            }
+        }
+        else if (nodo === 'HIJOS') {
+            if (etiqueta === '/*') {
+                let cons = [];
+                consulta.forEach(element => {
+                    this.ts.tabla.forEach(padre => {
+                        if (padre[0] === element.identificador && padre[4] === element.linea && padre[5] === element.columna) {
+                            if (element.listaObjetos.length > 0) {
+                                cons = cons.concat(element.listaObjetos);
+                            }
+                        }
+                    });
+                });
+                return cons;
+            }
+        }
+        else if (nodo === 'ATRIBUTO_NODO') {
+            if (etiqueta === '/@*') {
+                let cons = [];
+                consulta.forEach(element => {
+                    if (element.listaAtributos.length > 0) {
+                        cons = cons.concat(element);
+                    }
+                });
+                this.atributo_nodo = true;
+                return cons;
+            }
+        }
     }
     recDescen(a, etiqueta, atributo) {
         let cons = [];
@@ -716,8 +800,161 @@ class Traduccion {
                 generador.Addcomentarioxml('Generación resultado: ' + numero);
                 generador.Addnumconsulta(numero);
                 if (this.nodo_descendente) {
+                    /*
+                    Se introduce al heapxpath en la posición Hxpath el caracter ascii: <
+                    */
+                    generador.Addxml(`heapxpath[(int)Hxpath] = ${"<".charCodeAt(0)};`);
+                    generador.Addxml('Hxpath = Hxpath + 1;\n');
+                    generador.Incphxpath(1);
+                    generador.Addcomentarioxml('Agregando ID de la etiqueta');
+                    /*
+                    Se introduce el elemento.cons.identificador
+                    */
+                    this.Concat_id_ET(element.cons.identificador);
+                    if (element.cons.listaAtributos.length > 0) {
+                        generador.Addcomentarioxml('Agregando atributos de la etiqueta');
+                        element.cons.listaAtributos.forEach(atributos => {
+                            /*
+                            Se introduce al heapxpath en la posición Hxpath el caracter ascii:  ' '
+                            */
+                            generador.Addxml(`heapxpath[(int)Hxpath] = ${" ".charCodeAt(0)};`);
+                            generador.Addxml('Hxpath = Hxpath + 1;\n');
+                            generador.Incphxpath(1);
+                            generador.Addcomentarioxml('Atributo');
+                            /*
+                            Se introduce atributos.identificador
+                            */
+                            this.Concat_id_ET(atributos.identificador);
+                            /*
+                            Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '='
+                            */
+                            generador.Addxml(`heapxpath[(int)Hxpath] = ${"=".charCodeAt(0)};`);
+                            generador.Addxml('Hxpath = Hxpath + 1;');
+                            generador.Incphxpath(1);
+                            /*
+                            Se introduce atributos.valor, se le envía el ID
+                            */
+                            this.Concat_id_Atrib(atributos.identificador);
+                        });
+                    }
+                    if (element.cons.doble) {
+                        /*
+                        Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '>'
+                        */
+                        generador.Addxml(`heapxpath[(int)Hxpath] = ${">".charCodeAt(0)};`);
+                        generador.Addxml('Hxpath = Hxpath + 1;');
+                        generador.Incphxpath(1);
+                        /*
+                        Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '\n'
+                        */
+                        generador.Addxml(`heapxpath[(int)Hxpath] = ${"\n".charCodeAt(0)};`);
+                        generador.Addxml('Hxpath = Hxpath + 1;\n');
+                        generador.Incphxpath(1);
+                    }
+                    else {
+                        /*
+                        Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '/'
+                        */
+                        generador.Addxml(`heapxpath[(int)Hxpath] = ${"/".charCodeAt(0)};`);
+                        generador.Addxml('Hxpath = Hxpath + 1;');
+                        generador.Incphxpath(1);
+                        /*
+                        Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '>'
+                        */
+                        generador.Addxml(`heapxpath[(int)Hxpath] = ${">".charCodeAt(0)};`);
+                        generador.Addxml('Hxpath = Hxpath + 1;');
+                        generador.Incphxpath(1);
+                        /*
+                        Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '\n'
+                        */
+                        generador.Addxml(`heapxpath[(int)Hxpath] = ${"\n".charCodeAt(0)};`);
+                        generador.Addxml('Hxpath = Hxpath + 1;\n');
+                        generador.Incphxpath(1);
+                    }
+                    if (texto != '') {
+                        //Verificar si se puede aplicar el encode
+                        //cadena += this.encode(texto) +  '\n';
+                        /*
+                        Se introduce element.identificador para obtener el texto
+                        */
+                        this.Concat_id_text(element.cons.identificador);
+                        /*
+                        Se introduce al heapxpath en la posición Hxpath el caracter ascii: '\n'
+                        */
+                        generador.Addxml(`heapxpath[(int)Hxpath] = ${"\n".charCodeAt(0)};`);
+                        generador.Addxml('Hxpath = Hxpath + 1;');
+                        generador.Incphxpath(1);
+                    }
+                    if (element.cons.listaObjetos.length > 0) {
+                        this.traducirRecursiva(element.cons.listaObjetos);
+                    }
+                    if (element.cons.doble) {
+                        /*
+                        Se introduce al heapxpath en la posición Hxpath el caracter ascii:  <
+                        */
+                        generador.Addxml(`heapxpath[(int)Hxpath] = ${"<".charCodeAt(0)};`);
+                        generador.Addxml('Hxpath = Hxpath + 1;');
+                        generador.Incphxpath(1);
+                        /*
+                        Se introduce al heapxpath en la posición Hxpath el caracter ascii: '/'
+                        */
+                        generador.Addxml(`heapxpath[(int)Hxpath] = ${"/".charCodeAt(0)};`);
+                        generador.Addxml('Hxpath = Hxpath + 1;');
+                        generador.Incphxpath(1);
+                        /*
+                        Se introduce el elemento.cons.identificador
+                        */
+                        this.Concat_id_ET(element.cons.identificador);
+                        /*
+                        Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '>'
+                        */
+                        generador.Addxml(`heapxpath[(int)Hxpath] = ${">".charCodeAt(0)};`);
+                        generador.Addxml('Hxpath = Hxpath + 1;');
+                        generador.Incphxpath(1);
+                        /*
+                        Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '\n'
+                        */
+                        generador.Addxml(`heapxpath[(int)Hxpath] = ${"\n".charCodeAt(0)};`);
+                        generador.Addxml('Hxpath = Hxpath + 1;\n');
+                        generador.Incphxpath(1);
+                    }
+                    if (element.cons.listaObjetos.length > 0) {
+                        this.traducirRecursiva(element.cons.listaObjetos);
+                    }
                 }
                 else if (this.atributo_nodo) {
+                    if (element.cons.listaAtributos.length > 0) {
+                        generador.Addcomentarioxml('Agregando atributos de la etiqueta');
+                        element.cons.listaAtributos.forEach(atributos => {
+                            /*
+                            Se introduce al heapxpath en la posición Hxpath el caracter ascii:  ' '
+                            */
+                            generador.Addxml(`heapxpath[(int)Hxpath] = ${" ".charCodeAt(0)};`);
+                            generador.Addxml('Hxpath = Hxpath + 1;\n');
+                            generador.Incphxpath(1);
+                            generador.Addcomentarioxml('Atributo');
+                            /*
+                            Se introduce atributos.identificador
+                            */
+                            this.Concat_id_ET(atributos.identificador);
+                            /*
+                            Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '='
+                            */
+                            generador.Addxml(`heapxpath[(int)Hxpath] = ${"=".charCodeAt(0)};`);
+                            generador.Addxml('Hxpath = Hxpath + 1;');
+                            generador.Incphxpath(1);
+                            /*
+                            Se introduce atributos.valor, se le envía el ID
+                            */
+                            this.Concat_id_Atrib(atributos.identificador);
+                            /*
+                            Se introduce al heapxpath en la posición Hxpath el caracter ascii:  '\n'
+                            */
+                            generador.Addxml(`heapxpath[(int)Hxpath] = ${"\n".charCodeAt(0)};`);
+                            generador.Addxml('Hxpath = Hxpath + 1;');
+                            generador.Incphxpath(1);
+                        });
+                    }
                 }
                 else if (this.node_desc) {
                 }

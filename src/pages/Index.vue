@@ -798,13 +798,19 @@ export default {
       this.dot4 = '';
       this.repgramdescxml = [];
     },
- /*inicializarValores5 corresponde a ejecutarXQuery*/
+    /*inicializarValores5 corresponde a ejecutarXQuery*/
     inicializarValores5() {
       Errores.getInstance().clear();
       this.errores = [];
       this.dot5 = '';
-    }
-    ,
+    },
+    /*inicializarValores4 corresponde a Optimizar*/
+    inicializarValores6() {
+      Errores.getInstance().clear();
+      Rep_Optimizar.getInstance().clear();
+      this.errores = [];
+      this.repoptimizar = [];
+    },
     validarError(error) {
       const json = JSON.stringify(error);
       this.notificar(
@@ -930,6 +936,11 @@ export default {
       this.errores = Errores.getInstance().lista;
       //this.entornos = Entornos.getInstance().lista;
     },
+    traduccionXQUERY(){
+      let variable = "ñ";
+      console.log(variable.codePointAt(0));
+      console.log(variable.charCodeAt(0));
+    },
      Optimizar(){
       if (this.code3D.trim() == "") 
       {
@@ -959,18 +970,6 @@ export default {
       }
       this.errores = Errores.getInstance().lista;
       this.repoptimizar = Rep_Optimizar.getInstance().lista;
-    },
-     /*inicializarValores4 corresponde a Optimizar*/
-    inicializarValores6() {
-      Errores.getInstance().clear();
-      Rep_Optimizar.getInstance().clear();
-      this.errores = [];
-      this.repoptimizar = [];
-    },
-    traduccionXQUERY(){
-      let variable = "ñ";
-      console.log(variable.codePointAt(0));
-      console.log(variable.charCodeAt(0));
     }
   },
 };
