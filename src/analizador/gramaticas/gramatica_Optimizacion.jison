@@ -10,13 +10,13 @@
 
 //Palabras Reservadas 
 '#include' return 'include';
-'<stdio.h>' return 'stdio';
+//'<stdio.h>' return 'stdio';
 'double'    return 'double';
 'int' return 'int';
-'S'           return 'p_Stack';
-'H'           return 'p_Heap';
-'heap' return 'heap';
-'stack' return 'stack';
+//'S'           return 'p_Stack';
+//'H'           return 'p_Heap';
+//'heap' return 'heap';
+//'stack' return 'stack';
 'main()' return 'main';
 'goto' return 'goto';
 'if'  return 'if';
@@ -51,11 +51,13 @@
 '>' return 'mayor';
 '<' return 'menor';
 ',' return 'coma';
+'.' return 'punto';
 
 //Expresiones Regulares 
-T[0-9]+                             return 'temporal';
+//T[0-9]+                             return 'temporal';
+//t[0-9]+                             return 'temporal';
 L[0-9]+                             return 'etiqueta';
-[a-zA-ZñÑáéíóúÁÉÍÓÚ_]+[[a-zA-ZñÑáéíóúÁÉÍÓÚ0-9_]]*            return 'id';
+[a-zA-ZñÑáéíóúÁÉÍÓÚ_]+[a-zA-ZñÑáéíóúÁÉÍÓÚ0-9_]*            return 'id';
 (([0-9]+"."[0-9]*)|("."[0-9]+))     return 'decimal';
 
 [0-9]+                              return 'integer';
@@ -98,41 +100,45 @@ S : INICIO EOF { return new NodoAST({label: 'S', hijos: [$1], linea: yylineno});
 INICIO : HEADER FUNCIONES 
        { $$ = new NodoAST({label: 'INICIO', hijos: [$1,$2], linea: yylineno}); };
 
-HEADER: include stdio L_DECLARACION 
-       { $$ = new NodoAST({label: 'HEADER', hijos: [$1,$2,$3], linea: yylineno}); };
+IMPORTS : IMPORTS IMPORT 
+              { $$ = new NodoAST({label: 'IMPORT', hijos: [...$1.hijos,$2], linea: yylineno}); }
+        | IMPORT { $$ = new NodoAST({label: 'IMPORT', hijos: [$1], linea: yylineno});}; 
+
+IMPORT : include menor id punto id mayor
+              { $$ = new NodoAST({label: 'IMPORT', hijos: [$1,$2,$3,$4,$5,$6], linea: yylineno}); }
+;
+
+HEADER: IMPORTS L_DECLARACION 
+       { $$ = new NodoAST({label: 'HEADER', hijos: [...$1.hijos,$2], linea: yylineno}); };
 
 L_DECLARACION : L_DECLARACION DECLARACION 
               { $$ = new NodoAST({label: 'L_DECLARACION', hijos: [$1,$2], linea: yylineno}); }
               | DECLARACION 
               {$$ = new NodoAST({label: 'L_DECLARACION', hijos: [$1], linea: yylineno});} ; 
 
-DECLARACION : double heap cor_izq integer cor_der pto_coma 
-              {$$ = new NodoAST({label: 'DECLARACION', hijos: [$1,$2,$3,$4,$5,$6], linea: yylineno});}      //heap 
-            | double stack cor_izq integer cor_der pto_coma 
-              {$$ = new NodoAST({label: 'DECLARACION', hijos: [$1,$2,$3,$4,$5,$6], linea: yylineno});}    //stack                             
+DECLARACION : double id cor_izq integer cor_der pto_coma 
+              {$$ = new NodoAST({label: 'DECLARACION', hijos: [$1,$2,$3,$4,$5,$6], linea: yylineno});}      //heap                            
             | double L_TEMPORAL pto_coma 
-              {$$ = new NodoAST({label: 'DECLARACION', hijos: [$1,...$2.hijos,$3], linea: yylineno});}                     //temporales
-            | double p_Heap pto_coma 
-              {$$ = new NodoAST({label: 'DECLARACION', hijos: [$1,$2,$3], linea: yylineno});} //puntero
-            | double p_Stack pto_coma 
-              {$$ = new NodoAST({label: 'DECLARACION', hijos: [$1,$2,$3], linea: yylineno});} ; //puntero
+              {$$ = new NodoAST({label: 'DECLARACION', hijos: [$1,...$2.hijos,$3], linea: yylineno});}   ;                  //temporales
 
-L_TEMPORAL : L_TEMPORAL coma temporal 
+L_TEMPORAL : L_TEMPORAL coma id
               {$$ = new NodoAST({label: 'L_TEMPORAL', hijos: [...$1.hijos,$2,$3], linea: yylineno}); }
-           | temporal 
+           | id
               {$$ = new NodoAST({label: 'L_DECLARACION', hijos: [$1], linea: yylineno}); }; 
 
 FUNCIONES: FUNCIONES FUNCION {$$ = new NodoAST({label: 'FUNCIONES', hijos: [...$1.hijos,...$2.hijos], linea: yylineno}); }
        | FUNCION {$$ = new NodoAST({label: 'FUNCIONES', hijos: [...$1.hijos], linea: yylineno}); };  
 
-FUNCION: TIPO_F funtion id par_izq par_der llave_izq BLOQUES RETURN llave_der 
-              {$$ = new NodoAST({label: 'FUNCION', hijos: [$1,$3,$4,$5,$6,$7,...$8.hijos,$9], linea: yylineno});}
-       | TIPO_F main llave_izq BLOQUES RETURN llave_der
-              {$$ = new NodoAST({label: 'FUNCION', hijos: [$1,$2,$3,$4,...$5.hijos,$6], linea: yylineno});}
-       ;
+FUNCION: int funtion id par_izq par_der llave_izq BLOQUES RETURN llave_der 
+              {$$ = new NodoAST({label: 'FUNCION', hijos: [$1,$2,$3,$4,$5,$6,$7,$8,$9], linea: yylineno});}
+         | void funtion id par_izq par_der llave_izq BLOQUES llave_der 
+              {$$ = new NodoAST({label: 'FUNCION', hijos: [$1,$3,$4,$5,$6,$7,$8], linea: yylineno});}
+         | int main llave_izq BLOQUES RETURN llave_der 
+              {$$ = new NodoAST({label: 'FUNCION', hijos: [$1,$2,$3,$4,$5], linea: yylineno});}
+         | void main llave_izq BLOQUES llave_der 
+              {$$ = new NodoAST({label: 'FUNCION', hijos: [$1,$2,$3,$4,$5], linea: yylineno});}
 
-TIPO_F : int { $$ = $1} 
-       | void {$$ = $1}; 
+       ;
 
 TIPO :  int { $$ = $1}
        | float { $$ = $1}
@@ -143,14 +149,12 @@ RETURN : return pto_coma {$$ = new NodoAST({label: 'RETURN', hijos: [$1,$2], lin
        | return par_izq par_der pto_coma {$$ = new NodoAST({label: 'RETURN', hijos: [$1,$2,$3,$4], linea: yylineno}); } 
        | return VALOR pto_coma {$$ = new NodoAST({label: 'RETURN', hijos: [$1,...$2.hijos,$3], linea: yylineno});} ;
 
-VALOR: temporal {$$ = new NodoAST({label: 'temporal', hijos: [$1], linea: yylineno}); }
+VALOR: id {$$ = new NodoAST({label: 'temporal', hijos: [$1], linea: yylineno}); }
        | integer {$$ = new NodoAST({label: 'integer', hijos: [$1], linea: yylineno}); }
        | decimal {$$ = new NodoAST({label: 'decimal', hijos: [$1], linea: yylineno}); }
        | par_izq TIPO par_der integer {$$ = new NodoAST({label: 'acceso', hijos: [$1,$2,$3,$4], linea: yylineno});} 
        | par_izq TIPO par_der double {$$ = new NodoAST({label: 'acceso', hijos: [$1,$2,$3,$4], linea: yylineno});} 
-       | par_izq TIPO par_der p_Stack {$$ = new NodoAST({label: 'acceso', hijos: [$1,$2,$3,$4], linea: yylineno});} 
-       | par_izq TIPO par_der p_Heap {$$ = new NodoAST({label: 'acceso', hijos: [$1,$2,$3,$4], linea: yylineno});} 
-       | PUNTERO {$$ = new NodoAST({label: 'PUNTERO', hijos: [$1], linea: yylineno}); }
+       | par_izq TIPO par_der id {$$ = new NodoAST({label: 'acceso', hijos: [$1,$2,$3,$4], linea: yylineno});} 
        | resta integer {$$ = new NodoAST({label: 'umenos', hijos: [($1+$2)], linea: yylineno});}; 
 
 BLOQUES : BLOQUES BLOQUE {$$ = new NodoAST({label: 'BLOQUES', hijos: [...$1.hijos,...$2.hijos], linea: yylineno}); }
@@ -160,7 +164,11 @@ BLOQUE : IF {$$ = new NodoAST({label: 'BLOQUE', hijos: [$1], linea: yylineno}); 
       | GOTO { $$ = new NodoAST({label: 'BLOQUE', hijos: [$1], linea: yylineno}); }
       | LLAMADA {$$ = new NodoAST({label: 'BLOQUE', hijos: [$1], linea: yylineno}); }
       | PRINT {$$ = new NodoAST({label: 'BLOQUE', hijos: [$1], linea: yylineno}); }
-      | ASIGNA {$$ = new NodoAST({label: 'BLOQUE', hijos: [$1], linea: yylineno}); }; 
+      | ASIGNA {$$ = new NodoAST({label: 'BLOQUE', hijos: [$1], linea: yylineno}); }
+      | ETIQUETA {$$ = new NodoAST({label: 'BLOQUE', hijos: [$1], linea: yylineno})}; 
+
+ETIQUETA : etiqueta dos_pts {$$ = new NodoAST({label: 'ETIQUETA', hijos: [$1,$2], linea: yylineno})};
+
 
 LLAMADA : id par_izq par_der pto_coma {$$ = new NodoAST({label: 'LLAMADA', hijos: [$1,$2,$3,$4], linea: yylineno}); }  ; 
 
@@ -190,15 +198,11 @@ OP_COMPARACION : diferente_que
                | menor 
                      { $$ = $1}; 
 
-ASIGNA : temporal  igual EXPR pto_coma
+ASIGNA : id  igual EXPR pto_coma
               {$$ = new NodoAST({label: 'ASIGNA_EXPR', hijos: [$1,$2,$3,$4], linea: yylineno});}
-       | temporal  igual VALOR pto_coma
+       | id  igual VALOR pto_coma
               {$$ = new NodoAST({label: 'ASIGNA', hijos: [$1,$2,...$3.hijos,$4], linea: yylineno});}
-       | PUNTERO igual EXPR  pto_coma
-              {$$ = new NodoAST({label: 'ASIGNA_EXPR', hijos: [$1,$2,$3,$4], linea: yylineno});}
-       | PUNTERO igual VALOR pto_coma
-              {$$ = new NodoAST({label: 'ASIGNA', hijos: [$1,$2,...$3.hijos,$4], linea: yylineno});}
-       | temporal igual ACCESO pto_coma
+       | id igual ACCESO pto_coma
               {$$ = new NodoAST({label: 'ASIGNA', hijos: [$1,$2,...$3.hijos,$4], linea: yylineno});}
        | ACCESO  igual EXPR pto_coma
               {$$ = new NodoAST({label: 'ASIGNA_EXPR', hijos: [$1,$2,$3,$4], linea: yylineno});}
@@ -208,16 +212,9 @@ ASIGNA : temporal  igual EXPR pto_coma
 
 EXPR: VALOR OP_ARITMETICO VALOR {$$ = new NodoAST({label: 'EXPR', hijos: [...$1.hijos,$2,...$3.hijos], linea: yylineno});};
 
-ACCESO : heap cor_izq VALOR cor_der 
-              {$$ = new NodoAST({label: 'ACCESO', hijos: [$1,$2,...$3.hijos,$4], linea: yylineno});}
-       | stack cor_izq VALOR cor_der
+ACCESO : id cor_izq VALOR cor_der 
               {$$ = new NodoAST({label: 'ACCESO', hijos: [$1,$2,...$3.hijos,$4], linea: yylineno});}
        ;
-
-PUNTERO : p_Stack 
-              { $$ = $1}
-       | p_Heap 
-              { $$ = $1}; 
 
 OP_ARITMETICO : suma 
                      { $$ = $1}

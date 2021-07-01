@@ -319,6 +319,8 @@ LET :  let dolar id doble_pto igual EXPR RETURN
          { $$ = new NodoAST({label: 'LET', hijos: [($2+$3),$5,$6,$7], linea: yylineno}); } 
      | let dolar id doble_pto igual EXPR
          { $$ = new NodoAST({label: 'LET', hijos: [($2+$3),$5,$6], linea: yylineno}); } 
+     | let dolar id  igual EXPR
+        { $$ = new NodoAST({label: 'LET', hijos: [($2+$3),$4,$5], linea: yylineno}); } 
     ;
 
 FUNCION : declare function id doble_pto id par_izq PARAMETROS par_der  as xs doble_pto TIPO llave_izq SENTENCIAS llave_der pto_coma 
@@ -554,6 +556,8 @@ PATH : EXPR doble_diagonal EXPR
                { $$ = new NodoAST({label: 'PATH', hijos: [...$1.hijos,$2,$3], linea: yylineno}); }
         | diagonal_dos_pts
               { $$ = new NodoAST({label: 'PATH', hijos: [$1], linea: yylineno}); }
+        | diagonal OPC_PATH 
+               { $$ = new NodoAST({label: 'PATH', hijos: [$1,...$2.hijos], linea: yylineno}); }
     
         ;
 
