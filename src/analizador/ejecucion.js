@@ -4,9 +4,14 @@ exports.Ejecucion = void 0;
 const error_1 = require("./arbol/error");
 const errores_1 = require("./arbol/errores");
 const xmlTS_1 = require("./arbol/xmlTS");
+const identificador_1 = require("./expresiones/identificador");
+const letEXP_1 = require("./expresiones/letEXP");
 const operacion_1 = require("./expresiones/operacion");
 const primitivo_1 = require("./expresiones/primitivo");
 const relacional_1 = require("./expresiones/relacional");
+const entorno_1 = require("./interfaces/entorno");
+const instruccion_1 = require("./interfaces/instruccion");
+const listaEntornos_1 = require("./interfaces/listaEntornos");
 class Ejecucion {
     constructor(prologo, cuerpo, cadena, raiz) {
         this.tildes = ['á', 'é', 'í', 'ó', 'ú'];
@@ -112,11 +117,17 @@ class Ejecucion {
             this.atributo = false;
             this.atributoTexto = '';
             this.atributoIdentificacion = [];
+            this.ejecXQuery = [];
             this.indiceValor = null;
             this.punto = '';
             this.consultaXML = this.cuerpoXml;
             this.verObjetos();
             try {
+                if (this.raiz instanceof Object) {
+                    if (this.identificar('XQUERY', this.raiz)) {
+                        this.xqueryEjec();
+                    }
+                }
                 this.recorrido(this.raiz);
             }
             catch (error) {
@@ -1831,6 +1842,71 @@ class Ejecucion {
         const json = JSON.stringify(error);
         const objeto = JSON.parse(json);
         console.log(objeto);
+    }
+    xqueryEjec() {
+        const instrucciones = this.xqueryRec(this.raiz);
+        if (instrucciones instanceof Array) {
+            const entorno = new entorno_1.Entorno();
+            instrucciones.forEach(element => {
+                if (element instanceof instruccion_1.Instruccion) {
+                    try {
+                        element.ejecutar(entorno);
+                    }
+                    catch (error) {
+                    }
+                }
+            });
+            listaEntornos_1.ListaEntornos.getInstance().push(entorno);
+        }
+        console.log(instrucciones);
+    }
+    xqueryRec(nodo) {
+        if (nodo instanceof Object) {
+            if (this.identificar('XQUERY', nodo)) {
+                return this.xqueryRec(nodo.hijos[0]);
+            }
+            if (this.identificar('LET', nodo)) {
+                let instrucciones = [];
+                if (this.identificar('LET', nodo.hijos[0])) {
+                    console.log('entro let');
+                    nodo.hijos.forEach(element => {
+                        const inst = this.xqueryRec(element);
+                        if (inst instanceof Array) {
+                            instrucciones = instrucciones.concat(inst);
+                        }
+                        else {
+                            instrucciones.push(inst);
+                        }
+                    });
+                }
+                else {
+                    console.log('instruccion');
+                    if (this.identificar('EXPR', nodo.hijos[2])) {
+                        let val = null;
+                        val = this.calcular(nodo.hijos[2].hijos[0], null, 0);
+                        console.log(val.getValorImplicito(val));
+                        instrucciones.push(new letEXP_1.letEXP('0', nodo.hijos[0], val.getValorImplicito(val)));
+                    }
+                    if (nodo.hijos.length === 4) {
+                        if (this.identificar('RETURN', nodo.hijos[3])) {
+                            //const inst = this.xqueryRec(nodo.hijos[3]);
+                            //instrucciones.push(inst);
+                            nodo.hijos[3].forEach(element => {
+                                const insts = this.xqueryRec(element);
+                                if (insts instanceof Array) {
+                                    instrucciones = instrucciones.concat(insts);
+                                }
+                                else if (typeof element === 'string') {
+                                    instrucciones.push(new identificador_1.identificador('0', element));
+                                }
+                            });
+                        }
+                    }
+                }
+                console.log(instrucciones);
+                return instrucciones;
+            }
+        }
     }
 }
 exports.Ejecucion = Ejecucion;

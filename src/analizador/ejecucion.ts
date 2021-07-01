@@ -3,10 +3,15 @@ import { Objeto } from "./abstractas/objeto";
 import { Error } from "./arbol/error";
 import { Errores } from "./arbol/errores";
 import { XmlTS } from "./arbol/xmlTS";
+import { identificador } from "./expresiones/identificador";
+import { letEXP } from "./expresiones/letEXP";
 import { Operacion, Operador } from "./expresiones/operacion";
 import { Primitivo } from "./expresiones/primitivo";
 import { Relacion } from "./expresiones/relacional";
+import { Entorno } from "./interfaces/entorno";
 import { Expresion } from "./Interfaces/Expresion";
+import { Instruccion } from "./interfaces/instruccion";
+import { ListaEntornos } from "./interfaces/listaEntornos";
 
 export class Ejecucion {
   prologoXml: JSON;
@@ -44,7 +49,7 @@ export class Ejecucion {
   contador: number;
   dot: string;
 
-
+  ejecXQuery: any[];
 
   constructor(prologo: JSON, cuerpo: Array<Objeto>, cadena: string, raiz: Object) {
     this.prologoXml = prologo;
@@ -156,11 +161,17 @@ export class Ejecucion {
       this.atributo = false;
       this.atributoTexto = '';
       this.atributoIdentificacion = [];
+      this.ejecXQuery = [];
       this.indiceValor = null;
       this.punto = '';
       this.consultaXML = this.cuerpoXml;
       this.verObjetos();
       try {
+        if (this.raiz instanceof Object) {
+          if (this.identificar('XQUERY', this.raiz)) {
+            this.xqueryEjec();
+          }
+        }
         this.recorrido(this.raiz);
       } catch (error) {
         return 'No se encontró por algun error';
@@ -1913,5 +1924,73 @@ export class Ejecucion {
     const json = JSON.stringify(error);
     const objeto = JSON.parse(json);
     console.log(objeto);
+  }
+
+  xqueryEjec(): void{
+    const instrucciones = this.xqueryRec(this.raiz);
+    if(instrucciones instanceof Array) {
+      const entorno = new Entorno();
+      instrucciones.forEach(element => {
+        if(element instanceof Instruccion){
+          try{
+            element.ejecutar(entorno);
+          } catch (error) {
+
+          }
+        }
+      });
+      ListaEntornos.getInstance().push(entorno);
+    }
+    console.log(instrucciones);
+  }
+
+  xqueryRec(nodo: any): any{
+    if (nodo instanceof Object) {
+      if (this.identificar('XQUERY', nodo)) {
+        return this.xqueryRec(nodo.hijos[0]);
+      }
+
+      if (this.identificar('LET', nodo)){
+        let instrucciones = [];
+        if(this.identificar('LET', nodo.hijos[0])){
+          console.log('entro let');
+          nodo.hijos.forEach(element => {
+            const inst = this.xqueryRec(element);
+            if (inst instanceof Array) {
+              instrucciones = instrucciones.concat(inst);
+            }
+            else {
+              instrucciones.push(inst);
+            }
+          });
+        }
+        else {
+          console.log('instruccion');
+          if(this.identificar('EXPR', nodo.hijos[2])){
+            let val: Expresion = null;
+            val = this.calcular(nodo.hijos[2].hijos[0],null,0);
+            console.log(val.getValorImplicito(val));
+            instrucciones.push(new letEXP('0', nodo.hijos[0], val.getValorImplicito(val)));
+          }
+          if(nodo.hijos.length === 4){
+            if (this.identificar('RETURN', nodo.hijos[3])) {
+              //const inst = this.xqueryRec(nodo.hijos[3]);
+              //instrucciones.push(inst);
+              nodo.hijos[3].forEach(element => {
+                const insts = this.xqueryRec(element);
+                if (insts instanceof Array) {
+                  instrucciones = instrucciones.concat(insts);
+                }
+                else if(typeof element === 'string'){
+                  instrucciones.push(new identificador('0',element));
+                }
+              });
+            }
+          }
+        }
+        console.log(instrucciones);
+        return instrucciones;
+      }
+    }
   }
 }

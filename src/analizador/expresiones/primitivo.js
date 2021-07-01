@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Primitivo = void 0;
-const Tipo_1 = require("./Tipo");
 class Primitivo {
     constructor(valor, linea, columna) {
         this.linea = linea;
@@ -11,21 +10,21 @@ class Primitivo {
     getTipo(arbol) {
         const valor = this.getValorImplicito(arbol);
         if (typeof (valor) === 'boolean') {
-            return Tipo_1.Tipo.BOOL;
+            return 3 /* BOOL */;
         }
         else if (typeof (valor) === 'string') {
-            return Tipo_1.Tipo.STRING;
+            return 0 /* STRING */;
         }
         else if (typeof (valor) === 'number') {
             if (this.isInt(Number(valor))) {
-                return Tipo_1.Tipo.INT;
+                return 1 /* INT */;
             }
-            return Tipo_1.Tipo.DOUBLE;
+            return 2 /* DOUBLE */;
         }
         else if (valor === null) {
-            return Tipo_1.Tipo.NULL;
+            return 6 /* NULL */;
         }
-        return Tipo_1.Tipo.VOID;
+        return 4 /* VOID */;
     }
     getValorImplicito(arbol) {
         return this.valor;
