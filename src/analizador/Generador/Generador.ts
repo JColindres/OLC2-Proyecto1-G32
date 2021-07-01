@@ -188,6 +188,7 @@ export class Generador{
         let cadena = this.cod_funcs.join('\n');
 
         //Se agrega al código inicial
+        this.Addcomentario('Funciones nativas');
         this.codigo.push(cadena);
     }
 
@@ -298,8 +299,6 @@ export class Generador{
 
         //Llamado de función
         this.Addxml('Printconsulta();\n')
-
-        this.Addcomentario('Funciones nativas');
 
         this.Addcodfunc('void Printconsulta() {');
 
