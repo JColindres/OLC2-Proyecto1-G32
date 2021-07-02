@@ -117,7 +117,7 @@ L_DECLARACION : L_DECLARACION DECLARACION
               {$$ = new NodoAST({label: 'L_DECLARACION', hijos: [$1], linea: yylineno});} ; 
 
 DECLARACION : double id cor_izq integer cor_der pto_coma 
-              {$$ = new NodoAST({label: 'DECLARACION', hijos: [$1,$2,$3,$4,$5,$6], linea: yylineno});}      //heap                            
+              {$$ = new NodoAST({label: 'DECLARACION_ACCESO', hijos: [$1,$2,$3,$4,$5,$6], linea: yylineno});}      //heap                            
             | double L_TEMPORAL pto_coma 
               {$$ = new NodoAST({label: 'DECLARACION', hijos: [$1,...$2.hijos,$3], linea: yylineno});}   ;                  //temporales
 
@@ -126,18 +126,21 @@ L_TEMPORAL : L_TEMPORAL coma id
            | id
               {$$ = new NodoAST({label: 'L_DECLARACION', hijos: [$1], linea: yylineno}); }; 
 
-FUNCIONES: FUNCIONES FUNCION {$$ = new NodoAST({label: 'FUNCIONES', hijos: [...$1.hijos,...$2.hijos], linea: yylineno}); }
-       | FUNCION {$$ = new NodoAST({label: 'FUNCIONES', hijos: [...$1.hijos], linea: yylineno}); };  
+FUNCIONES: FUNCIONES FUNCION {$$ = new NodoAST({label: 'FUNCIONES', hijos: [$1,$2], linea: yylineno}); }
+       | FUNCION {$$ = new NodoAST({label: 'FUNCIONES', hijos: [$1], linea: yylineno}); };  
 
 FUNCION: int funtion id par_izq par_der llave_izq BLOQUES RETURN llave_der 
               {$$ = new NodoAST({label: 'FUNCION', hijos: [$1,$2,$3,$4,$5,$6,$7,$8,$9], linea: yylineno});}
-         | void funtion id par_izq par_der llave_izq BLOQUES llave_der 
-              {$$ = new NodoAST({label: 'FUNCION', hijos: [$1,$3,$4,$5,$6,$7,$8], linea: yylineno});}
+         | void funtion id par_izq par_der llave_izq BLOQUES RETURN llave_der 
+              {$$ = new NodoAST({label: 'FUNCION', hijos: [$1,$3,$4,$5,$6,$7,$8,$9], linea: yylineno});}
          | int main llave_izq BLOQUES RETURN llave_der 
-              {$$ = new NodoAST({label: 'FUNCION', hijos: [$1,$2,$3,$4,$5], linea: yylineno});}
+              {$$ = new NodoAST({label: 'FUNCION', hijos: [$1,$2,$3,$4,$5,$6], linea: yylineno});}
+         | void main llave_izq BLOQUES RETURN llave_der 
+              {$$ = new NodoAST({label: 'FUNCION', hijos: [$1,$2,$3,$4,$5,$6], linea: yylineno});}
          | void main llave_izq BLOQUES llave_der 
               {$$ = new NodoAST({label: 'FUNCION', hijos: [$1,$2,$3,$4,$5], linea: yylineno});}
-
+         | void id par_izq par_der llave_izq BLOQUES  RETURN llave_der 
+              {$$ = new NodoAST({label: 'FUNCION', hijos: [$1,$2,$3,$4,$5,$6,$7,$8], linea: yylineno});}
        ;
 
 TIPO :  int { $$ = $1}
@@ -173,7 +176,7 @@ ETIQUETA : etiqueta dos_pts {$$ = new NodoAST({label: 'ETIQUETA', hijos: [$1,$2]
 LLAMADA : id par_izq par_der pto_coma {$$ = new NodoAST({label: 'LLAMADA', hijos: [$1,$2,$3,$4], linea: yylineno}); }  ; 
 
 PRINT : printf par_izq string coma VALOR par_der pto_coma 
-              {$$ = new NodoAST({label: 'LLAMADA', hijos: [$1,$2,$3,$4,...$5.hijos,$6,$7], linea: yylineno});} ; 
+              {$$ = new NodoAST({label: 'PRINT', hijos: [$1,$2,$3,$4,...$5.hijos,$6,$7], linea: yylineno});} ; 
 
 IF: if par_izq CONDICION par_der GOTO 
               {$$ = new NodoAST({label: 'IF', hijos: [$1,$2,$3,$4,$5], linea: yylineno});};
@@ -203,11 +206,11 @@ ASIGNA : id  igual EXPR pto_coma
        | id  igual VALOR pto_coma
               {$$ = new NodoAST({label: 'ASIGNA', hijos: [$1,$2,...$3.hijos,$4], linea: yylineno});}
        | id igual ACCESO pto_coma
-              {$$ = new NodoAST({label: 'ASIGNA', hijos: [$1,$2,...$3.hijos,$4], linea: yylineno});}
+              {$$ = new NodoAST({label: 'ASIGNA_ACCESO', hijos: [$1,$2,$3,$4], linea: yylineno});}
        | ACCESO  igual EXPR pto_coma
-              {$$ = new NodoAST({label: 'ASIGNA_EXPR', hijos: [$1,$2,$3,$4], linea: yylineno});}
+              {$$ = new NodoAST({label: 'ASIGNA_ACCESO', hijos: [$1,$2,$3,$4], linea: yylineno});}
        | ACCESO  igual VALOR pto_coma
-              {$$ = new NodoAST({label: 'ASIGNA', hijos: [...$1.hijos,$2,...$3.hijos,$4], linea: yylineno});}
+              {$$ = new NodoAST({label: 'ASIGNA_ACCESO', hijos: [$1,$2,...$3.hijos,$4], linea: yylineno});}
        ; 
 
 EXPR: VALOR OP_ARITMETICO VALOR {$$ = new NodoAST({label: 'EXPR', hijos: [...$1.hijos,$2,...$3.hijos], linea: yylineno});};

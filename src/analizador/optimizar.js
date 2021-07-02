@@ -25,11 +25,12 @@ class Optimizar {
         this.salida = '';
         if (this.raiz != null) {
             try {
-                this.regla1(this.raiz);
+                /*this.regla1(this.raiz);
                 this.regla3(this.raiz);
                 this.regla4(this.raiz);
                 this.regla2(this.raiz);
-                this.regla5(this.raiz);
+                this.regla5(this.raiz);*/
+                this.reducir(this.raiz);
                 this.recorrido(this.raiz);
             }
             catch (error) {
@@ -41,7 +42,7 @@ class Optimizar {
         return 'No se puede optimizar';
     }
     regla1(nodo) {
-        let nodoBloques = nodo.hijos[0].hijos[1].hijos[3];
+        let nodoBloques = nodo;
         let inicio, final, etiqueta;
         for (var i = 0; i < nodoBloques.hijos.length; i++) {
             if (this.identificar('GOTO', nodoBloques.hijos[i])) {
@@ -74,7 +75,7 @@ class Optimizar {
         }
     }
     regla2(nodo) {
-        let nodoBloques = nodo.hijos[0].hijos[1].hijos[3];
+        let nodoBloques = nodo;
         let inicio;
         let etiqueta;
         for (var i = 0; i < nodoBloques.hijos.length; i++) {
@@ -121,7 +122,7 @@ class Optimizar {
         }
     }
     regla3(nodo) {
-        let nodoBloques = nodo.hijos[0].hijos[1].hijos[3];
+        let nodoBloques = nodo;
         let if_inicio;
         let val1, op, val2;
         for (var i = 0; i < nodoBloques.hijos.length; i++) {
@@ -155,7 +156,7 @@ class Optimizar {
         }
     }
     regla4(nodo) {
-        let nodoBloques = nodo.hijos[0].hijos[1].hijos[3];
+        let nodoBloques = nodo;
         let if_inicio;
         let val1, op, val2;
         for (var i = 0; i < nodoBloques.hijos.length; i++) {
@@ -188,7 +189,7 @@ class Optimizar {
         }
     }
     regla5(nodo) {
-        let nodoBloques = nodo.hijos[0].hijos[1].hijos[3];
+        let nodoBloques = nodo;
         for (var i = 0; i < nodoBloques.hijos.length; i++) {
             if (this.identificar('ASIGNA', nodoBloques.hijos[i])) {
                 let temp1 = nodoBloques.hijos[i].hijos[0];
@@ -224,6 +225,56 @@ class Optimizar {
                     }
                 }
             }
+        }
+    }
+    reducir(nodo) {
+        if (nodo instanceof Object) {
+            if (this.identificar('S', nodo)) {
+                this.reducir(nodo.hijos[0]);
+            }
+        }
+        if (this.identificar('INICIO', nodo)) {
+            nodo.hijos.forEach((element) => {
+                if (element instanceof Object) {
+                    this.reducir(element);
+                }
+            });
+        }
+        if (this.identificar('HEADER', nodo)) {
+            nodo.hijos.forEach((element) => {
+                if (element instanceof Object) {
+                    this.reducir(element);
+                }
+            });
+        }
+        if (this.identificar('L_DECLARACION', nodo)) {
+            nodo.hijos.forEach((element) => {
+                if (element instanceof Object) {
+                    this.reducir(element);
+                }
+            });
+        }
+        if (this.identificar('FUNCIONES', nodo)) {
+            nodo.hijos.forEach((element) => {
+                if (element instanceof Object) {
+                    this.reducir(element);
+                }
+            });
+        }
+        if (this.identificar('FUNCION', nodo)) {
+            nodo.hijos.forEach((element) => {
+                if (element instanceof Object) {
+                    this.reducir(element);
+                }
+            });
+        }
+        if (this.identificar('BLOQUES', nodo)) {
+            console.log(nodo);
+            this.regla1(nodo);
+            this.regla3(nodo);
+            this.regla4(nodo);
+            this.regla2(nodo);
+            this.regla5(nodo);
         }
     }
     recorrido(nodo) {
@@ -266,7 +317,28 @@ class Optimizar {
         }
         if (this.identificar('DECLARACION', nodo)) {
             nodo.hijos.forEach((element) => {
-                this.salida += element + ' ';
+                if (element == '[') {
+                    this.salida += element;
+                }
+                else if (element.match(this.valoresAceptados)) {
+                    this.salida += element;
+                }
+                else {
+                    this.salida += element + ' ';
+                }
+                if (element == ';') {
+                    this.salida += '\r\n';
+                }
+            });
+        }
+        if (this.identificar('DECLARACION_ACCESO', nodo)) {
+            nodo.hijos.forEach((element) => {
+                if (element == nodo.hijos[0]) {
+                    this.salida += element + ' ';
+                }
+                else {
+                    this.salida += element;
+                }
                 if (element == ';') {
                     this.salida += '\r\n';
                 }
@@ -277,11 +349,67 @@ class Optimizar {
                 if (element instanceof Object) {
                     this.recorrido(element);
                 }
+            });
+        }
+        if (this.identificar('FUNCION', nodo)) {
+            this.salida += '\r\n';
+            nodo.hijos.forEach((element) => {
+                if (element instanceof Object) {
+                    this.recorrido(element);
+                }
                 else {
                     this.salida += element + ' ';
-                    if (element == ';' || element == '{') {
+                    if (element == '}' || element == '{') {
                         this.salida += '\r\n';
                     }
+                }
+            });
+        }
+        if (this.identificar('ACCESO', nodo)) {
+            nodo.hijos.forEach((element) => {
+                if (element instanceof Object) {
+                    this.recorrido(element);
+                }
+                else {
+                    this.salida += element;
+                }
+            });
+        }
+        if (this.identificar('LLAMADA', nodo)) {
+            this.salida += '\t';
+            nodo.hijos.forEach((element) => {
+                if (element instanceof Object) {
+                    this.recorrido(element);
+                }
+                else {
+                    this.salida += element;
+                }
+            });
+            this.salida += '\r\n';
+        }
+        if (this.identificar('PRINT', nodo)) {
+            this.salida += '\t';
+            nodo.hijos.forEach((element) => {
+                if (element instanceof Object) {
+                    this.recorrido(element);
+                }
+                else {
+                    this.salida += element;
+                }
+            });
+            this.salida += '\r\n';
+        }
+        if (this.identificar('RETURN', nodo)) {
+            nodo.hijos.forEach((element) => {
+                if (element == nodo.hijos[0]) {
+                    this.salida += '\t';
+                    this.salida += element + ' ';
+                }
+                else {
+                    this.salida += element + ' ';
+                }
+                if (element == ';') {
+                    this.salida += '\r\n';
                 }
             });
         }
@@ -293,7 +421,7 @@ class Optimizar {
             });
         }
         if (this.identificar('GOTO', nodo)) {
-            //this.salida += '\n';
+            this.salida += '\t';
             nodo.hijos.forEach((element) => {
                 this.salida += element + ' ';
                 if (element == ';') {
@@ -302,6 +430,7 @@ class Optimizar {
             });
         }
         if (this.identificar('IF', nodo)) {
+            this.salida += '\t';
             nodo.hijos.forEach((element) => {
                 if (element instanceof Object) {
                     this.recorrido(element);
@@ -328,6 +457,7 @@ class Optimizar {
             });
         }
         if (this.identificar('ETIQUETA', nodo)) {
+            this.salida += '\t';
             nodo.hijos.forEach((element) => {
                 this.salida += element + ' ';
                 if (element == ':') {
@@ -336,14 +466,35 @@ class Optimizar {
             });
         }
         if (this.identificar('ASIGNA', nodo)) {
+            this.salida += '\t';
             nodo.hijos.forEach((element) => {
-                this.salida += element + ' ';
-                if (element == ';') {
-                    this.salida += '\r\n';
+                if (element instanceof Object) {
+                    this.recorrido(element);
+                }
+                else {
+                    this.salida += element + ' ';
+                    if (element == ';') {
+                        this.salida += '\r\n';
+                    }
+                }
+            });
+        }
+        if (this.identificar('ASIGNA_ACCESO', nodo)) {
+            this.salida += '\t';
+            nodo.hijos.forEach((element) => {
+                if (element instanceof Object) {
+                    this.recorrido(element);
+                }
+                else {
+                    this.salida += element + ' ';
+                    if (element == ';') {
+                        this.salida += '\r\n';
+                    }
                 }
             });
         }
         if (this.identificar('ASIGNA_EXPR', nodo)) {
+            this.salida += '\t';
             let id = nodo.hijos[0];
             let arg1 = nodo.hijos[2].hijos[0];
             let op = nodo.hijos[2].hijos[1];

@@ -961,7 +961,8 @@ export default {
           return;
         }
         let optimizar = new Optimizar(raiz);
-        this.code3D = beautify_js(optimizar.recorrer(), { indent_size: 2 });
+        this.code3D = optimizar.recorrer();
+        //this.code3D = beautify_js(optimizar.recorrer(), { indent_size: 2 });
 
         this.notificar("primary", "Ejecución realizada con éxito");
       } catch (error) {
