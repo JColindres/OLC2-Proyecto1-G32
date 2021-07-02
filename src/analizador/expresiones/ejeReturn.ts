@@ -2,7 +2,7 @@ export class Retorno {
   has_value: boolean;
   value: any;
 
-  constructor( has_value: boolean, value: any = null) {
+  constructor( has_value: boolean, value: any) {
     Object.assign(this, { has_value, value });
   }
 

@@ -19,44 +19,33 @@ export class If_Else extends Instruccion {
             if (this.condicionIF.ejecutar(e)) {
                 const entorno = new Entorno(e);
                 const resp = this.instruccionIF.ejecutar(entorno);
-                if (this.instruccionIF instanceof Retorno) {
-                    return this.instruccionIF;
-                }
-                //return;
+                //console.log('entra if', this.instruccionIF, resp);
+                return resp;
             }
             else if (this.condicionELSEIF.ejecutar(e)) {
                 const entorno = new Entorno(e);
                 const resp = this.instruccionELSEIF.ejecutar(entorno);
-                if (this.instruccionELSEIF instanceof Retorno) {
-                    return this.instruccionELSEIF;
-                }
-                //return;
+                //console.log('entra elseif', this.instruccionELSEIF, resp);
+                return resp;
             }
             else {
                 const entorno = new Entorno(e);
                 const resp = this.instruccionELSE.ejecutar(entorno);
-                if (this.instruccionELSE instanceof Retorno) {
-                    return this.instruccionELSE;
-                }
-                //return;
+                //console.log('entra else', this.instruccionELSE, resp);
+                return resp;
             }
         }
         if (this.condicionIF.ejecutar(e)) {
             const entorno = new Entorno(e);
             const resp = this.instruccionIF.ejecutar(entorno);
-            if (this.instruccionIF instanceof Retorno) {
-                //console.log(this.instruccionIF)
-                return this.instruccionIF;
-            }
-            //return resp;
+            //console.log('entra if', this.instruccionIF, resp);
+            return resp;
         }
         else {
             const entorno = new Entorno(e);
             const resp = this.instruccionELSE.ejecutar(entorno);
-            if (this.instruccionELSE instanceof Retorno) {
-                return this.instruccionELSE;
-            }
-            //return resp;
+            //console.log('entra else', this.instruccionELSE, resp);
+            return resp;
         }
     }
 

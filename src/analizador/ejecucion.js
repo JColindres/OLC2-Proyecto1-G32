@@ -2008,7 +2008,7 @@ class Ejecucion {
                 instruccionELSEIF = this.xqueryRec(nodo.hijos[2].hijos[1].hijos[0]);
                 instruccionELSEIF = new retorno_1.Retorno(nodo.linea, true, instruccionELSEIF);
                 instruccionELSE = this.xqueryRec(nodo.hijos[3].hijos[0]);
-                instruccionELSE = new retorno_1.Retorno(nodo.linea, instruccionELSE);
+                instruccionELSE = new retorno_1.Retorno(nodo.linea, true, instruccionELSE);
             }
             else {
                 instruccionELSE = this.xqueryRec(nodo.hijos[2].hijos[0]);
@@ -2100,7 +2100,7 @@ class Ejecucion {
             return new primitivo_1.Primitivo(nodo.hijos[0], nodo.linea, 0);
         }
         if (this.identificar('xquery', nodo)) {
-            return nodo.hijos[0] + nodo.hijos[1];
+            return new identificador_1.identificador(nodo.linea, nodo.hijos[0] + nodo.hijos[1]);
         }
     }
 }

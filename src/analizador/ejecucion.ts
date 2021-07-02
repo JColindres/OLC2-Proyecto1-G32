@@ -2098,7 +2098,7 @@ export class Ejecucion {
         instruccionELSEIF = this.xqueryRec(nodo.hijos[2].hijos[1].hijos[0]);
         instruccionELSEIF = new Retorno(nodo.linea, true, instruccionELSEIF);
         instruccionELSE = this.xqueryRec(nodo.hijos[3].hijos[0]);
-        instruccionELSE = new Retorno(nodo.linea, instruccionELSE);
+        instruccionELSE = new Retorno(nodo.linea, true, instruccionELSE);
       }
       else {
         instruccionELSE = this.xqueryRec(nodo.hijos[2].hijos[0]);
@@ -2201,7 +2201,7 @@ export class Ejecucion {
     }
 
     if (this.identificar('xquery', nodo)) {
-      return nodo.hijos[0] + nodo.hijos[1];
+      return new identificador(nodo.linea, nodo.hijos[0] + nodo.hijos[1]);
     }
 
   }

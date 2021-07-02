@@ -38,7 +38,7 @@ export class Aritmeticas extends Instruccion {
         if (this.operador !== Operador.MENOS_UNARIO && this.operador !== Operador.NOT){
             let exp1 = this.expIzq.ejecutar(e);
             let exp2 = this.expDer.ejecutar(e);
-            
+            //console.log(this.expDer)
             //suma
             if (this.operador == Operador.SUMA)
             {
@@ -50,7 +50,6 @@ export class Aritmeticas extends Instruccion {
                 {
                     if (exp1 == null) exp1 = "null";
                     if (exp2 == null) exp2 = "null";
-                    console.log('aber');
                     return exp1.ToString() + exp2.ToString();
                 }
                 else
@@ -78,7 +77,7 @@ export class Aritmeticas extends Instruccion {
             {
                 if (typeof(exp1==="number") && typeof(exp2==="number"))
                 {
-                    //console.log(exp1, ' * ', exp2 , this.expDer)
+                    //console.log(exp1, ' * ', exp2)
                     return exp1 * exp2;
                 }
                 else

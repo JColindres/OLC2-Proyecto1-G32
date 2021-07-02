@@ -7,7 +7,7 @@ const errores_1 = require("../arbol/errores");
 const entFunc_1 = require("../interfaces/entFunc");
 const entorno_1 = require("../interfaces/entorno");
 const instruccion_1 = require("../interfaces/instruccion");
-const retorno_1 = require("./retorno");
+const ejeReturn_1 = require("./ejeReturn");
 const tipo_1 = require("./tipo");
 class llamfuc extends instruccion_1.Instruccion {
     constructor(linea, id, lista_parametros = null) {
@@ -15,8 +15,8 @@ class llamfuc extends instruccion_1.Instruccion {
         Object.assign(this, { id, lista_parametros });
     }
     ejecutar(e) {
-        const entorno_aux = new entorno_1.Entorno();
-        const entorno_local = new entorno_1.Entorno(e);
+        let entorno_aux = new entorno_1.Entorno();
+        let entorno_local = new entorno_1.Entorno(e);
         const funcion = _.cloneDeep(e.getFuncion(this.id));
         //Validacion de funcion existente
         if (!funcion) {
@@ -69,30 +69,32 @@ class llamfuc extends instruccion_1.Instruccion {
         //Ejecuto las instrucciones
         for (let instruccion of funcion.instrucciones) {
             const resp = instruccion.ejecutar(entorno_local);
-            //console.log(resp);
             //Validacion Return
-            if (resp instanceof retorno_1.Retorno) {
+            if (resp instanceof ejeReturn_1.Retorno) {
                 //Validacion de retorno en funcion
-                if (funcion.hasReturn() && resp.has_value) {
+                if (funcion.hasReturn() && resp.hasValue()) {
                     //Valido el tipo del retorno
-                    let val = resp.value;
-                    //console.log(resp, val, instruccion)
-                    //console.log('eeee', val.ejecutar(e))
+                    let val = resp.getValue();
+                    if (val != null && tipo_1.getTipo(val) != funcion.tipo_return) {
+                        errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'semantico', linea: this.linea, descripcion: `La funcion ${this.id} esta retornando un tipo distinto al declarado` }));
+                        entFunc_1.entFunc.getInstance().fFuncion();
+                        return;
+                    }
                     entFunc_1.entFunc.getInstance().fFuncion();
-                    return val.ejecutar(entorno_local);
+                    return val;
                 }
                 //Si la funcion tiene return pero el return no trae valor
-                /*if (funcion.hasReturn() && !resp.hasValue()) {
-                  Errores.getInstance().push(new Error({ tipo: 'semantico', linea: this.linea, descripcion: `La funcion ${this.id} debe retornar un valor` }));
-                  entFunc.getInstance().fFuncion();
-                  return;
+                if (funcion.hasReturn() && !resp.hasValue()) {
+                    errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'semantico', linea: this.linea, descripcion: `La funcion ${this.id} debe retornar un valor` }));
+                    entFunc_1.entFunc.getInstance().fFuncion();
+                    return;
                 }
                 //Si la funcion no debe tener return y el return trae un valor
-                if(!funcion.hasReturn() && resp.hasValue()){
-                  Errores.getInstance().push(new Error({ tipo: 'semantico', linea: this.linea, descripcion: `La funcion ${this.id} no debe retornar un valor` }));
-                  entFunc.getInstance().fFuncion();
-                  return;
-                }*/
+                if (!funcion.hasReturn() && resp.hasValue()) {
+                    errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'semantico', linea: this.linea, descripcion: `La funcion ${this.id} no debe retornar un valor` }));
+                    entFunc_1.entFunc.getInstance().fFuncion();
+                    return;
+                }
                 //Si solo es un return
                 entFunc_1.entFunc.getInstance().fFuncion();
                 return;

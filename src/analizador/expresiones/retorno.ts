@@ -8,7 +8,7 @@ export class Retorno extends Instruccion {
   value: any;
   linea: string;
 
-  constructor(linea: string, has_value: boolean, value: any = null) {
+  constructor(linea: string, has_value: boolean, value: any) {
     super(linea)
     Object.assign(this, { has_value, value });
   }
@@ -18,9 +18,6 @@ export class Retorno extends Instruccion {
       const valor = this.value.ejecutar(e);
       console.log(valor)
       return new recuperarRetorno(this.has_value, valor);
-    }
-    else{
-      return new recuperarRetorno(this.has_value);
     }
   }
 }

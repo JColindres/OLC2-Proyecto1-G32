@@ -4,7 +4,7 @@ exports.Retorno = void 0;
 const instruccion_1 = require("../interfaces/instruccion");
 const ejeReturn_1 = require("./ejeReturn");
 class Retorno extends instruccion_1.Instruccion {
-    constructor(linea, has_value, value = null) {
+    constructor(linea, has_value, value) {
         super(linea);
         Object.assign(this, { has_value, value });
     }
@@ -13,9 +13,6 @@ class Retorno extends instruccion_1.Instruccion {
             const valor = this.value.ejecutar(e);
             console.log(valor);
             return new ejeReturn_1.Retorno(this.has_value, valor);
-        }
-        else {
-            return new ejeReturn_1.Retorno(this.has_value);
         }
     }
 }
