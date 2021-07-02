@@ -32,5 +32,8 @@ class Primitivo {
     isInt(n) {
         return Number(n) === n && n % 1 === 0;
     }
+    ejecutar(e) {
+        return this.valor;
+    }
 }
 exports.Primitivo = Primitivo;

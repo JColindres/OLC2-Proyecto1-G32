@@ -203,23 +203,8 @@ break;
 case 44:
  this.$ = new NodoAST({label: 'ELSE', hijos: [...$$[$0].hijos], linea: yylineno}); 
 break;
-case 45:
- this.$ = new NodoAST({label: 'eq', hijos: [...$$[$0-2].hijos,...$$[$0].hijos], linea: yylineno}); 
-break;
-case 46:
- this.$ = new NodoAST({label: 'ne', hijos: [...$$[$0-2].hijos,...$$[$0].hijos], linea: yylineno}); 
-break;
-case 47:
- this.$ = new NodoAST({label: 'lt', hijos: [...$$[$0-2].hijos,...$$[$0].hijos], linea: yylineno}); 
-break;
-case 48:
- this.$ = new NodoAST({label: 'le', hijos: [...$$[$0-2].hijos,...$$[$0].hijos], linea: yylineno}); 
-break;
-case 49:
- this.$ = new NodoAST({label: 'gt', hijos: [...$$[$0-2].hijos,...$$[$0].hijos], linea: yylineno}); 
-break;
-case 50:
- this.$ = new NodoAST({label: 'ge', hijos: [...$$[$0-2].hijos,...$$[$0].hijos], linea: yylineno}); 
+case 45: case 46: case 47: case 48: case 49: case 50: case 164: case 165: case 166: case 167: case 168: case 169:
+ this.$ = new NodoAST({label: 'RELACIONALES', hijos: [...$$[$0-2].hijos,$$[$0-1],...$$[$0].hijos], linea: yylineno}); 
 break;
 case 51:
  this.$ = new NodoAST({label: 'to', hijos: [...$$[$0-2].hijos,...$$[$0].hijos], linea: yylineno}); 
@@ -402,7 +387,7 @@ case 141:
  this.$ = new NodoAST({label: 'EXPR', hijos: [$$[$0-1],...$$[$0].hijos], linea: yylineno}); 
 break;
 case 145:
- this.$ = new NodoAST({label: 'EXPR', hijos: [$$[$0-2],...$$[$0-1].hijos,$$[$0]], linea: yylineno}); 
+ this.$ = new NodoAST({label: 'EXPR', hijos: [...$$[$0-1].hijos], linea: yylineno}); 
 break;
 case 148: case 149:
  this.$ = new NodoAST({label: 'PATH', hijos: [...$$[$0-2].hijos,$$[$0-1],...$$[$0].hijos], linea: yylineno}); 
@@ -430,9 +415,6 @@ case 157: case 158:
 break;
 case 159: case 160: case 161: case 162: case 163:
  this.$ = new NodoAST({label: 'ARITMETICAS', hijos: [...$$[$0-2].hijos,$$[$0-1],...$$[$0].hijos], linea: yylineno}); 
-break;
-case 164: case 165: case 166: case 167: case 168: case 169:
- this.$ = new NodoAST({label: 'RELACIONALES', hijos: [...$$[$0-2].hijos,$$[$0-1],...$$[$0].hijos], linea: yylineno}); 
 break;
 case 170: case 171:
  this.$ = new NodoAST({label: 'LOGICAS', hijos: [...$$[$0-2].hijos,$$[$0-1],...$$[$0].hijos], linea: yylineno}); 

@@ -1,5 +1,6 @@
 import { Tipo } from "./Tipo";
 import { Expresion } from "../Interfaces/Expresion";
+import { Entorno } from "../interfaces/entorno";
 
 export class Primitivo implements Expresion {
     linea: number;
@@ -44,4 +45,7 @@ export class Primitivo implements Expresion {
         return Number(n) === n && n % 1 === 0;
     }
     
+    ejecutar(e: Entorno) {
+        return this.valor;
+    }
 }

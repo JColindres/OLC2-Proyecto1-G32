@@ -269,17 +269,17 @@ ELSE :  else EXPR
     ;
 
 COMPARACION_XQUERY : EXPR eq EXPR
-                        { $$ = new NodoAST({label: 'eq', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }
+                        { $$ = new NodoAST({label: 'RELACIONALES', hijos: [...$1.hijos,$2,...$3.hijos], linea: yylineno}); }
                     | EXPR ne EXPR
-                        { $$ = new NodoAST({label: 'ne', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }
+                        { $$ = new NodoAST({label: 'RELACIONALES', hijos: [...$1.hijos,$2,...$3.hijos], linea: yylineno}); }
                     | EXPR lt EXPR 
-                        { $$ = new NodoAST({label: 'lt', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }
+                        { $$ = new NodoAST({label: 'RELACIONALES', hijos: [...$1.hijos,$2,...$3.hijos], linea: yylineno}); }
                     | EXPR le EXPR 
-                        { $$ = new NodoAST({label: 'le', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }
+                        { $$ = new NodoAST({label: 'RELACIONALES', hijos: [...$1.hijos,$2,...$3.hijos], linea: yylineno}); }
                     | EXPR gt EXPR 
-                        { $$ = new NodoAST({label: 'gt', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }
+                        { $$ = new NodoAST({label: 'RELACIONALES', hijos: [...$1.hijos,$2,...$3.hijos], linea: yylineno}); }
                     | EXPR ge EXPR 
-                        { $$ = new NodoAST({label: 'ge', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }
+                        { $$ = new NodoAST({label: 'RELACIONALES', hijos: [...$1.hijos,$2,...$3.hijos], linea: yylineno}); }
                     | EXPR to EXPR 
                         { $$ = new NodoAST({label: 'to', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }
                     ;
@@ -537,7 +537,7 @@ EXPR : ATRIBUTO_PREDICADO
      | NODO_FUNCION
        { $$ = new NodoAST({label: 'EXPR', hijos: [$1], linea: yylineno}); }
      | par_izq EXPR par_der
-       { $$ = new NodoAST({label: 'EXPR', hijos: [$1,...$2.hijos,$3], linea: yylineno}); } 
+       { $$ = new NodoAST({label: 'EXPR', hijos: [...$2.hijos], linea: yylineno}); } 
      | COMPARACION_XQUERY
        { $$ = new NodoAST({label: 'EXPR', hijos: [$1], linea: yylineno}); }
     | LLAMADA_FUNCION 

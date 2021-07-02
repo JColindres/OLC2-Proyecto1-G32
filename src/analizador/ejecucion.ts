@@ -1,13 +1,21 @@
-import { forEach } from "lodash";
+import { cond, forEach } from "lodash";
 import { Objeto } from "./abstractas/objeto";
 import { Error } from "./arbol/error";
 import { Errores } from "./arbol/errores";
 import { XmlTS } from "./arbol/xmlTS";
+import { Aritmeticas } from "./expresiones/aritmeticas";
 import { identificador } from "./expresiones/identificador";
+import { If_Else } from "./expresiones/if_else";
 import { letEXP } from "./expresiones/letEXP";
+import { llamfuc } from "./expresiones/llamFunc";
+import { Mostrar } from "./expresiones/mostrar";
+import { nuevaFuncion } from "./expresiones/nuevaFuncion";
 import { Operacion, Operador } from "./expresiones/operacion";
 import { Primitivo } from "./expresiones/primitivo";
 import { Relacion } from "./expresiones/relacional";
+import { Retorno } from "./expresiones/retorno";
+import { Tipo } from "./expresiones/tipo";
+import { Variable } from "./expresiones/variable";
 import { Entorno } from "./interfaces/entorno";
 import { Expresion } from "./Interfaces/Expresion";
 import { Instruccion } from "./interfaces/instruccion";
@@ -591,36 +599,36 @@ export class Ejecucion {
           }
         });
       }
-      
-      if (this.identificar('XQUERY', nodo)){
+
+      if (this.identificar('XQUERY', nodo)) {
         nodo.hijos.forEach((element: any) => {
           if (element instanceof Object) {
             this.recorrido(element);
           }
           else if (typeof element === 'string') {
-            
+
           }
         });
       }
 
-      if (this.identificar('HTML', nodo)){
+      if (this.identificar('HTML', nodo)) {
         nodo.hijos.forEach((element: any) => {
           if (element instanceof Object) {
             this.recorrido(element);
           }
           else if (typeof element === 'string') {
-            
+
           }
         });
       }
 
-      if (this.identificar('FOR', nodo)){
+      if (this.identificar('FOR', nodo)) {
         nodo.hijos.forEach((element: any) => {
           if (element instanceof Object) {
             this.recorrido(element);
           }
           else if (typeof element === 'string') {
-            
+
           }
         });
         this.atributoIdentificacion = [];
@@ -630,31 +638,31 @@ export class Ejecucion {
         //this.atributoIdentificacion = this.atributoIdentificacion.filter(item => this.consultaXML.includes(item.cons))
       }
 
-      if (this.identificar('WHERE', nodo)){
+      if (this.identificar('WHERE', nodo)) {
         nodo.hijos.forEach((element: any) => {
           if (element instanceof Object) {
             this.recorrido(element);
           }
           else if (typeof element === 'string') {
-            
+
           }
         });
       }
 
-      if (this.identificar('ORDER BY', nodo)){
+      if (this.identificar('ORDER BY', nodo)) {
         let regresar: boolean = false;
         nodo.hijos.forEach((element: any) => {
           if (element instanceof Object) {
             this.recorrido(element);
           }
           else if (typeof element === 'string') {
-            if (element === '$x'){
+            if (element === '$x') {
               this.consultaXML;
             }
-            else if (element === '/'){
+            else if (element === '/') {
               this.consultaXML = this.reducir(this.consultaXML, element, 'RAIZ');
             }
-            else if (!(element === ',')){
+            else if (!(element === ',')) {
               this.consultaXML = this.reducir(this.consultaXML, element, 'INSTRUCCIONES');
               regresar = true;
             }
@@ -663,31 +671,31 @@ export class Ejecucion {
             if (n1.texto > n2.texto) {
               return 1;
             }
-  
+
             if (n1.texto < n2.texto) {
               return -1;
             }
-  
+
             return 0;
           });
-          if(regresar){
-            console.log('regresar' , regresar, this.consultaXML, element)
+          if (regresar) {
+            console.log('regresar', regresar, this.consultaXML, element)
             this.consultaXML = this.reducir(this.consultaXML, '/..', 'PADRE')
             regresar = false;
           }
         });
       }
 
-      if (this.identificar('RETURN', nodo)){
+      if (this.identificar('RETURN', nodo)) {
         nodo.hijos.forEach((element: any) => {
           if (element instanceof Object) {
             this.recorrido(element);
           }
           else if (typeof element === 'string') {
-            if (element === '$x'){
+            if (element === '$x') {
               this.consultaXML;
             }
-            else if (element === '/'){
+            else if (element === '/') {
               this.consultaXML = this.reducir(this.consultaXML, element, 'RAIZ');
             }
             else {
@@ -697,16 +705,16 @@ export class Ejecucion {
         });
       }
 
-      if (this.identificar('IF', nodo)){
+      if (this.identificar('IF', nodo)) {
         nodo.hijos.forEach((element: any) => {
           if (element instanceof Object) {
             this.recorrido(element);
           }
           else if (typeof element === 'string') {
-            if (element === '$x'){
+            if (element === '$x') {
               this.consultaXML;
             }
-            else if (element === '/'){
+            else if (element === '/') {
               this.consultaXML = this.reducir(this.consultaXML, element, 'RAIZ');
             }
             else {
@@ -716,16 +724,16 @@ export class Ejecucion {
         });
       }
 
-      if (this.identificar('THEN', nodo)){
+      if (this.identificar('THEN', nodo)) {
         nodo.hijos.forEach((element: any) => {
           if (element instanceof Object) {
             this.recorrido(element);
           }
           else if (typeof element === 'string') {
-            if (element === '$x'){
+            if (element === '$x') {
               this.consultaXML;
             }
-            else if (element === '/'){
+            else if (element === '/') {
               this.consultaXML = this.reducir(this.consultaXML, element, 'RAIZ');
             }
             else {
@@ -1926,34 +1934,43 @@ export class Ejecucion {
     console.log(objeto);
   }
 
-  xqueryEjec(): void{
+  xqueryEjec(): void {
     const instrucciones = this.xqueryRec(this.raiz);
-    if(instrucciones instanceof Array) {
+    if (instrucciones instanceof Array) {
       const entorno = new Entorno();
       instrucciones.forEach(element => {
-        if(element instanceof Instruccion){
-          try{
+        if (element instanceof Instruccion) {
+          try {
+            console.log(element, entorno);
             element.ejecutar(entorno);
           } catch (error) {
-
+            console.log(error);
           }
         }
       });
       ListaEntornos.getInstance().push(entorno);
     }
-    console.log(instrucciones);
   }
 
-  xqueryRec(nodo: any): any{
+  xqueryRec(nodo: any): any {
     if (nodo instanceof Object) {
       if (this.identificar('XQUERY', nodo)) {
-        return this.xqueryRec(nodo.hijos[0]);
+        let instrucciones = [];
+        nodo.hijos.forEach(element => {
+          const inst = this.xqueryRec(element);
+          if (inst instanceof Array) {
+            instrucciones = instrucciones.concat(inst);
+          }
+          else {
+            instrucciones.push(inst);
+          }
+        });
+        return instrucciones;
       }
 
-      if (this.identificar('LET', nodo)){
+      if (this.identificar('LET', nodo)) {
         let instrucciones = [];
-        if(this.identificar('LET', nodo.hijos[0])){
-          console.log('entro let');
+        if (this.identificar('LET', nodo.hijos[0])) {
           nodo.hijos.forEach(element => {
             const inst = this.xqueryRec(element);
             if (inst instanceof Array) {
@@ -1965,32 +1982,227 @@ export class Ejecucion {
           });
         }
         else {
-          console.log('instruccion');
-          if(this.identificar('EXPR', nodo.hijos[2])){
-            let val: Expresion = null;
-            val = this.calcular(nodo.hijos[2].hijos[0],null,0);
-            console.log(val.getValorImplicito(val));
-            instrucciones.push(new letEXP('0', nodo.hijos[0], val.getValorImplicito(val)));
+          if (this.identificar('EXPR', nodo.hijos[2])) {
+            let val = this.xqueryRec(nodo.hijos[2]);
+            instrucciones.push(new letEXP('0', nodo.hijos[0], val));
           }
-          if(nodo.hijos.length === 4){
+          if (nodo.hijos.length === 4) {
             if (this.identificar('RETURN', nodo.hijos[3])) {
-              //const inst = this.xqueryRec(nodo.hijos[3]);
-              //instrucciones.push(inst);
-              nodo.hijos[3].forEach(element => {
-                const insts = this.xqueryRec(element);
-                if (insts instanceof Array) {
-                  instrucciones = instrucciones.concat(insts);
-                }
-                else if(typeof element === 'string'){
-                  instrucciones.push(new identificador('0',element));
-                }
-              });
+              let inst;
+              if (typeof nodo.hijos[3].hijos[0] == 'string') {
+                inst = new identificador(nodo.linea, nodo.hijos[3].hijos[0]);
+              }
+              else {
+                inst = this.xqueryRec(nodo.hijos[3].hijos[0]) as Array<Instruccion>;
+              }
+              instrucciones.push(new Mostrar(nodo.linea, inst));
             }
           }
         }
-        console.log(instrucciones);
+        //console.log(instrucciones);
+        return instrucciones;
+      }
+
+      if (this.identificar('FUNCION', nodo)) {
+        let instrucciones = [];
+        if (this.identificar('FUNCION', nodo.hijos[0])) {
+          nodo.hijos.forEach(element => {
+            const inst = this.xqueryRec(element);
+            if (inst instanceof Array) {
+              instrucciones = instrucciones.concat(inst);
+            }
+            else {
+              instrucciones.push(inst);
+            }
+          });
+        }
+        else {
+          if (nodo.hijos.length === 5) {
+            const variables = [];
+            if (this.identificar('PARAMETROS', nodo.hijos[2])) {
+              for (let index = 0; index < nodo.hijos[2].hijos.length / 3; index++) {
+                const id = nodo.hijos[2].hijos[index * 3 + 0]
+                let tipo = nodo.hijos[2].hijos[index * 3 + 2]
+                if (tipo === 'integer') {
+                  tipo = Tipo.INT;
+                }
+                else if (tipo === 'decimal') {
+                  tipo = Tipo.INT;
+                }
+                else if (tipo === 'string') {
+                  tipo = Tipo.STRING;
+                }
+                variables.push(new Variable({ id, tipo_asignado: tipo }));
+              }
+              const id_funcion = nodo.hijos[1];
+              let tipo_funcion = nodo.hijos[3].hijos[0];
+              if (tipo_funcion === 'integer') {
+                tipo_funcion = Tipo.INT;
+              }
+              else if (tipo_funcion === 'decimal') {
+                tipo_funcion = Tipo.INT;
+              }
+              else if (tipo_funcion === 'string') {
+                tipo_funcion = Tipo.STRING;
+              }
+              const flwor = this.xqueryRec(nodo.hijos[4]);
+              instrucciones.push(new nuevaFuncion(nodo.linea, id_funcion, flwor, tipo_funcion, variables));
+            }
+          }
+        }
         return instrucciones;
       }
     }
+
+    if (this.identificar('F_LLAMADA', nodo)) {
+      let parametros = this.xqueryRec(nodo.hijos[2]);
+      let llamada = new llamfuc(nodo.linea, nodo.hijos[1], parametros);
+      //return new Mostrar(nodo.linea,llamada);
+      return llamada
+    }
+
+    if (this.identificar('PARAMETROS', nodo)) {
+      let parametros = [];
+      nodo.hijos.forEach((element: any) => {
+        if (element instanceof Object) {
+          const exp = this.xqueryRec(element);
+          parametros.push(exp);
+        }
+      });
+      return parametros;
+    }
+
+    if (this.identificar('FLWOR', nodo)) {
+      let instrucciones = [];
+      nodo.hijos.forEach(element => {
+        const inst = this.xqueryRec(element);
+        if (inst instanceof Array) {
+          instrucciones = instrucciones.concat(inst);
+        }
+        else {
+          instrucciones.push(inst);
+        }
+      });
+      return instrucciones;
+    }
+
+    if (this.identificar('IF', nodo)) {
+      let instrucciones = [];
+      let condicionIF = this.xqueryRec(nodo.hijos[0]);
+      let instruccionIF = this.xqueryRec(nodo.hijos[1].hijos[0]);
+      let condicionELSEIF;
+      let instruccionELSEIF;
+      let instruccionELSE;
+      if (nodo.hijos.length == 4) {
+        condicionELSEIF = this.xqueryRec(nodo.hijos[2].hijos[0]);
+        instruccionELSEIF = this.xqueryRec(nodo.hijos[2].hijos[1].hijos[0]);
+        instruccionELSEIF = new Retorno(nodo.linea, true, instruccionELSEIF);
+        instruccionELSE = this.xqueryRec(nodo.hijos[3].hijos[0]);
+        instruccionELSE = new Retorno(nodo.linea, instruccionELSE);
+      }
+      else {
+        instruccionELSE = this.xqueryRec(nodo.hijos[2].hijos[0]);
+        instruccionELSE = new Retorno(nodo.linea, true, instruccionELSE);
+      }
+      instruccionIF = new Retorno(nodo.linea, true, instruccionIF);
+      const ifins = new If_Else(nodo.linea, condicionIF, instruccionIF, instruccionELSE, condicionELSEIF, instruccionELSEIF);
+      instrucciones.push(ifins);
+      return instrucciones;
+    }
+
+    if (this.identificar('EXPR', nodo)) {
+      const expresion = this.xqueryRec(nodo.hijos[0]);
+      if (this.identificar('xquery', nodo.hijos[0])) {
+        return new identificador(nodo.linea, expresion);
+      }
+      else {
+        return expresion;
+      }
+
+    }
+
+    if (this.identificar('ARITMETICAS', nodo)) {
+      if (nodo.hijos.length === 3) {
+        let aritIzq = this.xqueryRec(nodo.hijos[0]);
+        let aritDer = this.xqueryRec(nodo.hijos[2]);
+
+        if (typeof aritIzq == 'string') {
+          aritIzq = new identificador(nodo.linea, aritIzq);
+        }
+        if (typeof aritDer == 'string') {
+          aritDer = new identificador(nodo.linea, aritDer);
+        }
+        const operando = nodo.hijos[1];
+        switch (operando) {
+          case '+':
+            return new Aritmeticas(aritIzq, aritDer, Operador.SUMA, nodo.linea);
+          case '-':
+            return new Aritmeticas(aritIzq, aritDer, Operador.RESTA, nodo.linea);
+          case '*':
+            return new Aritmeticas(aritIzq, aritDer, Operador.MULTIPLICACION, nodo.linea);
+          case 'div':
+            return new Aritmeticas(aritIzq, aritDer, Operador.DIVISION, nodo.linea);
+        }
+      }
+    }
+
+    if (this.identificar('RELACIONALES', nodo)) {
+      if (nodo.hijos.length === 3) {
+        let aritIzq = this.xqueryRec(nodo.hijos[0]);
+        let aritDer = this.xqueryRec(nodo.hijos[2]);
+
+        if (typeof aritIzq == 'string') {
+          aritIzq = new identificador(nodo.linea, aritIzq);
+        }
+        if (typeof aritDer == 'string') {
+          aritDer = new identificador(nodo.linea, aritDer);
+        }
+        const operando = nodo.hijos[1];
+        switch (operando) {
+          case '=':
+            return new Aritmeticas(aritIzq, aritDer, Operador.IGUAL_IGUAL, nodo.linea);
+          case 'eq':
+            return new Aritmeticas(aritIzq, aritDer, Operador.IGUAL_IGUAL, nodo.linea);
+          case '!=':
+            return new Aritmeticas(aritIzq, aritDer, Operador.DIFERENTE_QUE, nodo.linea);
+          case 'ne':
+            return new Aritmeticas(aritIzq, aritDer, Operador.DIFERENTE_QUE, nodo.linea);
+          case '<':
+            return new Aritmeticas(aritIzq, aritDer, Operador.MENOR_QUE, nodo.linea);
+          case 'lt':
+            return new Aritmeticas(aritIzq, aritDer, Operador.MENOR_QUE, nodo.linea);
+          case '<=':
+            return new Aritmeticas(aritIzq, aritDer, Operador.MENOR_IGUA_QUE, nodo.linea);
+          case 'le':
+            return new Aritmeticas(aritIzq, aritDer, Operador.MENOR_IGUA_QUE, nodo.linea);
+          case '>':
+            return new Aritmeticas(aritIzq, aritDer, Operador.MAYOR_QUE, nodo.linea);
+          case 'gt':
+            return new Aritmeticas(aritIzq, aritDer, Operador.MAYOR_QUE, nodo.linea);
+          case '>=':
+            return new Aritmeticas(aritIzq, aritDer, Operador.MAYOR_IGUA_QUE, nodo.linea);
+          case 'ge':
+            return new Aritmeticas(aritIzq, aritDer, Operador.MAYOR_IGUA_QUE, nodo.linea);
+
+        }
+      }
+    }
+
+    if (this.identificar('integer', nodo)) {
+      return new Primitivo(Number(nodo.hijos[0]), nodo.linea, 0);
+    }
+
+    if (this.identificar('double', nodo)) {
+      return new Primitivo(Number(nodo.hijos[0]), nodo.linea, 0);
+    }
+
+    if (this.identificar('string', nodo)) {
+      return new Primitivo(nodo.hijos[0], nodo.linea, 0);
+    }
+
+    if (this.identificar('xquery', nodo)) {
+      return nodo.hijos[0] + nodo.hijos[1];
+    }
+
   }
 }
