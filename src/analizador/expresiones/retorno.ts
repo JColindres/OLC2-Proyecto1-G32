@@ -16,7 +16,6 @@ export class Retorno extends Instruccion {
   ejecutar(e: Entorno) {
     if(this.has_value && this.value != null){
       const valor = this.value.ejecutar(e);
-      console.log(valor)
       return new recuperarRetorno(this.has_value, valor);
     }
   }

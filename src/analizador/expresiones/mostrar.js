@@ -3,22 +3,24 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Mostrar = void 0;
 const _ = require("lodash");
 const instruccion_1 = require("../interfaces/instruccion");
+const ejeArreglo_1 = require("./ejeArreglo");
 class Mostrar extends instruccion_1.Instruccion {
-    constructor(linea, instrucciones) {
+    constructor(linea, impresion) {
         super(linea);
-        Object.assign(this, { instrucciones });
+        Object.assign(this, { impresion });
     }
     ejecutar(e) {
-        if (!this.instrucciones) {
+        if (!this.impresion) {
             return null;
         }
-        //this.instrucciones.forEach(inst => {
-        let res = this.instrucciones.ejecutar(e);
+        let res = this.impresion.ejecutar(e);
         res = _.cloneDeep(res);
+        if (res instanceof ejeArreglo_1.Arreglo) {
+            res = res.toString();
+        }
         const salida = res !== null && res !== void 0 ? res : 'null';
         console.log(salida);
-        //Salida.getInstance().push(salida);
-        //});
+        return salida;
     }
 }
 exports.Mostrar = Mostrar;

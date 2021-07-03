@@ -7,18 +7,25 @@ export const enum Tipo {
     DOUBLE,
     BOOL,
     VOID,
-    STRUCT,
     NULL,
-    ATRIBUTO,
-    ARRAY,
-    getTipo
+    ARRAY
 }
 
 export function getTipo(valor: any): Tipo {
-    if (typeof valor == 'string') return Tipo.STRING;
-    if (typeof valor == 'number') return Tipo.INT;
-    if (typeof valor == 'boolean') return Tipo.BOOL;
-    if (valor instanceof Arreglo) return Tipo.ARRAY;
-    if (valor == null) return null;
+    if (typeof valor == 'string') {
+        return Tipo.STRING;
+    }
+    else if (typeof valor == 'number') {
+        return Tipo.INT;
+    }
+    else if (typeof valor == 'boolean') {
+        return Tipo.BOOL;
+    }
+    else if (valor instanceof Arreglo) {
+        return Tipo.ARRAY;
+    }
+    else if (valor == null) {
+        return null;
+    }
     return null;
-  }
+}

@@ -72,13 +72,6 @@ class Entorno {
                 return e;
         }
     }
-    toString() {
-        let salida = `*** VARIABLES ****\n`;
-        for (let variable of Array.from(this.variables.values())) {
-            salida += variable.toString() + '\n';
-        }
-        return salida;
-    }
     getVariables() {
         return Array.from(this.variables.values());
     }

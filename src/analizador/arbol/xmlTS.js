@@ -8,5 +8,8 @@ class XmlTS {
     agregar(identificador, valor, ambito, tipo, linea, columna, nodo, direccion) {
         this.tabla.push([identificador, valor, ambito, tipo, linea, columna, nodo, direccion]);
     }
+    concatenar(nueva) {
+        this.tabla = this.tabla.concat(nueva);
+    }
 }
 exports.XmlTS = XmlTS;

@@ -754,9 +754,10 @@ export default {
         this.dot5 = ejecucion.getDot();
 
         ejecucion.verObjetos();
-        this.dataTS(ejecucion.ts.tabla);
+        //this.dataTS(ejecucion.ts.tabla);
         this.codeS = ejecucion.recorrer();
-
+        this.simbolos = [];
+        this.dataTS(ejecucion.ts.tabla);
         this.notificar("primary", "Ejecución realizada con éxito");
       } catch (error) {
         this.validarError(error);

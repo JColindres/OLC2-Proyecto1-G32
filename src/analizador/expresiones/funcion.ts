@@ -1,32 +1,36 @@
 import { Instruccion } from "../interfaces/instruccion";
 import { Tipo } from "../expresiones/tipo";
 import { Variable } from "./variable";
+import { XmlTS } from "../arbol/xmlTS";
 
 export class Funcion{
   id: string;
   instrucciones: Array<Instruccion>;
-  tipo_return: Tipo;
-  lista_parametros: Array<Variable>;
+  tipo: Tipo;
+  params: Array<Variable>;
 
-  constructor(id: string, instrucciones: Array<Instruccion>, tipo_return: Tipo = Tipo.VOID, lista_parametros: Array<Variable> = null){
-    Object.assign(this, {id, instrucciones, tipo_return, lista_parametros});
+  constructor(id: string, instrucciones: Array<Instruccion>, tipo: Tipo = Tipo.VOID, params: Array<Variable> = null){
+    Object.assign(this, {id, instrucciones, tipo, params});
   }
 
   hasReturn() : boolean{
-    return this.tipo_return != Tipo.VOID;
+    return this.tipo != Tipo.VOID;
   }
 
   hasParametros() : boolean{
-    return this.lista_parametros != null;
+    return this.params != null;
   }
 
   getParametrosSize() : number{
-    return this.hasParametros() ? this.lista_parametros.length : 0;
+    return this.hasParametros() ? this.params.length : 0;
   }
 
-  public toString() : string{
-    const parametros = this.lista_parametros != null ? this.lista_parametros.length : 0;
+  public toString(ent: number) : XmlTS{
+    let ts = new XmlTS();
+    const parametros = this.params != null ? this.params.length : 0;
     let salida = `Funcion: ${this.id} - Parametros: ${parametros} - Return Asignado: ${this.hasReturn()?'Si':'No'}`;
-    return salida;
+    console.log(salida)
+    ts.agregar(this.id,'0', ent.toString(),this.tipo.toString(),1,1,null,null);
+    return ts;
   }
 }

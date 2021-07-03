@@ -11,7 +11,7 @@ export class ListaEntornos {
 
   public static getInstance(): ListaEntornos {
     if (!ListaEntornos.instance) {
-        ListaEntornos.instance = new ListaEntornos();
+      ListaEntornos.instance = new ListaEntornos();
     }
     return ListaEntornos.instance;
   }
@@ -20,7 +20,7 @@ export class ListaEntornos {
     this.lista.push(_.cloneDeep(entorno));
   }
 
-  public clear(): void{
+  public clear(): void {
     this.lista = [];
   }
 }

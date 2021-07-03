@@ -10,13 +10,11 @@ class identificador extends instruccion_1.Instruccion {
         Object.assign(this, { id, linea });
     }
     ejecutar(e) {
-        //Busco el id en el entorno
         const variable = e.getVariable(this.id);
         if (variable) {
             return variable.getValor();
         }
-        //Error
-        errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'semantico', linea: this.linea, 'descripcion': `No en contró ninguna variable con el id: ${this.id}` }));
+        errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'Sémantico', linea: this.linea, descripcion: `No se encontró la variable ${this.id}` }));
         return null;
     }
 }

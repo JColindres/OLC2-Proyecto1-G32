@@ -1,27 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Variable = void 0;
-const arreglo_1 = require("./arreglo");
+const xmlTS_1 = require("../arbol/xmlTS");
 class Variable {
-    constructor({ id, tipo_asignado = null, valor = null, dimensiones = 0 }) {
-        Object.assign(this, { id, tipo_asignado, valor, dimensiones });
-    }
-    isArray() {
-        // return this.dimensiones > 0;
-        return this.tipo_asignado == 8 /* ARRAY */ || this.valor instanceof arreglo_1.Arreglo;
-    }
-    isNumber() {
-        return this.tipo_asignado == 1 /* INT */ || typeof this.valor == 'number';
+    constructor({ id, tipo = null, valor = null, dimensiones = 0 }) {
+        Object.assign(this, { id, tipo, valor, dimensiones });
     }
     hasTipoAsignado() {
-        return this.tipo_asignado != null;
+        return this.tipo != null;
     }
     getValor() {
         return this.valor;
     }
-    toString() {
+    toString(ent) {
+        let ts = new xmlTS_1.XmlTS();
         let salida = `Variable: ${this.id} - Valor: ${this.valor}`;
-        return salida;
+        ts.agregar(this.id, this.valor, ent.toString(), this.tipo.toString(), 1, 1, null, null);
+        return ts;
     }
 }
 exports.Variable = Variable;

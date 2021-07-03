@@ -1,6 +1,7 @@
 import { Funcion } from '../expresiones/funcion';
 import { Variable } from '../expresiones/variable';
 import * as _ from 'lodash';
+import { XmlTS } from '../arbol/xmlTS';
 
 export class Entorno {
   variables: Map<String, Variable>;
@@ -82,14 +83,6 @@ export class Entorno {
     for (let e: Entorno = this; e != null; e = e.padre) {
       if (e.padre == null) return e;
     }
-  }
-
-  public toString(): string {
-    let salida = `*** VARIABLES ****\n`;
-    for (let variable of Array.from(this.variables.values())) {
-      salida += variable.toString() + '\n';
-    }
-    return salida;
   }
 
   getVariables() : Array<Variable>{

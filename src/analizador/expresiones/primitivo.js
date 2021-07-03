@@ -22,7 +22,7 @@ class Primitivo {
             return 2 /* DOUBLE */;
         }
         else if (valor === null) {
-            return 6 /* NULL */;
+            return 5 /* NULL */;
         }
         return 4 /* VOID */;
     }

@@ -1,44 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Arreglo = void 0;
-class Arreglo {
-    constructor(arreglo) {
-        this.arreglo = arreglo;
+const instruccion_1 = require("../interfaces/instruccion");
+const ejeArreglo_1 = require("./ejeArreglo");
+class Arreglo extends instruccion_1.Instruccion {
+    constructor(linea, valores_arreglo = null) {
+        super(linea);
+        this.valores_arreglo = valores_arreglo;
     }
-    isInitialized() {
-        return this.arreglo != null;
-    }
-    getSize() {
-        return this.arreglo.length;
-    }
-    hasIndex(index) {
-        return this.isInitialized() && index < this.getSize();
-    }
-    setValue(index, value) {
-        this.arreglo[index] = value;
-    }
-    getValue(index) {
-        return this.arreglo[index];
-    }
-    toString() {
-        let salida = '[';
-        const size = this.arreglo.length;
-        this.arreglo.forEach((item, index) => {
-            if (item != null)
-                salida += item.toString();
-            else
-                salida += "null";
-            if (index != size - 1)
-                salida += ', ';
-        });
-        salida += ']';
-        return salida;
-    }
-    pop() {
-        return this.arreglo.pop();
-    }
-    push(valor) {
-        this.arreglo.push(valor);
+    ejecutar(e) {
+        const arreglo = [];
+        let inicio = this.valores_arreglo[0].ejecutar(e);
+        let final = this.valores_arreglo[1].ejecutar(e);
+        //console.log(inicio, final);
+        for (let index = inicio; index < final + 1; index++) {
+            arreglo.push(index);
+        }
+        return new ejeArreglo_1.Arreglo(arreglo);
     }
 }
 exports.Arreglo = Arreglo;

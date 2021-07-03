@@ -4,22 +4,20 @@ import { Entorno } from "../interfaces/entorno";
 import { Instruccion } from "../interfaces/instruccion";
 import * as _ from 'lodash';
 
-export class identificador extends Instruccion{
+export class identificador extends Instruccion {
   id: string;
 
-  constructor(linea: string, id: string){
+  constructor(linea: string, id: string) {
     super(linea);
-    Object.assign(this, {id, linea});
+    Object.assign(this, { id, linea });
   }
 
   ejecutar(e: Entorno) {
-    //Busco el id en el entorno
     const variable = e.getVariable(this.id);
-    if(variable){
+    if (variable) {
       return variable.getValor();
     }
-    //Error
-    Errores.getInstance().push(new Error({tipo: 'semantico', linea: this.linea, 'descripcion': `No en contró ninguna variable con el id: ${this.id}`}));
+    Errores.getInstance().push(new Error({ tipo: 'Sémantico', linea: this.linea, descripcion: `No se encontró la variable ${this.id}` }));
     return null;
   }
 }

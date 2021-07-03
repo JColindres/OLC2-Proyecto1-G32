@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Aritmeticas = exports.Operador = void 0;
+const error_1 = require("../arbol/error");
+const errores_1 = require("../arbol/errores");
 const instruccion_1 = require("../interfaces/instruccion");
 var Operador;
 (function (Operador) {
@@ -44,7 +46,7 @@ class Aritmeticas extends instruccion_1.Instruccion {
                     return exp1.ToString() + exp2.ToString();
                 }
                 else {
-                    console.log("Error de tipos de datos no permitidos realizando una suma");
+                    errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'Semántico', linea: this.linea, descripcion: `No se pudo sumar ${exp1} con ${exp2}` }));
                     return null;
                 }
             }
@@ -55,7 +57,7 @@ class Aritmeticas extends instruccion_1.Instruccion {
                     return exp1 - exp2;
                 }
                 else {
-                    console.log("Error de tipos de datos no permitidos realizando una suma");
+                    errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'Semántico', linea: this.linea, descripcion: `No se pudo restar ${exp1} con ${exp2}` }));
                     return null;
                 }
             }
@@ -66,7 +68,7 @@ class Aritmeticas extends instruccion_1.Instruccion {
                     return exp1 * exp2;
                 }
                 else {
-                    console.log("Error de tipos de datos no permitidos realizando una suma");
+                    errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'Semántico', linea: this.linea, descripcion: `No se pudo multiplicar ${exp1} con ${exp2}` }));
                     return null;
                 }
             }
@@ -74,13 +76,13 @@ class Aritmeticas extends instruccion_1.Instruccion {
             else if (this.operador == Operador.DIVISION) {
                 if (typeof (exp1 === "number") && typeof (exp2 === "number")) {
                     if (exp2 === 0) {
-                        console.log("Resultado indefinido, no puede ejecutarse operación sobre cero.");
+                        errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'Semántico', linea: this.linea, descripcion: `No se puede dividir ${exp1} con ${exp2}` }));
                         return null;
                     }
                     return exp1 / exp2;
                 }
                 else {
-                    console.log("Error de tipos de datos no permitidos realizando una suma");
+                    errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'Semántico', linea: this.linea, descripcion: `No se pudo dividir ${exp1} con ${exp2}` }));
                     return null;
                 }
             }
@@ -88,13 +90,13 @@ class Aritmeticas extends instruccion_1.Instruccion {
             else if (this.operador == Operador.MODULO) {
                 if (typeof (exp1 === "number") && typeof (exp2 === "number")) {
                     if (exp2 === 0) {
-                        console.log("Resultado indefinido, no puede ejecutarse operación sobre cero.");
+                        errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'Semántico', linea: this.linea, descripcion: `No se pudo operar ${exp1} con ${exp2}` }));
                         return null;
                     }
                     return exp1 % exp2;
                 }
                 else {
-                    console.log("Error de tipos de datos no permitidos realizando una suma");
+                    errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'Semántico', linea: this.linea, descripcion: `No se pudo operar ${exp1} con ${exp2}` }));
                     return null;
                 }
             }
@@ -111,7 +113,7 @@ class Aritmeticas extends instruccion_1.Instruccion {
                     return exp1.ToString() < exp2.ToString();
                 }
                 else {
-                    console.log("Error de tipos de datos no permitidos realizando una suma");
+                    errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'Semántico', linea: this.linea, descripcion: `No se pudo comparar ${exp1} con ${exp2}` }));
                     return null;
                 }
             }
@@ -128,7 +130,7 @@ class Aritmeticas extends instruccion_1.Instruccion {
                     return exp1.ToString() > exp2.ToString();
                 }
                 else {
-                    console.log("Error de tipos de datos no permitidos realizando una suma");
+                    errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'Semántico', linea: this.linea, descripcion: `No se pudo comparar ${exp1} con ${exp2}` }));
                     return null;
                 }
             }
@@ -145,7 +147,7 @@ class Aritmeticas extends instruccion_1.Instruccion {
                     return exp1.ToString() <= exp2.ToString();
                 }
                 else {
-                    console.log("Error de tipos de datos no permitidos realizando una suma");
+                    errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'Semántico', linea: this.linea, descripcion: `No se pudo comparar ${exp1} con ${exp2}` }));
                     return null;
                 }
             }
@@ -162,7 +164,7 @@ class Aritmeticas extends instruccion_1.Instruccion {
                     return exp1.ToString() >= exp2.ToString();
                 }
                 else {
-                    console.log("Error de tipos de datos no permitidos realizando una suma");
+                    errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'Semántico', linea: this.linea, descripcion: `No se pudo comparar ${exp1} con ${exp2}` }));
                     return null;
                 }
             }
@@ -179,7 +181,7 @@ class Aritmeticas extends instruccion_1.Instruccion {
                     return exp1.ToString() === exp2.ToString();
                 }
                 else {
-                    console.log("Error de tipos de datos no permitidos realizando una suma");
+                    errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'Semántico', linea: this.linea, descripcion: `No se pudo comparar ${exp1} con ${exp2}` }));
                     return null;
                 }
             }
@@ -196,7 +198,27 @@ class Aritmeticas extends instruccion_1.Instruccion {
                     return !(exp1.ToString() === exp2.ToString());
                 }
                 else {
-                    console.log("Error de tipos de datos no permitidos realizando una suma");
+                    errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'Semántico', linea: this.linea, descripcion: `No se pudo comparar ${exp1} con ${exp2}` }));
+                    return null;
+                }
+            }
+            //and
+            else if (this.operador == Operador.AND) {
+                if (typeof (exp1 === "boolean") && typeof (exp2 === "boolean")) {
+                    return (exp1 && exp2);
+                }
+                else {
+                    errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'Semántico', linea: this.linea, descripcion: `No se pudo ejecutar lógica de ${exp1} con ${exp2}` }));
+                    return null;
+                }
+            }
+            //or
+            else if (this.operador || Operador.AND) {
+                if (typeof (exp1 === "boolean") && typeof (exp2 === "boolean")) {
+                    return (exp1 || exp2);
+                }
+                else {
+                    errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'Semántico', linea: this.linea, descripcion: `No se pudo ejecutar lógica de ${exp1} con ${exp2}` }));
                     return null;
                 }
             }
@@ -208,7 +230,7 @@ class Aritmeticas extends instruccion_1.Instruccion {
                     return -1 * exp1;
                 }
                 else {
-                    console.log("Error de tipos de datos no permitidos realizando una operación unaria");
+                    errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'Semántico', linea: this.linea, descripcion: `No se pudo operar unariamente ${exp1}` }));
                     return null;
                 }
             }
@@ -217,14 +239,14 @@ class Aritmeticas extends instruccion_1.Instruccion {
                     return !exp1;
                 }
                 else {
-                    console.log("Error de tipos de datos no permitidos realizando una operación unaria");
+                    errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'Semántico', linea: this.linea, descripcion: `No se pudo ejecutar lógica de ${exp1}` }));
                     return null;
                 }
             }
         }
         return null;
         //Si no es error
-        //Errores.getInstance().push(new Error({ tipo: 'semantico', linea: this.linea, descripcion: `No se puede realizar una multiplicacion entre un operando tipo ${typeof exp1} y un operando tipo ${typeof exp2}` }));
+        //Errores.getInstance().push(new Error({ tipo: 'Semántico', linea: this.linea, descripcion: `No se puede realizar una multiplicacion entre un operando tipo ${typeof exp1} y un operando tipo ${typeof exp2}` }));
     }
 }
 exports.Aritmeticas = Aritmeticas;

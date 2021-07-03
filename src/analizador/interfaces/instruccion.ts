@@ -1,15 +1,15 @@
 import { Entorno } from './entorno';
 
-export abstract class Instruccion{
+export abstract class Instruccion {
   linea: string;
-  abstract ejecutar(e : Entorno) : any;
+  abstract ejecutar(e: Entorno): any;
 
-  constructor(linea: string){
+  constructor(linea: string) {
     const valor = +linea + 1;
-    Object.assign(this, {linea: valor.toString()});
+    Object.assign(this, { linea: valor.toString() });
   }
 
-  getLinea() : string{
+  getLinea(): string {
     return this.linea;
   }
 }

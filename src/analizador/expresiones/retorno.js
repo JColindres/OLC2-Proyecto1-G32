@@ -11,7 +11,6 @@ class Retorno extends instruccion_1.Instruccion {
     ejecutar(e) {
         if (this.has_value && this.value != null) {
             const valor = this.value.ejecutar(e);
-            console.log(valor);
             return new ejeReturn_1.Retorno(this.has_value, valor);
         }
     }

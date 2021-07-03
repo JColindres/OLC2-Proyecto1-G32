@@ -5,6 +5,8 @@ const error_1 = require("./arbol/error");
 const errores_1 = require("./arbol/errores");
 const xmlTS_1 = require("./arbol/xmlTS");
 const aritmeticas_1 = require("./expresiones/aritmeticas");
+const arreglo_1 = require("./expresiones/arreglo");
+const funcion_1 = require("./expresiones/funcion");
 const identificador_1 = require("./expresiones/identificador");
 const if_else_1 = require("./expresiones/if_else");
 const letEXP_1 = require("./expresiones/letEXP");
@@ -124,18 +126,20 @@ class Ejecucion {
             this.atributo = false;
             this.atributoTexto = '';
             this.atributoIdentificacion = [];
-            this.ejecXQuery = [];
+            this.ejecXQuery = '';
             this.indiceValor = null;
             this.punto = '';
             this.consultaXML = this.cuerpoXml;
-            this.verObjetos();
+            //this.verObjetos();
             try {
                 if (this.raiz instanceof Object) {
                     if (this.identificar('XQUERY', this.raiz)) {
                         this.xqueryEjec();
+                        return this.ejecXQuery;
                     }
                 }
-                this.recorrido(this.raiz);
+                else
+                    this.recorrido(this.raiz);
             }
             catch (error) {
                 return 'No se encontró por algun error';
@@ -1851,21 +1855,105 @@ class Ejecucion {
         console.log(objeto);
     }
     xqueryEjec() {
+        listaEntornos_1.ListaEntornos.getInstance().clear();
         const instrucciones = this.xqueryRec(this.raiz);
         if (instrucciones instanceof Array) {
             const entorno = new entorno_1.Entorno();
             instrucciones.forEach(element => {
                 if (element instanceof instruccion_1.Instruccion) {
                     try {
-                        console.log(element, entorno);
-                        element.ejecutar(entorno);
+                        if (element instanceof mostrar_1.Mostrar) {
+                            this.ejecXQuery = element.ejecutar(entorno).toString();
+                        }
+                        else {
+                            element.ejecutar(entorno);
+                        }
                     }
                     catch (error) {
                         console.log(error);
+                        errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'Fatal', linea: '0', descripcion: error }));
                     }
                 }
             });
             listaEntornos_1.ListaEntornos.getInstance().push(entorno);
+            let lista = listaEntornos_1.ListaEntornos.getInstance().lista;
+            let tsAux = new xmlTS_1.XmlTS();
+            lista.forEach((elementE, indexE) => {
+                elementE['funciones'].forEach(elementF => {
+                    if (elementF instanceof funcion_1.Funcion) {
+                        let a = elementF.toString(indexE).tabla;
+                        a.forEach(elementTS => {
+                            let entorno = elementTS[2];
+                            if (entorno == '0') {
+                                entorno = 'GLOBAL';
+                            }
+                            let tipo = '';
+                            switch (elementTS[3]) {
+                                case '0':
+                                    tipo = 'STRING';
+                                    break;
+                                case '1':
+                                    tipo = 'INTEGER';
+                                    break;
+                                case '2':
+                                    tipo = 'DECIMAL';
+                                    break;
+                                case '3':
+                                    tipo = 'BOOLEAN';
+                                    break;
+                                case '4':
+                                    tipo = 'VOID';
+                                    break;
+                                case '5':
+                                    tipo = 'NULL';
+                                    break;
+                                case '6':
+                                    tipo = 'ARRAY';
+                                    break;
+                            }
+                            tsAux.agregar(elementTS[0], elementTS[1], entorno, 'Función - ' + tipo, elementTS[4], elementTS[5], elementTS[6], elementTS[7]);
+                        });
+                    }
+                });
+                elementE['variables'].forEach(elementV => {
+                    if (elementV instanceof variable_1.Variable) {
+                        let a = elementV.toString(indexE).tabla;
+                        a.forEach(elementTS => {
+                            let entorno = elementTS[2];
+                            if (entorno == '0') {
+                                entorno = 'GLOBAL';
+                            }
+                            let tipo = '';
+                            switch (elementTS[3]) {
+                                case '0':
+                                    tipo = 'STRING';
+                                    break;
+                                case '1':
+                                    tipo = 'INTEGER';
+                                    break;
+                                case '2':
+                                    tipo = 'DECIMAL';
+                                    break;
+                                case '3':
+                                    tipo = 'BOOLEAN';
+                                    break;
+                                case '4':
+                                    tipo = 'VOID';
+                                    break;
+                                case '5':
+                                    tipo = 'NULL';
+                                    break;
+                                case '6':
+                                    tipo = 'ARRAY';
+                                    break;
+                            }
+                            tsAux.agregar(elementTS[0], elementTS[1], entorno, 'Variable - ' + tipo, elementTS[4], elementTS[5], elementTS[6], elementTS[7]);
+                        });
+                    }
+                });
+            });
+            this.ts.concatenar(tsAux.tabla);
+            //console.log(this.ts)
         }
     }
     xqueryRec(nodo) {
@@ -1878,7 +1966,11 @@ class Ejecucion {
                         instrucciones = instrucciones.concat(inst);
                     }
                     else {
-                        instrucciones.push(inst);
+                        if (this.identificar('F_LLAMADA', element)) {
+                            instrucciones.push(new mostrar_1.Mostrar(element.linea, inst));
+                        }
+                        else
+                            instrucciones.push(inst);
                     }
                 });
                 return instrucciones;
@@ -1899,7 +1991,7 @@ class Ejecucion {
                 else {
                     if (this.identificar('EXPR', nodo.hijos[2])) {
                         let val = this.xqueryRec(nodo.hijos[2]);
-                        instrucciones.push(new letEXP_1.letEXP('0', nodo.hijos[0], val));
+                        instrucciones.push(new letEXP_1.letEXP(nodo.linea, nodo.hijos[0], val));
                     }
                     if (nodo.hijos.length === 4) {
                         if (this.identificar('RETURN', nodo.hijos[3])) {
@@ -1941,12 +2033,15 @@ class Ejecucion {
                                     tipo = 1 /* INT */;
                                 }
                                 else if (tipo === 'decimal') {
-                                    tipo = 1 /* INT */;
+                                    tipo = 2 /* DOUBLE */;
                                 }
                                 else if (tipo === 'string') {
                                     tipo = 0 /* STRING */;
                                 }
-                                variables.push(new variable_1.Variable({ id, tipo_asignado: tipo }));
+                                else if (tipo === 'boolean') {
+                                    tipo = 3 /* BOOL */;
+                                }
+                                variables.push(new variable_1.Variable({ id, tipo: tipo }));
                             }
                             const id_funcion = nodo.hijos[1];
                             let tipo_funcion = nodo.hijos[3].hijos[0];
@@ -1954,10 +2049,13 @@ class Ejecucion {
                                 tipo_funcion = 1 /* INT */;
                             }
                             else if (tipo_funcion === 'decimal') {
-                                tipo_funcion = 1 /* INT */;
+                                tipo_funcion = 2 /* DOUBLE */;
                             }
                             else if (tipo_funcion === 'string') {
                                 tipo_funcion = 0 /* STRING */;
+                            }
+                            else if (tipo_funcion === 'boolean') {
+                                tipo_funcion = 3 /* BOOL */;
                             }
                             const flwor = this.xqueryRec(nodo.hijos[4]);
                             instrucciones.push(new nuevaFuncion_1.nuevaFuncion(nodo.linea, id_funcion, flwor, tipo_funcion, variables));
@@ -2023,6 +2121,11 @@ class Ejecucion {
             const expresion = this.xqueryRec(nodo.hijos[0]);
             if (this.identificar('xquery', nodo.hijos[0])) {
                 return new identificador_1.identificador(nodo.linea, expresion);
+            }
+            else if (this.identificar('to', nodo.hijos[0])) {
+                let inicio = this.xqueryRec(nodo.hijos[0].hijos[0]);
+                let final = this.xqueryRec(nodo.hijos[0].hijos[1]);
+                return new arreglo_1.Arreglo(nodo.linea, [inicio, final]);
             }
             else {
                 return expresion;
@@ -2090,17 +2193,66 @@ class Ejecucion {
                 }
             }
         }
+        if (this.identificar('LOGICAS', nodo)) {
+            if (nodo.hijos.length === 3) {
+                let aritIzq = this.xqueryRec(nodo.hijos[0]);
+                let aritDer = this.xqueryRec(nodo.hijos[2]);
+                if (typeof aritIzq == 'string') {
+                    aritIzq = new identificador_1.identificador(nodo.linea, aritIzq);
+                }
+                if (typeof aritDer == 'string') {
+                    aritDer = new identificador_1.identificador(nodo.linea, aritDer);
+                }
+                const operando = nodo.hijos[1];
+                switch (operando) {
+                    case 'and':
+                        return new aritmeticas_1.Aritmeticas(aritIzq, aritDer, operacion_1.Operador.AND, nodo.linea);
+                    case 'or':
+                        return new aritmeticas_1.Aritmeticas(aritIzq, aritDer, operacion_1.Operador.OR, nodo.linea);
+                }
+            }
+        }
         if (this.identificar('integer', nodo)) {
             return new primitivo_1.Primitivo(Number(nodo.hijos[0]), nodo.linea, 0);
         }
         if (this.identificar('double', nodo)) {
             return new primitivo_1.Primitivo(Number(nodo.hijos[0]), nodo.linea, 0);
         }
+        if (this.identificar('boolean', nodo)) {
+            return new primitivo_1.Primitivo((nodo.hijos[0] == "true"), nodo.linea, 0);
+        }
         if (this.identificar('string', nodo)) {
             return new primitivo_1.Primitivo(nodo.hijos[0], nodo.linea, 0);
         }
         if (this.identificar('xquery', nodo)) {
             return new identificador_1.identificador(nodo.linea, nodo.hijos[0] + nodo.hijos[1]);
+        }
+        if (this.identificar('PATH', nodo)) {
+            this.esRaiz = true;
+            this.descendiente = false;
+            this.atributo = false;
+            this.atributoTexto = '';
+            this.atributoIdentificacion = [];
+            this.ejecXQuery = '';
+            this.indiceValor = null;
+            this.punto = '';
+            this.consultaXML = this.cuerpoXml;
+            this.pathh = this.consultaXML;
+            this.pathhCount = 0;
+            this.path(nodo);
+            let texto = "";
+            let param;
+            for (var i = 0; i < this.pathh[0].texto.length; i++) {
+                texto += this.pathh[0].texto[i];
+            }
+            if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
+                param = new primitivo_1.Primitivo(Number(texto), nodo.linea, 1);
+                return param;
+            }
+            else {
+                param = new primitivo_1.Primitivo(texto, nodo.linea, 1);
+                return param;
+            }
         }
     }
 }
