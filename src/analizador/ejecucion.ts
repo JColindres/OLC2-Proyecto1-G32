@@ -180,11 +180,13 @@ export class Ejecucion {
         if (this.raiz instanceof Object) {
           if (this.identificar('XQUERY', this.raiz)) {
             this.xqueryEjec();
-            return this.ejecXQuery;
+            this.recorrido(this.raiz);
+            return this.ejecXQuery + '\n' + this.traducir();
           }
+          else
+            this.recorrido(this.raiz);
         }
-        else
-          this.recorrido(this.raiz);
+        
       } catch (error) {
         return 'No se encontró por algun error';
       }

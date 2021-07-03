@@ -938,9 +938,40 @@ export default {
       //this.entornos = Entornos.getInstance().lista;
     },
     traduccionXQUERY(){
-      let variable = "ñ";
-      console.log(variable.codePointAt(0));
-      console.log(variable.charCodeAt(0));
+      if (this.codeXP.trim() == "") {
+        this.notificar("primary", `El editor está vacío, escriba algo.`);
+        return;
+      }
+      this.inicializarValores5();
+      try {
+        const raiz = AXml.parse(this.code);
+        const raizxq = AXQUERY.parse(this.codeXP);
+
+        //Validacion de raiz
+        if (raizxq == null) {
+          this.notificar(
+            "negative",
+            "No se pudo ejecutar"
+          );
+          return;
+        }
+
+        this.xmlXP = raiz;
+        let ejecucion = new Ejecucion(this.xmlXP.prologo, this.xmlXP.cuerpo, this.code, raizxq);
+        ejecucion.verObjetos();
+
+        //Se llama al método traducir
+        let traductor = new Traduccion(ejecucion.ts);
+        this.code3D = traductor.TraducirXquery(this.xmlXP.prologo, this.xmlXP.cuerpo, raizxq);
+
+        this.dataTS(ejecucion.ts.tabla);
+
+        this.notificar("primary", "Ejecución realizada con éxito");
+      } catch (error) {
+        this.validarError(error);
+       // console.log(error);
+      }
+      this.errores = Errores.getInstance().lista;
     },
      Optimizar(){
       if (this.code3D.trim() == "") 

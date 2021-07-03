@@ -196,6 +196,57 @@ class Traduccion {
         //Retorno del código
         this.cadena = generador.GetCodigo();
     }
+    TraducirXquery(prologo, cuerpo, raiz) {
+        this.prologoXml = prologo;
+        this.cuerpoXml = cuerpo;
+        Object.assign(this, { raiz, contador: 0, dot: '' });
+        const generador = Generador_1.Generador.GetInstance();
+        generador.ResetGenerador();
+        //Arreglar tabla de símbolos y crear heap y stack
+        this.Crearestructuras();
+        //Crear codigo de consulta
+        this.recorrer();
+        //Se agregan funciones si no hay errores
+        if (this.Unerror == false) {
+            generador.Printf();
+        }
+        //Formular código
+        this.Crearcadenaxquery();
+        return this.cadena;
+    }
+    Crearcadenaxquery() {
+        //Recuperar instancia del generador
+        const generador = Generador_1.Generador.GetInstance();
+        //Se agrega primero el header
+        generador.Addcomentario('Inicio del código generado');
+        generador.Addcodigo('#include <stdio.h>\n');
+        generador.Addcodigo('double heap[30101999];');
+        generador.Addcodigo('double stack[30101999];');
+        generador.Addcodigo('double heapxpath[30101999];');
+        generador.Addcodigo('double stackxpath[30101999];');
+        generador.Addcodigo('double S;');
+        generador.Addcodigo('double H;');
+        generador.Addcodigo('double Sxpath;');
+        generador.Addcodigo('double Hxpath;\n');
+        //Se agregan las declaraciones iniciales
+        generador.Jointemporales();
+        //Se agregan funciones
+        generador.Joinfunc();
+        //Se agrega el inicio del main
+        generador.Addcomentario('Agregando main');
+        generador.Addcodigo(`int main() \n{`);
+        //Contenido del main
+        generador.Addcomentarioidentado('Inicializar registros');
+        generador.Addcodigoidentado('S = 0;');
+        generador.Addcodigoidentado('H = 0;');
+        generador.Addcodigoidentado('Sxpath = 0;');
+        generador.Addcodigoidentado('Hxpath = 0;\n');
+        generador.Joincodxml();
+        //Se agrega el final del main
+        generador.Addcodigoidentado(`return 0; \n}\n`);
+        //Retorno del código
+        this.cadena = generador.GetCodigo();
+    }
     identificar(etiqueta, nodo) {
         if (nodo == null || !(nodo instanceof Object)) {
             return false;
@@ -625,6 +676,136 @@ class Traduccion {
                     }
                     else if (typeof element === 'string') {
                         this.consultaXML = this.reducir(this.consultaXML, element, 'NODO_FUNCION');
+                    }
+                });
+            }
+            //Parte de XQUERY
+            if (this.identificar('XQUERY', nodo)) {
+                nodo.hijos.forEach((element) => {
+                    if (element instanceof Object) {
+                        this.recorrido(element);
+                    }
+                    else if (typeof element === 'string') {
+                    }
+                });
+            }
+            if (this.identificar('HTML', nodo)) {
+                nodo.hijos.forEach((element) => {
+                    if (element instanceof Object) {
+                        this.recorrido(element);
+                    }
+                    else if (typeof element === 'string') {
+                    }
+                });
+            }
+            if (this.identificar('FOR', nodo)) {
+                nodo.hijos.forEach((element) => {
+                    if (element instanceof Object) {
+                        this.recorrido(element);
+                    }
+                    else if (typeof element === 'string') {
+                    }
+                });
+                this.atributoIdentificacion = [];
+                this.consultaXML.forEach(element => {
+                    this.atributoIdentificacion.push({ cons: element, atributo: this.atributo, texto: this.atributoTexto });
+                });
+                //this.atributoIdentificacion = this.atributoIdentificacion.filter(item => this.consultaXML.includes(item.cons))
+            }
+            if (this.identificar('WHERE', nodo)) {
+                nodo.hijos.forEach((element) => {
+                    if (element instanceof Object) {
+                        this.recorrido(element);
+                    }
+                    else if (typeof element === 'string') {
+                    }
+                });
+            }
+            if (this.identificar('ORDER BY', nodo)) {
+                let regresar = false;
+                nodo.hijos.forEach((element) => {
+                    if (element instanceof Object) {
+                        this.recorrido(element);
+                    }
+                    else if (typeof element === 'string') {
+                        if (element === '$x') {
+                            this.consultaXML;
+                        }
+                        else if (element === '/') {
+                            this.consultaXML = this.reducir(this.consultaXML, element, 'RAIZ');
+                        }
+                        else if (!(element === ',')) {
+                            this.consultaXML = this.reducir(this.consultaXML, element, 'INSTRUCCIONES');
+                            regresar = true;
+                        }
+                    }
+                    this.consultaXML.sort((n1, n2) => {
+                        if (n1.texto > n2.texto) {
+                            return 1;
+                        }
+                        if (n1.texto < n2.texto) {
+                            return -1;
+                        }
+                        return 0;
+                    });
+                    if (regresar) {
+                        console.log('regresar', regresar, this.consultaXML, element);
+                        this.consultaXML = this.reducir(this.consultaXML, '/..', 'PADRE');
+                        regresar = false;
+                    }
+                });
+            }
+            if (this.identificar('RETURN', nodo)) {
+                nodo.hijos.forEach((element) => {
+                    if (element instanceof Object) {
+                        this.recorrido(element);
+                    }
+                    else if (typeof element === 'string') {
+                        if (element === '$x') {
+                            this.consultaXML;
+                        }
+                        else if (element === '/') {
+                            this.consultaXML = this.reducir(this.consultaXML, element, 'RAIZ');
+                        }
+                        else {
+                            this.consultaXML = this.reducir(this.consultaXML, element, 'INSTRUCCIONES');
+                        }
+                    }
+                });
+            }
+            if (this.identificar('IF', nodo)) {
+                nodo.hijos.forEach((element) => {
+                    if (element instanceof Object) {
+                        this.recorrido(element);
+                    }
+                    else if (typeof element === 'string') {
+                        if (element === '$x') {
+                            this.consultaXML;
+                        }
+                        else if (element === '/') {
+                            this.consultaXML = this.reducir(this.consultaXML, element, 'RAIZ');
+                        }
+                        else {
+                            this.consultaXML = this.reducir(this.consultaXML, element, 'INSTRUCCIONES');
+                        }
+                    }
+                });
+            }
+            if (this.identificar('THEN', nodo)) {
+                nodo.hijos.forEach((element) => {
+                    if (element instanceof Object) {
+                        this.recorrido(element);
+                    }
+                    else if (typeof element === 'string') {
+                        if (element === '$x') {
+                            this.consultaXML;
+                        }
+                        else if (element === '/') {
+                            this.consultaXML = this.reducir(this.consultaXML, element, 'RAIZ');
+                        }
+                        else {
+                            this.consultaXML = this.reducir(this.consultaXML, element, 'INSTRUCCIONES');
+                        }
                     }
                 });
             }
