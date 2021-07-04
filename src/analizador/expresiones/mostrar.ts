@@ -1,4 +1,5 @@
 import * as _ from 'lodash';
+import { Objeto } from '../abstractas/objeto';
 import { Entorno } from '../interfaces/entorno';
 import { Instruccion } from '../interfaces/instruccion';
 import { Arreglo } from './ejeArreglo';

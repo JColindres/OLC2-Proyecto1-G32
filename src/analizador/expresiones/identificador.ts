@@ -14,7 +14,7 @@ export class identificador extends Instruccion {
 
   ejecutar(e: Entorno) {
     const variable = e.getVariable(this.id);
-      console.log('identif\n',this.id,variable, e)
+      //console.log('identif\n',this.id,variable, e)
     if (variable) {
       return variable.getValor();
     }

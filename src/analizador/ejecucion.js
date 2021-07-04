@@ -1872,7 +1872,18 @@ class Ejecucion {
                     try {
                         //console.log(element, entorno)
                         if (element instanceof mostrar_1.Mostrar) {
-                            this.ejecXQuery = element.ejecutar(entorno).toString();
+                            console.log('primero');
+                            let a = element.ejecutar(entorno);
+                            console.log('segundo');
+                            if (!(typeof a == 'string' || typeof a == 'number')) {
+                                this.atributoIdentificacion.pop();
+                                this.atributoIdentificacion.push({ cons: a, atributo: this.atributo, texto: this.atributoTexto });
+                                //this.ejecXQuery = this.traducir();
+                                //console.log(a,this.atributoIdentificacion,this.ejecXQuery)
+                            }
+                            else
+                                this.ejecXQuery = a.toString();
+                            console.log('tercero', a);
                         }
                         else {
                             element.ejecutar(entorno);
@@ -2019,13 +2030,22 @@ class Ejecucion {
                 }
                 else {
                     if (this.identificar('EXPR', nodo.hijos[2])) {
-                        let val = this.xqueryRec(nodo.hijos[2]);
-                        instrucciones.push(new letEXP_1.letEXP(nodo.linea, nodo.hijos[0], val));
+                        if (this.identificar('PATH', nodo.hijos[2].hijos[0])) {
+                            let val = this.xqueryRec(nodo.hijos[2].hijos[0]);
+                            instrucciones.push(new letEXP_1.letEXP(nodo.linea, nodo.hijos[0], val));
+                        }
+                        else {
+                            let val = this.xqueryRec(nodo.hijos[2]);
+                            instrucciones.push(new letEXP_1.letEXP(nodo.linea, nodo.hijos[0], val));
+                        }
                     }
                     if (nodo.hijos.length === 4) {
                         if (this.identificar('RETURN', nodo.hijos[3])) {
                             let inst;
-                            if (typeof nodo.hijos[3].hijos[0] == 'string') {
+                            if (this.identificar('EXPR', nodo.hijos[3].hijos[0])) {
+                                inst = this.xqueryRec(nodo.hijos[3].hijos[0]);
+                            }
+                            else if (typeof nodo.hijos[3].hijos[0] == 'string') {
                                 inst = new identificador_1.identificador(nodo.linea, nodo.hijos[3].hijos[0]);
                             }
                             else {
@@ -2278,15 +2298,21 @@ class Ejecucion {
             this.path(nodo);
             let texto = "";
             let param;
-            for (var i = 0; i < this.pathh[0].texto.length; i++) {
-                texto += this.pathh[0].texto[i];
-            }
-            if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
-                param = new primitivo_1.Primitivo(Number(texto), nodo.linea, 1);
-                return param;
+            if (this.pathh[0].texto.length > 0) {
+                for (var i = 0; i < this.pathh[0].texto.length; i++) {
+                    texto += this.pathh[0].texto[i];
+                }
+                if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
+                    param = new primitivo_1.Primitivo(Number(texto), nodo.linea, 1);
+                    return param;
+                }
+                else {
+                    param = new primitivo_1.Primitivo(texto, nodo.linea, 1);
+                    return param;
+                }
             }
             else {
-                param = new primitivo_1.Primitivo(texto, nodo.linea, 1);
+                param = new primitivo_1.Primitivo(this.pathh[0], nodo.linea, 1);
                 return param;
             }
         }

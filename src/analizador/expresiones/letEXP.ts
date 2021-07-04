@@ -25,7 +25,7 @@ export class letEXP extends Instruccion {
 
     let valor = this.expresion.ejecutar(e);
     valor = _.cloneDeep(valor);
-    console.log('letexp\n',this.id, this.expresion, valor, e)
+    //console.log('letexp\n',this.id, this.expresion, valor, e)
     const tipo = getTipo(valor);
     variable = new Variable({ id: this.id, tipo, valor });
     e.setVariable(variable);

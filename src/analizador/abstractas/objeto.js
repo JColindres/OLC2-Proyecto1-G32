@@ -11,5 +11,9 @@ class Objeto {
         this.listaObjetos = listaO;
         this.doble = doble;
     }
+    toString() {
+        let salida = 'Objeto XML';
+        return salida;
+    }
 }
 exports.Objeto = Objeto;
