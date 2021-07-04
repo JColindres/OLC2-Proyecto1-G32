@@ -21,6 +21,7 @@ const variable_1 = require("./expresiones/variable");
 const entorno_1 = require("./interfaces/entorno");
 const instruccion_1 = require("./interfaces/instruccion");
 const listaEntornos_1 = require("./interfaces/listaEntornos");
+const funcion_nativa_1 = require("./expresiones/funcion_nativa");
 class Ejecucion {
     constructor(prologo, cuerpo, cadena, raiz) {
         this.tildes = ['á', 'é', 'í', 'ó', 'ú'];
@@ -131,6 +132,8 @@ class Ejecucion {
             this.indiceValor = null;
             this.punto = '';
             this.consultaXML = this.cuerpoXml;
+            this.f_nativa_upper = false;
+            this.f_nativa_lower = false;
             //this.verObjetos();
             try {
                 if (this.raiz instanceof Object) {
@@ -1974,6 +1977,27 @@ class Ejecucion {
                         if (this.identificar('F_LLAMADA', element)) {
                             instrucciones.push(new mostrar_1.Mostrar(element.linea, inst));
                         }
+                        else if (this.identificar('LLAMADA_FUNCION', element)) {
+                            instrucciones.push(new mostrar_1.Mostrar(element.linea, inst));
+                        }
+                        else if (this.identificar('F_UPPERCASE', element)) {
+                            instrucciones.push(new mostrar_1.Mostrar(element.linea, inst));
+                        }
+                        else if (this.identificar('F_NUMBER', element)) {
+                            instrucciones.push(new mostrar_1.Mostrar(element.linea, inst));
+                        }
+                        else if (this.identificar('F_STRING', element)) { //nativa string
+                            instrucciones.push(new mostrar_1.Mostrar(element.linea, inst));
+                        }
+                        else if (this.identificar('F_LOWERCASE', element)) {
+                            instrucciones.push(new mostrar_1.Mostrar(element.linea, inst));
+                        }
+                        else if (this.identificar('F_SUBSTRING', element)) {
+                            instrucciones.push(new mostrar_1.Mostrar(element.linea, inst));
+                        }
+                        else if (this.identificar('F_SUBSTRING1', element)) {
+                            instrucciones.push(new mostrar_1.Mostrar(element.linea, inst));
+                        }
                         else
                             instrucciones.push(inst);
                     }
@@ -2264,6 +2288,93 @@ class Ejecucion {
             else {
                 param = new primitivo_1.Primitivo(texto, nodo.linea, 1);
                 return param;
+            }
+        }
+        if (this.identificar('LLAMADA_FUNCION', nodo)) {
+            let parametros = this.xqueryRec(nodo.hijos[1]);
+            let llamada = new llamFunc_1.llamfuc(nodo.linea, nodo.hijos[0], parametros);
+            //return new Mostrar(nodo.linea,llamada);
+            return llamada;
+        }
+        if (this.identificar('F_UPPERCASE', nodo)) {
+            if (typeof nodo.hijos[0].hijos[0] == 'string') {
+                let valor = nodo.hijos[0].hijos[0];
+                let nativa = new funcion_nativa_1.funcion_nativa(nodo.linea, 'F_UPPERCASE', valor);
+                return nativa;
+            }
+            else {
+                this.f_nativa_upper = true;
+                //this.recorrido(nodo.hijos[0].hijos[0]);
+            }
+        }
+        if (this.identificar('F_LOWERCASE', nodo)) {
+            if (typeof nodo.hijos[0].hijos[0] == 'string') {
+                let valor = nodo.hijos[0].hijos[0];
+                let nativa = new funcion_nativa_1.funcion_nativa(nodo.linea, 'F_LOWERCASE', valor);
+                return nativa;
+            }
+            else {
+                this.f_nativa_lower = true;
+                //this.recorrido(nodo.hijos[0].hijos[0]);
+            }
+        }
+        if (this.identificar('F_STRING', nodo)) {
+            if (typeof nodo.hijos[0].hijos[0] == 'string') {
+                let valor = nodo.hijos[0].hijos[0];
+                let nativa = new funcion_nativa_1.funcion_nativa(nodo.linea, 'F_STRING', valor);
+                return nativa;
+            }
+            else {
+                //this.recorrido(nodo.hijos[0].hijos[0]);
+            }
+        }
+        if (this.identificar('F_NUMBER', nodo)) {
+            let valoresAceptados = /^[0-9]+$/;
+            if (typeof nodo.hijos[0] == 'string') {
+                if (nodo.hijos[0] == 'true') {
+                    let nativa = new funcion_nativa_1.funcion_nativa(nodo.linea, 'F_NUMBER', true);
+                    return nativa;
+                }
+                else if (nodo.hijos[0] == 'false') {
+                    let nativa = new funcion_nativa_1.funcion_nativa(nodo.linea, 'F_NUMBER', false);
+                    return nativa;
+                }
+                else if (nodo.hijos[0].match(valoresAceptados)) {
+                    let valor = nodo.hijos[0];
+                    let nativa = new funcion_nativa_1.funcion_nativa(nodo.linea, 'F_NUMBER', parseInt(valor));
+                    return nativa;
+                }
+                else {
+                    let valor = nodo.hijos[0];
+                    let nativa = new funcion_nativa_1.funcion_nativa(nodo.linea, 'F_NUMBER', +valor);
+                    return nativa;
+                }
+            }
+            else {
+                //this.recorrido(nodo.hijos[0]);
+            }
+        }
+        if (this.identificar('F_SUBSTRING', nodo)) {
+            if (typeof nodo.hijos[0].hijos[0] == 'string') {
+                let valor = nodo.hijos[0].hijos[0];
+                let inicio = parseInt(nodo.hijos[1]);
+                let nativa = new funcion_nativa_1.funcion_nativa(nodo.linea, 'F_SUBSTRING', valor, inicio);
+                return nativa;
+            }
+            else {
+                //this.recorrido(nodo.hijos[0].hijos[0]);
+            }
+        }
+        if (this.identificar('F_SUBSTRING1', nodo)) {
+            if (typeof nodo.hijos[0].hijos[0] == 'string') {
+                let valor = nodo.hijos[0].hijos[0];
+                let inicio = parseInt(nodo.hijos[1]);
+                let fin = parseInt(nodo.hijos[2]);
+                let nativa = new funcion_nativa_1.funcion_nativa(nodo.linea, 'F_SUBSTRING1', valor, inicio, fin);
+                return nativa;
+            }
+            else {
+                //this.recorrido(nodo.hijos[0].hijos[0]);
             }
         }
     }

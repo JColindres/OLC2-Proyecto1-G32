@@ -22,6 +22,7 @@ import { Entorno } from "./interfaces/entorno";
 import { Expresion } from "./Interfaces/Expresion";
 import { Instruccion } from "./interfaces/instruccion";
 import { ListaEntornos } from "./interfaces/listaEntornos";
+import {funcion_nativa} from "./expresiones/funcion_nativa";
 
 export class Ejecucion {
   prologoXml: JSON;
@@ -60,6 +61,8 @@ export class Ejecucion {
   dot: string;
 
   ejecXQuery: string;
+  f_nativa_upper:boolean;
+  f_nativa_lower: boolean;
 
   constructor(prologo: JSON, cuerpo: Array<Objeto>, cadena: string, raiz: Object) {
     this.prologoXml = prologo;
@@ -175,6 +178,10 @@ export class Ejecucion {
       this.indiceValor = null;
       this.punto = '';
       this.consultaXML = this.cuerpoXml;
+    
+      this.f_nativa_upper = false;
+      this.f_nativa_lower = false;
+
       //this.verObjetos();
       try {
         if (this.raiz instanceof Object) {
@@ -2062,6 +2069,21 @@ export class Ejecucion {
           else {
             if (this.identificar('F_LLAMADA', element)) {
               instrucciones.push(new Mostrar(element.linea, inst))
+            }else if (this.identificar('LLAMADA_FUNCION', element)) {
+              instrucciones.push(new Mostrar(element.linea, inst))
+            }
+            else if  (this.identificar('F_UPPERCASE', element)) {
+              instrucciones.push(new Mostrar(element.linea, inst))
+            }else if  (this.identificar('F_NUMBER', element)) {
+              instrucciones.push(new Mostrar(element.linea, inst))
+            }else if  (this.identificar('F_STRING', element)) { //nativa string
+              instrucciones.push(new Mostrar(element.linea, inst))
+            }else if  (this.identificar('F_LOWERCASE', element)) {
+              instrucciones.push(new Mostrar(element.linea, inst))
+            }else if  (this.identificar('F_SUBSTRING', element)) {
+              instrucciones.push(new Mostrar(element.linea, inst))
+            }else if  (this.identificar('F_SUBSTRING1', element)) {
+              instrucciones.push(new Mostrar(element.linea, inst))
             }
             else
               instrucciones.push(inst);
@@ -2373,6 +2395,91 @@ export class Ejecucion {
       } else {
         param = new Primitivo(texto, nodo.linea, 1);
         return param;
+      }
+    }
+
+    if (this.identificar('LLAMADA_FUNCION', nodo)) {
+      let parametros = this.xqueryRec(nodo.hijos[1]);
+      let llamada = new llamfuc(nodo.linea, nodo.hijos[0], parametros);
+      //return new Mostrar(nodo.linea,llamada);
+      return llamada
+    }
+
+    if (this.identificar('F_UPPERCASE', nodo)) {
+      if (typeof nodo.hijos[0].hijos[0] == 'string'){
+        let valor = nodo.hijos[0].hijos[0];
+        let nativa = new funcion_nativa(nodo.linea,'F_UPPERCASE',valor);
+        return nativa
+      }else{
+        this.f_nativa_upper = true;
+        //this.recorrido(nodo.hijos[0].hijos[0]);
+      }
+    }
+
+    if (this.identificar('F_LOWERCASE', nodo)) {
+      if (typeof nodo.hijos[0].hijos[0] == 'string'){
+        let valor = nodo.hijos[0].hijos[0];
+        let nativa = new funcion_nativa(nodo.linea,'F_LOWERCASE',valor);
+        return nativa
+      }else{
+        this.f_nativa_lower = true;
+        //this.recorrido(nodo.hijos[0].hijos[0]);
+      }
+    }
+
+    if (this.identificar('F_STRING', nodo)) {
+      if (typeof nodo.hijos[0].hijos[0] == 'string'){
+        let valor = nodo.hijos[0].hijos[0];
+        let nativa = new funcion_nativa(nodo.linea,'F_STRING',valor);
+        return nativa
+      }else{
+        //this.recorrido(nodo.hijos[0].hijos[0]);
+      }
+    }
+
+    if (this.identificar('F_NUMBER', nodo)) {
+      let valoresAceptados = /^[0-9]+$/;
+      if (typeof nodo.hijos[0] == 'string'){
+        if (nodo.hijos[0] == 'true'){
+          let nativa = new funcion_nativa(nodo.linea,'F_NUMBER',true);
+          return nativa
+        }else if (nodo.hijos[0] == 'false'){
+          let nativa = new funcion_nativa(nodo.linea,'F_NUMBER',false);
+          return nativa
+        }else if(nodo.hijos[0].match(valoresAceptados)){
+          let valor = nodo.hijos[0];
+          let nativa = new funcion_nativa(nodo.linea,'F_NUMBER',parseInt(valor));
+          return nativa
+        }else{
+          let valor = nodo.hijos[0];
+          let nativa = new funcion_nativa(nodo.linea,'F_NUMBER',+valor);
+          return nativa
+        }
+      }else{
+        //this.recorrido(nodo.hijos[0]);
+      }
+    }
+
+    if (this.identificar('F_SUBSTRING', nodo)) {
+      if (typeof nodo.hijos[0].hijos[0] == 'string'){
+        let valor = nodo.hijos[0].hijos[0];
+        let inicio = parseInt(nodo.hijos[1]);
+        let nativa = new funcion_nativa(nodo.linea,'F_SUBSTRING',valor,inicio);
+        return nativa
+      }else{
+        //this.recorrido(nodo.hijos[0].hijos[0]);
+      }
+    }
+
+    if (this.identificar('F_SUBSTRING1', nodo)) {
+      if (typeof nodo.hijos[0].hijos[0] == 'string'){
+        let valor = nodo.hijos[0].hijos[0];
+        let inicio = parseInt(nodo.hijos[1]);
+        let fin = parseInt(nodo.hijos[2]); 
+        let nativa = new funcion_nativa(nodo.linea,'F_SUBSTRING1',valor,inicio,fin);
+        return nativa
+      }else{
+        //this.recorrido(nodo.hijos[0].hijos[0]);
       }
     }
   }

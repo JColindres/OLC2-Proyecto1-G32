@@ -285,15 +285,20 @@ COMPARACION_XQUERY : EXPR eq EXPR
                     ;
 
 LLAMADA_FUNCION : id par_izq L_PARAM par_der 
-                    { $$ = new NodoAST({label: 'LLAMADA_FUNCION', hijos: [$1,$3], linea: yylineno}); }   
-                | number par_izq VALORES par_der 
-                    { $$ = new NodoAST({label: 'F_NUMBER', hijos: [$1,...$3.hijos], linea: yylineno}); }  
-                | tk_string par_izq VALORES par_der
-                    { $$ = new NodoAST({label: 'F_STRING', hijos: [$1,...$3.hijos], linea: yylineno}); }
+                    { 
+                        if ($1 == 'string'){
+                              $$ = new NodoAST({label: 'F_STRING', hijos: [...$3.hijos], linea: yylineno}); 
+                        }
+                        else {
+                            $$ = new NodoAST({label: 'LLAMADA_FUNCION', hijos: [$1,$3], linea: yylineno}); 
+                        }   
+                    }
+                | number par_izq VALOR_LLAMADA par_der 
+                    { $$ = new NodoAST({label: 'F_NUMBER', hijos: [...$3.hijos], linea: yylineno}); } 
                 | substring par_izq VALOR_LLAMADA coma integer par_der
-                    { $$ = new NodoAST({label: 'F_SUBSTRING', hijos: [...$3.hijos,$5], linea: yylineno}); }
+                    { $$ = new NodoAST({label: 'F_SUBSTRING', hijos: [$3,$5], linea: yylineno}); }
                 | substring par_izq VALOR_LLAMADA coma integer coma integer par_der
-                    { $$ = new NodoAST({label: 'F_SUBSTRING', hijos: [...$3.hijos,$5,$7], linea: yylineno}); }
+                    { $$ = new NodoAST({label: 'F_SUBSTRING1', hijos: [$3,$5,$7], linea: yylineno}); }
                 | lower menos case par_izq VALOR_LLAMADA par_der
                     { $$ = new NodoAST({label: 'F_LOWERCASE', hijos: [$5], linea: yylineno}); }
                 | upper menos case par_izq VALOR_LLAMADA par_der
@@ -303,11 +308,20 @@ LLAMADA_FUNCION : id par_izq L_PARAM par_der
                 ; 
 
 VALOR_LLAMADA : dolar id 
-                     { $$ = new NodoAST({label: 'dolar id', hijos: [($1+$2)], linea: yylineno}); }
+                     { $$ = new NodoAST({label: 'VALOR_LLAMADA', hijos: [($1+$2)], linea: yylineno}); }
+                | integer 
+                    { $$ = new NodoAST({label: 'VALOR_LLAMADA', hijos: [$1], linea: yylineno}); }
+                | double
+                    { $$ = new NodoAST({label: 'VALOR_LLAMADA', hijos: [$1], linea: yylineno}); }
                 | string 
-                    { $$ = new NodoAST({label: 'string', hijos: [$1], linea: yylineno}); }
-                | id
-                    { $$ = new NodoAST({label: 'id', hijos: [$1], linea: yylineno}); }; 
+                    { $$ = new NodoAST({label: 'VALOR_LLAMADA', hijos: [$1], linea: yylineno}); }
+                | true 
+                    { $$ = new NodoAST({label: 'VALOR_LLAMADA', hijos: [$1], linea: yylineno}); }
+                | false 
+                    { $$ = new NodoAST({label: 'VALOR_LLAMADA', hijos: [$1], linea: yylineno}); }
+                | INSTRUCCIONES
+                    { $$ = new NodoAST({label: 'VALOR_LLAMADA', hijos: [$1], linea: yylineno}); }    
+                ; 
 
 L_PARAM : L_PARAM coma EXPR
             { $$ = new NodoAST({label: 'PARAMETROS', hijos: [...$1.hijos,...$3.hijos], linea: yylineno}); }  
