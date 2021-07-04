@@ -23,7 +23,6 @@ export class Mostrar extends Instruccion{
         res = res.toString();
       }
       const salida = res ?? 'null';
-      console.log(salida);
       return salida;
   }
 

@@ -19,7 +19,6 @@ class Mostrar extends instruccion_1.Instruccion {
             res = res.toString();
         }
         const salida = res !== null && res !== void 0 ? res : 'null';
-        console.log(salida);
         return salida;
     }
 }

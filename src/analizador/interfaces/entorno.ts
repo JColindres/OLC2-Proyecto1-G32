@@ -21,6 +21,7 @@ export class Entorno {
   getVariable(id: string): Variable {
     for (let e: Entorno = this; e != null; e = e.padre) {
       let variable = e.variables.get(id);
+      console.log('entoronosssss\n', id, e);
       if (variable != null) return variable;
     }
     return null;

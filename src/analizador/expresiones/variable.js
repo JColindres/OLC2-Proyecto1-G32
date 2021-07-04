@@ -14,8 +14,12 @@ class Variable {
     }
     toString(ent) {
         let ts = new xmlTS_1.XmlTS();
-        let salida = `Variable: ${this.id} - Valor: ${this.valor}`;
-        ts.agregar(this.id, this.valor, ent.toString(), this.tipo.toString(), 1, 1, null, null);
+        let valorr = this.valor;
+        if (typeof this.valor == 'object') {
+            valorr = valorr.toString();
+            //this.tipo = 6;
+        }
+        ts.agregar(this.id, valorr, ent.toString(), this.tipo.toString(), 1, 1, null, null);
         return ts;
     }
 }

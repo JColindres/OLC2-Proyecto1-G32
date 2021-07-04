@@ -181,6 +181,9 @@ export class Ejecucion {
           if (this.identificar('XQUERY', this.raiz)) {
             this.xqueryEjec();
             this.recorrido(this.raiz);
+            if(!(this.atributoIdentificacion.length > 0)){
+              return this.ejecXQuery;
+            }
             return this.ejecXQuery + '\n' + this.traducir();
           }
           else
@@ -188,7 +191,7 @@ export class Ejecucion {
         }
         
       } catch (error) {
-        return 'No se encontró por algun error';
+        return 'No se encontró por algun error\n' + error;
       }
       //console.log(this.atributoIdentificacion);
       if (this.atributoIdentificacion.length > 0) {
@@ -1948,6 +1951,7 @@ export class Ejecucion {
       instrucciones.forEach(element => {
         if (element instanceof Instruccion) {
           try {
+            //console.log(element, entorno)
             if(element instanceof Mostrar){
               this.ejecXQuery = element.ejecutar(entorno).toString();
             }
@@ -1955,7 +1959,7 @@ export class Ejecucion {
               element.ejecutar(entorno);
             }
           } catch (error) {
-            console.log(error);
+            //console.log(error);
             Errores.getInstance().push(new Error({tipo: 'Fatal', linea:'0', descripcion: error}))
           }
         }
@@ -2041,9 +2045,10 @@ export class Ejecucion {
         });
       });
       this.ts.concatenar(tsAux.tabla);
-      //console.log(this.ts)
     }
   }
+
+  estaEnFuncion: Boolean = false;
 
   xqueryRec(nodo: any): any {
     if (nodo instanceof Object) {
@@ -2092,7 +2097,12 @@ export class Ejecucion {
               else {
                 inst = this.xqueryRec(nodo.hijos[3].hijos[0]) as Array<Instruccion>;
               }
-              instrucciones.push(new Mostrar(nodo.linea, inst));
+              if(this.estaEnFuncion){
+                instrucciones.push(new Retorno(nodo.linea, true, inst));
+              }
+              else{
+                instrucciones.push(new Mostrar(nodo.linea, inst));
+              }
             }
           }
         }
@@ -2101,6 +2111,7 @@ export class Ejecucion {
       }
 
       if (this.identificar('FUNCION', nodo)) {
+        this.estaEnFuncion = true;
         let instrucciones = [];
         if (this.identificar('FUNCION', nodo.hijos[0])) {
           nodo.hijos.forEach(element => {
@@ -2153,6 +2164,7 @@ export class Ejecucion {
             }
           }
         }
+        this.estaEnFuncion = false;
         return instrucciones;
       }
     }

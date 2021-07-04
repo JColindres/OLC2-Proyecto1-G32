@@ -21,17 +21,19 @@ class Arreglo {
         return this.arreglo[index];
     }
     toString() {
-        let salida = '[';
+        let salida = '';
         const size = this.arreglo.length;
         this.arreglo.forEach((item, index) => {
-            if (item != null)
+            if (item != null) {
                 salida += item.toString();
-            else
+            }
+            else {
                 salida += "null";
-            if (index != size - 1)
-                salida += ',\n';
+            }
+            if (index != size - 1) {
+                salida += ' ';
+            }
         });
-        salida += ']\n';
         return salida;
     }
 }

@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getTipo = void 0;
-const arreglo_1 = require("./arreglo");
 function getTipo(valor) {
     if (typeof valor == 'string') {
         return 0 /* STRING */;
@@ -12,7 +11,7 @@ function getTipo(valor) {
     else if (typeof valor == 'boolean') {
         return 3 /* BOOL */;
     }
-    else if (valor instanceof arreglo_1.Arreglo) {
+    else if (typeof valor == 'object') {
         return 6 /* ARRAY */;
     }
     else if (valor == null) {

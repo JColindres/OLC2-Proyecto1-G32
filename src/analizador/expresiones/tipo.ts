@@ -21,7 +21,7 @@ export function getTipo(valor: any): Tipo {
     else if (typeof valor == 'boolean') {
         return Tipo.BOOL;
     }
-    else if (valor instanceof Arreglo) {
+    else if (typeof valor == 'object') {
         return Tipo.ARRAY;
     }
     else if (valor == null) {

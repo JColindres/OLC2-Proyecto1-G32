@@ -24,6 +24,7 @@ const listaEntornos_1 = require("./interfaces/listaEntornos");
 class Ejecucion {
     constructor(prologo, cuerpo, cadena, raiz) {
         this.tildes = ['á', 'é', 'í', 'ó', 'ú'];
+        this.estaEnFuncion = false;
         this.prologoXml = prologo;
         this.cuerpoXml = cuerpo;
         this.cadena = cadena;
@@ -136,6 +137,9 @@ class Ejecucion {
                     if (this.identificar('XQUERY', this.raiz)) {
                         this.xqueryEjec();
                         this.recorrido(this.raiz);
+                        if (!(this.atributoIdentificacion.length > 0)) {
+                            return this.ejecXQuery;
+                        }
                         return this.ejecXQuery + '\n' + this.traducir();
                     }
                     else
@@ -143,7 +147,7 @@ class Ejecucion {
                 }
             }
             catch (error) {
-                return 'No se encontró por algun error';
+                return 'No se encontró por algun error\n' + error;
             }
             //console.log(this.atributoIdentificacion);
             if (this.atributoIdentificacion.length > 0) {
@@ -1863,6 +1867,7 @@ class Ejecucion {
             instrucciones.forEach(element => {
                 if (element instanceof instruccion_1.Instruccion) {
                     try {
+                        //console.log(element, entorno)
                         if (element instanceof mostrar_1.Mostrar) {
                             this.ejecXQuery = element.ejecutar(entorno).toString();
                         }
@@ -1871,7 +1876,7 @@ class Ejecucion {
                         }
                     }
                     catch (error) {
-                        console.log(error);
+                        //console.log(error);
                         errores_1.Errores.getInstance().push(new error_1.Error({ tipo: 'Fatal', linea: '0', descripcion: error }));
                     }
                 }
@@ -1954,7 +1959,6 @@ class Ejecucion {
                 });
             });
             this.ts.concatenar(tsAux.tabla);
-            //console.log(this.ts)
         }
     }
     xqueryRec(nodo) {
@@ -2003,7 +2007,12 @@ class Ejecucion {
                             else {
                                 inst = this.xqueryRec(nodo.hijos[3].hijos[0]);
                             }
-                            instrucciones.push(new mostrar_1.Mostrar(nodo.linea, inst));
+                            if (this.estaEnFuncion) {
+                                instrucciones.push(new retorno_1.Retorno(nodo.linea, true, inst));
+                            }
+                            else {
+                                instrucciones.push(new mostrar_1.Mostrar(nodo.linea, inst));
+                            }
                         }
                     }
                 }
@@ -2011,6 +2020,7 @@ class Ejecucion {
                 return instrucciones;
             }
             if (this.identificar('FUNCION', nodo)) {
+                this.estaEnFuncion = true;
                 let instrucciones = [];
                 if (this.identificar('FUNCION', nodo.hijos[0])) {
                     nodo.hijos.forEach(element => {
@@ -2063,6 +2073,7 @@ class Ejecucion {
                         }
                     }
                 }
+                this.estaEnFuncion = false;
                 return instrucciones;
             }
         }

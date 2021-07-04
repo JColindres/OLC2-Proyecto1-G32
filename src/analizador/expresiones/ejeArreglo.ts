@@ -26,14 +26,19 @@ export class Arreglo {
   }
 
   public toString(): string {
-    let salida = '[';
+    let salida = '';
     const size = this.arreglo.length;
     this.arreglo.forEach((item: any, index: number) => {
-      if (item != null) salida += item.toString();
-      else salida += "null";
-      if (index != size - 1) salida += ',\n';
+      if (item != null) {
+        salida += item.toString();
+      }
+      else {
+        salida += "null";
+      }
+      if (index != size - 1) {
+        salida += ' ';
+      }
     })
-    salida += ']\n';
     return salida;
   }
 }

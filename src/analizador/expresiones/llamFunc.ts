@@ -34,7 +34,7 @@ export class llamfuc extends Instruccion {
           return;
         }
         else if (this.params.length != ejecFunc.params.length) {
-          Errores.getInstance().push(new Error({ tipo: 'Semántico', linea: this.linea, descripcion: `La función ${this.id} no recibe otra cantidad de parámetros` }));
+          Errores.getInstance().push(new Error({ tipo: 'Semántico', linea: this.linea, descripcion: `La función ${this.id} recibe otra cantidad de parámetros` }));
           return;
         }
         else {
@@ -65,9 +65,15 @@ export class llamfuc extends Instruccion {
 
       for (let instruccion of ejecFunc.instrucciones) {
         const resp = instruccion.ejecutar(entLocal);
+        //console.log(instruccion, entLocal)
         if (resp instanceof ejeReturn) {
           if (ejecFunc.hasReturn() && resp.hasValue()) {
             let val = resp.getValue();
+            if (typeof val == 'object') {
+              val = val.toString();
+              entFunc.getInstance().fFuncion();
+              return val;
+            }
             if (val != null && getTipo(val) != ejecFunc.tipo) {
               Errores.getInstance().push(new Error({ tipo: 'Semántico', linea: this.linea, descripcion: `El retorno de la función ${this.id} no corresponde` }));
               entFunc.getInstance().fFuncion();
