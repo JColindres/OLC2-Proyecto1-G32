@@ -271,7 +271,18 @@ class Traduccion {
             this.punto = '';
             this.consultaXML = this.cuerpoXml;
             try {
-                this.recorrido(this.raiz);
+                if (this.raiz instanceof Object) {
+                    if (this.identificar('XQUERY', this.raiz)) {
+                        console.log("Entro al if de XQUERY");
+                        //this.xqueryEjec();
+                        this.recorrido(this.raiz);
+                        /*return this.ejecXQuery + '\n' + this.traducir();*/
+                    }
+                    else {
+                        console.log("Entro al if de Xpath");
+                        this.recorrido(this.raiz);
+                    }
+                }
             }
             catch (error) {
                 generador.Addcomentarioxml('No se encontró por algún error en la consulta :(');
@@ -280,6 +291,7 @@ class Traduccion {
                 generador.Addxml(`printf("${this.caderror}");`);
             }
             if (this.atributoIdentificacion.length > 0) {
+                console.log("Entro a atributoIdentificación");
                 this.traducir();
             }
             else {
