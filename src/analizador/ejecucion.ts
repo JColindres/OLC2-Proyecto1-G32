@@ -22,7 +22,8 @@ import { Entorno } from "./interfaces/entorno";
 import { Expresion } from "./Interfaces/Expresion";
 import { Instruccion } from "./interfaces/instruccion";
 import { ListaEntornos } from "./interfaces/listaEntornos";
-import {funcion_nativa} from "./expresiones/funcion_nativa";
+import { funcion_nativa } from "./expresiones/funcion_nativa";
+import _ = require("lodash");
 
 export class Ejecucion {
   prologoXml: JSON;
@@ -61,7 +62,7 @@ export class Ejecucion {
   dot: string;
 
   ejecXQuery: string;
-  f_nativa_upper:boolean;
+  f_nativa_upper: boolean;
   f_nativa_lower: boolean;
 
   constructor(prologo: JSON, cuerpo: Array<Objeto>, cadena: string, raiz: Object) {
@@ -178,7 +179,7 @@ export class Ejecucion {
       this.indiceValor = null;
       this.punto = '';
       this.consultaXML = this.cuerpoXml;
-    
+
       this.f_nativa_upper = false;
       this.f_nativa_lower = false;
 
@@ -188,7 +189,7 @@ export class Ejecucion {
           if (this.identificar('XQUERY', this.raiz)) {
             this.xqueryEjec();
             this.recorrido(this.raiz);
-            if(!(this.atributoIdentificacion.length > 0)){
+            if (!(this.atributoIdentificacion.length > 0)) {
               return this.ejecXQuery;
             }
             return this.ejecXQuery + '\n' + this.traducir();
@@ -196,7 +197,7 @@ export class Ejecucion {
           else
             this.recorrido(this.raiz);
         }
-        
+
       } catch (error) {
         return 'No se encontró por algun error\n' + error;
       }
@@ -665,8 +666,21 @@ export class Ejecucion {
         });
       }
 
+      if (this.identificar('LOGICAS', nodo)) {
+        nodo.hijos.forEach((element: any) => {
+          if (element instanceof Object) {
+            this.recorrido(element);
+          }
+          else if (typeof element === 'string') {
+
+          }
+        });
+      }
+
       if (this.identificar('ORDER BY', nodo)) {
         let regresar: boolean = false;
+        let atrib = false;
+        let nombre;
         nodo.hijos.forEach((element: any) => {
           if (element instanceof Object) {
             this.recorrido(element);
@@ -678,22 +692,65 @@ export class Ejecucion {
             else if (element === '/') {
               this.consultaXML = this.reducir(this.consultaXML, element, 'RAIZ');
             }
+            else if (element === '@') {
+              this.consultaXML = this.reducir(this.consultaXML, element, 'RAIZ');
+              atrib = true;
+            }
             else if (!(element === ',')) {
-              this.consultaXML = this.reducir(this.consultaXML, element, 'INSTRUCCIONES');
-              regresar = true;
+              if (atrib) {
+                this.consultaXML = this.reducir(this.consultaXML, element, 'RAIZ');
+                this.atributo = false;
+                nombre = element;
+              }
+              else {
+                this.consultaXML = this.reducir(this.consultaXML, element, 'INSTRUCCIONES');
+                regresar = true;
+              }
             }
           }
-          this.consultaXML.sort((n1, n2) => {
-            if (n1.texto > n2.texto) {
-              return 1;
-            }
+          if (atrib && nombre) {
+            console.log('entra')
+            this.consultaXML.sort((n1, n2) => {
+              let indice1 = 0, indice2 = 0;
+              n1.listaAtributos.forEach((elementLA, indexLA) => {
+                //console.log(elementLA.identificador, indice1)
+                if (elementLA.identificador === nombre) {
+                  indice1 = indexLA;
+                }
+              });
+              n2.listaAtributos.forEach((elementLA, indexLA) => {
+                if (elementLA.identificador === nombre) {
+                  indice2 = indexLA;
+                }
+              });
+              //console.log(indice1,n1.listaAtributos[indice1].valor,indice2,n2)
+              if (n1.listaAtributos[indice1].valor.slice(1, -1) > n2.listaAtributos[indice2].valor.slice(1, -1)) {
+                return 1;
+              }
 
-            if (n1.texto < n2.texto) {
-              return -1;
-            }
+              if (n1.listaAtributos[indice1].valor.slice(1, -1) < n2.listaAtributos[indice2].valor.slice(1, -1)) {
+                return -1;
+              }
 
-            return 0;
-          });
+              return 0;
+            });
+            atrib = false;
+            console.log('sale', this.consultaXML)
+          }
+          else {
+            this.consultaXML.sort((n1, n2) => {
+              if (n1.texto > n2.texto) {
+                return 1;
+              }
+
+              if (n1.texto < n2.texto) {
+                return -1;
+              }
+
+              return 0;
+            });
+          }
+          console.log('despues', this.consultaXML)
           if (regresar) {
             console.log('regresar', regresar, this.consultaXML, element)
             this.consultaXML = this.reducir(this.consultaXML, '/..', 'PADRE')
@@ -1959,26 +2016,28 @@ export class Ejecucion {
         if (element instanceof Instruccion) {
           try {
             //console.log(element, entorno)
-            if(element instanceof Mostrar){
-              console.log('primero')
+            if (element instanceof Mostrar) {
               let a = element.ejecutar(entorno);
-              console.log('segundo')
-              if(!(typeof a == 'string' || typeof a == 'number')){
+              if (typeof a == 'object') {
                 this.atributoIdentificacion.pop()
-                this.atributoIdentificacion.push({ cons: a, atributo: this.atributo, texto: this.atributoTexto })
-                //this.ejecXQuery = this.traducir();
-                //console.log(a,this.atributoIdentificacion,this.ejecXQuery)
+                if (!(a[0] instanceof Objeto)) {
+                  this.atributoIdentificacion.push({ cons: a, atributo: this.atributo, texto: this.atributoTexto })
+                }
+                else {
+                  a.forEach(element => {
+                    this.atributoIdentificacion.push({ cons: element, atributo: this.atributo, texto: this.atributoTexto })
+                  });
+                }
               }
               else
                 this.ejecXQuery = a.toString();
-                console.log('tercero',a)
             }
-            else{
+            else {
               element.ejecutar(entorno);
             }
           } catch (error) {
             //console.log(error);
-            Errores.getInstance().push(new Error({tipo: 'Fatal', linea:'0', descripcion: error}))
+            Errores.getInstance().push(new Error({ tipo: 'Fatal', linea: '0', descripcion: error }))
           }
         }
       });
@@ -1992,8 +2051,7 @@ export class Ejecucion {
             let a = elementF.toString(indexE).tabla;
             a.forEach(elementTS => {
               let entorno = elementTS[2];
-              if(entorno == '0')
-              {
+              if (entorno == '0') {
                 entorno = 'GLOBAL';
               }
               let tipo = '';
@@ -2029,8 +2087,7 @@ export class Ejecucion {
             let a = elementV.toString(indexE).tabla;
             a.forEach(elementTS => {
               let entorno = elementTS[2];
-              if(entorno == '0')
-              {
+              if (entorno == '0') {
                 entorno = 'GLOBAL';
               }
               let tipo = '';
@@ -2080,20 +2137,20 @@ export class Ejecucion {
           else {
             if (this.identificar('F_LLAMADA', element)) {
               instrucciones.push(new Mostrar(element.linea, inst))
-            }else if (this.identificar('LLAMADA_FUNCION', element)) {
+            } else if (this.identificar('LLAMADA_FUNCION', element)) {
               instrucciones.push(new Mostrar(element.linea, inst))
             }
-            else if  (this.identificar('F_UPPERCASE', element)) {
+            else if (this.identificar('F_UPPERCASE', element)) {
               instrucciones.push(new Mostrar(element.linea, inst))
-            }else if  (this.identificar('F_NUMBER', element)) {
+            } else if (this.identificar('F_NUMBER', element)) {
               instrucciones.push(new Mostrar(element.linea, inst))
-            }else if  (this.identificar('F_STRING', element)) { //nativa string
+            } else if (this.identificar('F_STRING', element)) { //nativa string
               instrucciones.push(new Mostrar(element.linea, inst))
-            }else if  (this.identificar('F_LOWERCASE', element)) {
+            } else if (this.identificar('F_LOWERCASE', element)) {
               instrucciones.push(new Mostrar(element.linea, inst))
-            }else if  (this.identificar('F_SUBSTRING', element)) {
+            } else if (this.identificar('F_SUBSTRING', element)) {
               instrucciones.push(new Mostrar(element.linea, inst))
-            }else if  (this.identificar('F_SUBSTRING1', element)) {
+            } else if (this.identificar('F_SUBSTRING1', element)) {
               instrucciones.push(new Mostrar(element.linea, inst))
             }
             else
@@ -2118,11 +2175,11 @@ export class Ejecucion {
         }
         else {
           if (this.identificar('EXPR', nodo.hijos[2])) {
-            if(this.identificar('PATH', nodo.hijos[2].hijos[0])){
+            if (this.identificar('PATH', nodo.hijos[2].hijos[0])) {
               let val = this.xqueryRec(nodo.hijos[2].hijos[0]);
               instrucciones.push(new letEXP(nodo.linea, nodo.hijos[0], val));
             }
-            else{
+            else {
               let val = this.xqueryRec(nodo.hijos[2]);
               instrucciones.push(new letEXP(nodo.linea, nodo.hijos[0], val));
             }
@@ -2130,19 +2187,26 @@ export class Ejecucion {
           if (nodo.hijos.length === 4) {
             if (this.identificar('RETURN', nodo.hijos[3])) {
               let inst;
-              if(this.identificar('EXPR', nodo.hijos[3].hijos[0])){
+              if (this.identificar('EXPR', nodo.hijos[3].hijos[0])) {
                 inst = this.xqueryRec(nodo.hijos[3].hijos[0]) as Array<Instruccion>;
               }
               else if (typeof nodo.hijos[3].hijos[0] == 'string') {
                 inst = new identificador(nodo.linea, nodo.hijos[3].hijos[0]);
+                if (nodo.hijos[3].hijos[1] === '/') {
+                  let retorno = this.pathh;
+                  retorno = this.reducir(retorno, '/', 'RAIZ');
+                  retorno = this.reducir(retorno, nodo.hijos[3].hijos[2], 'INSTRUCCIONES');
+                  console.log(retorno)
+                  inst = new Primitivo(retorno, nodo.linea, 1)
+                }
               }
               else {
                 inst = this.xqueryRec(nodo.hijos[3].hijos[0]) as Array<Instruccion>;
               }
-              if(this.estaEnFuncion){
+              if (this.estaEnFuncion) {
                 instrucciones.push(new Retorno(nodo.linea, true, inst));
               }
-              else{
+              else {
                 instrucciones.push(new Mostrar(nodo.linea, inst));
               }
             }
@@ -2406,7 +2470,7 @@ export class Ejecucion {
       this.path(nodo);
       let texto = "";
       let param;
-      if(this.pathh[0].texto.length > 0){
+      if (this.pathh[0].texto.length > 0) {
         for (var i = 0; i < this.pathh[0].texto.length; i++) {
           texto += this.pathh[0].texto[i];
         }
@@ -2418,8 +2482,8 @@ export class Ejecucion {
           return param;
         }
       }
-      else{
-        param = new Primitivo(this.pathh[0], nodo.linea, 1);
+      else {
+        param = new Primitivo(this.pathh, nodo.linea, 1);
         return param;
       }
     }
@@ -2432,79 +2496,79 @@ export class Ejecucion {
     }
 
     if (this.identificar('F_UPPERCASE', nodo)) {
-      if (typeof nodo.hijos[0].hijos[0] == 'string'){
+      if (typeof nodo.hijos[0].hijos[0] == 'string') {
         let valor = nodo.hijos[0].hijos[0];
-        let nativa = new funcion_nativa(nodo.linea,'F_UPPERCASE',valor);
+        let nativa = new funcion_nativa(nodo.linea, 'F_UPPERCASE', valor);
         return nativa
-      }else{
+      } else {
         this.f_nativa_upper = true;
         //this.recorrido(nodo.hijos[0].hijos[0]);
       }
     }
 
     if (this.identificar('F_LOWERCASE', nodo)) {
-      if (typeof nodo.hijos[0].hijos[0] == 'string'){
+      if (typeof nodo.hijos[0].hijos[0] == 'string') {
         let valor = nodo.hijos[0].hijos[0];
-        let nativa = new funcion_nativa(nodo.linea,'F_LOWERCASE',valor);
+        let nativa = new funcion_nativa(nodo.linea, 'F_LOWERCASE', valor);
         return nativa
-      }else{
+      } else {
         this.f_nativa_lower = true;
         //this.recorrido(nodo.hijos[0].hijos[0]);
       }
     }
 
     if (this.identificar('F_STRING', nodo)) {
-      if (typeof nodo.hijos[0].hijos[0] == 'string'){
+      if (typeof nodo.hijos[0].hijos[0] == 'string') {
         let valor = nodo.hijos[0].hijos[0];
-        let nativa = new funcion_nativa(nodo.linea,'F_STRING',valor);
+        let nativa = new funcion_nativa(nodo.linea, 'F_STRING', valor);
         return nativa
-      }else{
+      } else {
         //this.recorrido(nodo.hijos[0].hijos[0]);
       }
     }
 
     if (this.identificar('F_NUMBER', nodo)) {
       let valoresAceptados = /^[0-9]+$/;
-      if (typeof nodo.hijos[0] == 'string'){
-        if (nodo.hijos[0] == 'true'){
-          let nativa = new funcion_nativa(nodo.linea,'F_NUMBER',true);
+      if (typeof nodo.hijos[0] == 'string') {
+        if (nodo.hijos[0] == 'true') {
+          let nativa = new funcion_nativa(nodo.linea, 'F_NUMBER', true);
           return nativa
-        }else if (nodo.hijos[0] == 'false'){
-          let nativa = new funcion_nativa(nodo.linea,'F_NUMBER',false);
+        } else if (nodo.hijos[0] == 'false') {
+          let nativa = new funcion_nativa(nodo.linea, 'F_NUMBER', false);
           return nativa
-        }else if(nodo.hijos[0].match(valoresAceptados)){
+        } else if (nodo.hijos[0].match(valoresAceptados)) {
           let valor = nodo.hijos[0];
-          let nativa = new funcion_nativa(nodo.linea,'F_NUMBER',parseInt(valor));
+          let nativa = new funcion_nativa(nodo.linea, 'F_NUMBER', parseInt(valor));
           return nativa
-        }else{
+        } else {
           let valor = nodo.hijos[0];
-          let nativa = new funcion_nativa(nodo.linea,'F_NUMBER',+valor);
+          let nativa = new funcion_nativa(nodo.linea, 'F_NUMBER', +valor);
           return nativa
         }
-      }else{
+      } else {
         //this.recorrido(nodo.hijos[0]);
       }
     }
 
     if (this.identificar('F_SUBSTRING', nodo)) {
-      if (typeof nodo.hijos[0].hijos[0] == 'string'){
+      if (typeof nodo.hijos[0].hijos[0] == 'string') {
         let valor = nodo.hijos[0].hijos[0];
         let inicio = parseInt(nodo.hijos[1]);
-        let nativa = new funcion_nativa(nodo.linea,'F_SUBSTRING',valor,inicio);
+        let nativa = new funcion_nativa(nodo.linea, 'F_SUBSTRING', valor, inicio);
         return nativa
-      }else{
+      } else {
         //this.recorrido(nodo.hijos[0].hijos[0]);
       }
     }
 
     if (this.identificar('F_SUBSTRING1', nodo)) {
-      if (typeof nodo.hijos[0].hijos[0] == 'string'){
+      if (typeof nodo.hijos[0].hijos[0] == 'string') {
         let valor = nodo.hijos[0].hijos[0];
         let inicio = parseInt(nodo.hijos[1]);
-        let fin = parseInt(nodo.hijos[2]); 
-        let nativa = new funcion_nativa(nodo.linea,'F_SUBSTRING1',valor,inicio,fin);
+        let fin = parseInt(nodo.hijos[2]);
+        let nativa = new funcion_nativa(nodo.linea, 'F_SUBSTRING1', valor, inicio, fin);
         return nativa
-      }else{
+      } else {
         //this.recorrido(nodo.hijos[0].hijos[0]);
       }
     }

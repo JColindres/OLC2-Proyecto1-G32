@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Ejecucion = void 0;
+const objeto_1 = require("./abstractas/objeto");
 const error_1 = require("./arbol/error");
 const errores_1 = require("./arbol/errores");
 const xmlTS_1 = require("./arbol/xmlTS");
@@ -590,8 +591,19 @@ class Ejecucion {
                     }
                 });
             }
+            if (this.identificar('LOGICAS', nodo)) {
+                nodo.hijos.forEach((element) => {
+                    if (element instanceof Object) {
+                        this.recorrido(element);
+                    }
+                    else if (typeof element === 'string') {
+                    }
+                });
+            }
             if (this.identificar('ORDER BY', nodo)) {
                 let regresar = false;
+                let atrib = false;
+                let nombre;
                 nodo.hijos.forEach((element) => {
                     if (element instanceof Object) {
                         this.recorrido(element);
@@ -603,20 +615,61 @@ class Ejecucion {
                         else if (element === '/') {
                             this.consultaXML = this.reducir(this.consultaXML, element, 'RAIZ');
                         }
+                        else if (element === '@') {
+                            this.consultaXML = this.reducir(this.consultaXML, element, 'RAIZ');
+                            atrib = true;
+                        }
                         else if (!(element === ',')) {
-                            this.consultaXML = this.reducir(this.consultaXML, element, 'INSTRUCCIONES');
-                            regresar = true;
+                            if (atrib) {
+                                this.consultaXML = this.reducir(this.consultaXML, element, 'RAIZ');
+                                this.atributo = false;
+                                nombre = element;
+                            }
+                            else {
+                                this.consultaXML = this.reducir(this.consultaXML, element, 'INSTRUCCIONES');
+                                regresar = true;
+                            }
                         }
                     }
-                    this.consultaXML.sort((n1, n2) => {
-                        if (n1.texto > n2.texto) {
-                            return 1;
-                        }
-                        if (n1.texto < n2.texto) {
-                            return -1;
-                        }
-                        return 0;
-                    });
+                    if (atrib && nombre) {
+                        console.log('entra');
+                        this.consultaXML.sort((n1, n2) => {
+                            let indice1 = 0, indice2 = 0;
+                            n1.listaAtributos.forEach((elementLA, indexLA) => {
+                                //console.log(elementLA.identificador, indice1)
+                                if (elementLA.identificador === nombre) {
+                                    indice1 = indexLA;
+                                }
+                            });
+                            n2.listaAtributos.forEach((elementLA, indexLA) => {
+                                if (elementLA.identificador === nombre) {
+                                    indice2 = indexLA;
+                                }
+                            });
+                            //console.log(indice1,n1.listaAtributos[indice1].valor,indice2,n2)
+                            if (n1.listaAtributos[indice1].valor.slice(1, -1) > n2.listaAtributos[indice2].valor.slice(1, -1)) {
+                                return 1;
+                            }
+                            if (n1.listaAtributos[indice1].valor.slice(1, -1) < n2.listaAtributos[indice2].valor.slice(1, -1)) {
+                                return -1;
+                            }
+                            return 0;
+                        });
+                        atrib = false;
+                        console.log('sale', this.consultaXML);
+                    }
+                    else {
+                        this.consultaXML.sort((n1, n2) => {
+                            if (n1.texto > n2.texto) {
+                                return 1;
+                            }
+                            if (n1.texto < n2.texto) {
+                                return -1;
+                            }
+                            return 0;
+                        });
+                    }
+                    console.log('despues', this.consultaXML);
                     if (regresar) {
                         console.log('regresar', regresar, this.consultaXML, element);
                         this.consultaXML = this.reducir(this.consultaXML, '/..', 'PADRE');
@@ -1872,18 +1925,20 @@ class Ejecucion {
                     try {
                         //console.log(element, entorno)
                         if (element instanceof mostrar_1.Mostrar) {
-                            console.log('primero');
                             let a = element.ejecutar(entorno);
-                            console.log('segundo');
-                            if (!(typeof a == 'string' || typeof a == 'number')) {
+                            if (typeof a == 'object') {
                                 this.atributoIdentificacion.pop();
-                                this.atributoIdentificacion.push({ cons: a, atributo: this.atributo, texto: this.atributoTexto });
-                                //this.ejecXQuery = this.traducir();
-                                //console.log(a,this.atributoIdentificacion,this.ejecXQuery)
+                                if (!(a[0] instanceof objeto_1.Objeto)) {
+                                    this.atributoIdentificacion.push({ cons: a, atributo: this.atributo, texto: this.atributoTexto });
+                                }
+                                else {
+                                    a.forEach(element => {
+                                        this.atributoIdentificacion.push({ cons: element, atributo: this.atributo, texto: this.atributoTexto });
+                                    });
+                                }
                             }
                             else
                                 this.ejecXQuery = a.toString();
-                            console.log('tercero', a);
                         }
                         else {
                             element.ejecutar(entorno);
@@ -2047,6 +2102,13 @@ class Ejecucion {
                             }
                             else if (typeof nodo.hijos[3].hijos[0] == 'string') {
                                 inst = new identificador_1.identificador(nodo.linea, nodo.hijos[3].hijos[0]);
+                                if (nodo.hijos[3].hijos[1] === '/') {
+                                    let retorno = this.pathh;
+                                    retorno = this.reducir(retorno, '/', 'RAIZ');
+                                    retorno = this.reducir(retorno, nodo.hijos[3].hijos[2], 'INSTRUCCIONES');
+                                    console.log(retorno);
+                                    inst = new primitivo_1.Primitivo(retorno, nodo.linea, 1);
+                                }
                             }
                             else {
                                 inst = this.xqueryRec(nodo.hijos[3].hijos[0]);
@@ -2312,7 +2374,7 @@ class Ejecucion {
                 }
             }
             else {
-                param = new primitivo_1.Primitivo(this.pathh[0], nodo.linea, 1);
+                param = new primitivo_1.Primitivo(this.pathh, nodo.linea, 1);
                 return param;
             }
         }
