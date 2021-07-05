@@ -5,12 +5,15 @@ export class Generador{
     etiqueta: number;
     codigo: string[];
     cod_funcs: string[];
+    cad_xq: string[];
     cadxml: string[];
     tempsave: string[];
     ptrh: number;
     ptrs: number;
     ptrhxpath: number;
     ptrsxpath: number;
+    ptrhxq: number;
+    ptrsxq: number;
     
     /*Sección de inicio del generador*/
     private constructor()
@@ -21,10 +24,13 @@ export class Generador{
         this.cod_funcs = [];
         this.tempsave = [];
         this.cadxml = [];
+        this.cad_xq = [];
         this.ptrh = 0;
         this.ptrs = 0;
         this.ptrhxpath = 0;
         this.ptrsxpath = 0;
+        this.ptrhxq = 0;
+        this.ptrsxq = 0;
     }
 
     public static GetInstance(): Generador
@@ -43,10 +49,13 @@ export class Generador{
         this.cod_funcs = [];
         this.tempsave = [];
         this.cadxml = [];
+        this.cad_xq = [];
         this.ptrh = 0;
         this.ptrs = 0;
         this.ptrhxpath = 0;
         this.ptrsxpath = 0;
+        this.ptrhxq = 0;
+        this.ptrsxq = 0;
     }
 
     /*Sección de creación de etiquetas, temporales, labels...*/
@@ -154,10 +163,27 @@ export class Generador{
         this.cod_funcs.push(`\t${texto}`);
     }
 
+    public Addcomentariofuncout(texto:string)
+    {
+        //Se agrega un comentario al código afuera (no identado)
+        this.cod_funcs.push(`/*********** ${texto} ***********/`);
+    }
+
     public Addcomentariofunc(texto:string)
     {
         //Se agrega un comentario al código
         this.cod_funcs.push(`\t/*********** ${texto} ***********/`);
+    }
+
+    public Addxq(texto:string)
+    {
+        this.cad_xq.push(`\t${texto}`);
+    }
+    
+    public Addcomentarioxq(texto: string)
+    {
+        //Se agrega un comentario al código
+        this.cad_xq.push(`\t/*********** ${texto} ***********/`);
     }
 
     /*Sección para concatenar las listas a la cadena de código final*/
@@ -183,12 +209,20 @@ export class Generador{
         this.codigo.push(cadena);
     }
 
+    public Joincodxq()
+    {
+        let cadena = this.cad_xq.join('\n');
+
+        //Se agrega al código inicial
+        this.codigo.push(cadena);
+    }
+
     public Joinfunc()
     {
         let cadena = this.cod_funcs.join('\n');
 
         //Se agrega al código inicial
-        this.Addcomentario('Funciones nativas');
+        //this.Addcomentario('Funciones nativas');
         this.codigo.push(cadena);
     }
 
@@ -223,6 +257,21 @@ export class Generador{
         this.ptrsxpath = this.ptrsxpath - cant;
     }
 
+    public Incphxquery(cant: number)
+    {
+        this.ptrhxq = this.ptrhxq + cant;
+    }
+
+    public Incpsxquery(cant: number)
+    {
+        this.ptrsxq = this.ptrsxq + cant;
+    }
+
+    public Decpsxquery(cant: number)
+    {
+        this.ptrsxq = this.ptrsxq - cant;
+    }
+
     /*Sección de retornos*/
     //Retornos de registros
     public GetHeappos(): number
@@ -243,6 +292,16 @@ export class Generador{
     public GetStackposxpath(): number
     {
         return this.ptrsxpath;
+    }
+
+    public GetHeapposxquery(): number
+    {
+        return this.ptrhxq;
+    }
+
+    public GetStackposxquery(): number
+    {
+        return this.ptrsxq;
     }
 
     //Retorna el código ya completo
@@ -299,6 +358,8 @@ export class Generador{
 
         //Llamado de función
         this.Addxml('Printconsulta();\n')
+
+        this.Addcomentariofuncout('Función nativa');
 
         this.Addcodfunc('void Printconsulta() {');
 
