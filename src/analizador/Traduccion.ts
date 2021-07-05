@@ -393,7 +393,7 @@ export class Traduccion {
       generador.Addcodigoidentado('Sxquery = 0;');
       generador.Addcodigoidentado('Hxquery = 0;\n');
 
-      //generador.Joincodxml();
+      generador.Joincodxml();
       generador.Joincodxq();
 
       //Se agrega el final del main
@@ -890,7 +890,7 @@ export class Traduccion {
                 }
               });
             }
-
+      
             if (this.identificar('HTML', nodo)) {
               nodo.hijos.forEach((element: any) => {
                 if (element instanceof Object) {
@@ -901,7 +901,7 @@ export class Traduccion {
                 }
               });
             }
-
+      
             if (this.identificar('FOR', nodo)) {
               nodo.hijos.forEach((element: any) => {
                 if (element instanceof Object) {
@@ -917,7 +917,7 @@ export class Traduccion {
               });
               //this.atributoIdentificacion = this.atributoIdentificacion.filter(item => this.consultaXML.includes(item.cons))
             }
-
+      
             if (this.identificar('WHERE', nodo)) {
               nodo.hijos.forEach((element: any) => {
                 if (element instanceof Object) {
@@ -928,9 +928,22 @@ export class Traduccion {
                 }
               });
             }
-
+      
+            if (this.identificar('LOGICAS', nodo)) {
+              nodo.hijos.forEach((element: any) => {
+                if (element instanceof Object) {
+                  this.recorrido(element);
+                }
+                else if (typeof element === 'string') {
+      
+                }
+              });
+            }
+      
             if (this.identificar('ORDER BY', nodo)) {
               let regresar: boolean = false;
+              let atrib = false;
+              let nombre;
               nodo.hijos.forEach((element: any) => {
                 if (element instanceof Object) {
                   this.recorrido(element);
@@ -942,22 +955,65 @@ export class Traduccion {
                   else if (element === '/') {
                     this.consultaXML = this.reducir(this.consultaXML, element, 'RAIZ');
                   }
+                  else if (element === '@') {
+                    this.consultaXML = this.reducir(this.consultaXML, element, 'RAIZ');
+                    atrib = true;
+                  }
                   else if (!(element === ',')) {
-                    this.consultaXML = this.reducir(this.consultaXML, element, 'INSTRUCCIONES');
-                    regresar = true;
+                    if (atrib) {
+                      this.consultaXML = this.reducir(this.consultaXML, element, 'RAIZ');
+                      this.atributo = false;
+                      nombre = element;
+                    }
+                    else {
+                      this.consultaXML = this.reducir(this.consultaXML, element, 'INSTRUCCIONES');
+                      regresar = true;
+                    }
                   }
                 }
-                this.consultaXML.sort((n1, n2) => {
-                  if (n1.texto > n2.texto) {
-                    return 1;
-                  }
+                if (atrib && nombre) {
+                  console.log('entra')
+                  this.consultaXML.sort((n1, n2) => {
+                    let indice1 = 0, indice2 = 0;
+                    n1.listaAtributos.forEach((elementLA, indexLA) => {
+                      //console.log(elementLA.identificador, indice1)
+                      if (elementLA.identificador === nombre) {
+                        indice1 = indexLA;
+                      }
+                    });
+                    n2.listaAtributos.forEach((elementLA, indexLA) => {
+                      if (elementLA.identificador === nombre) {
+                        indice2 = indexLA;
+                      }
+                    });
+                    //console.log(indice1,n1.listaAtributos[indice1].valor,indice2,n2)
+                    if (n1.listaAtributos[indice1].valor.slice(1, -1) > n2.listaAtributos[indice2].valor.slice(1, -1)) {
+                      return 1;
+                    }
       
-                  if (n1.texto < n2.texto) {
-                    return -1;
-                  }
+                    if (n1.listaAtributos[indice1].valor.slice(1, -1) < n2.listaAtributos[indice2].valor.slice(1, -1)) {
+                      return -1;
+                    }
       
-                  return 0;
-                });
+                    return 0;
+                  });
+                  atrib = false;
+                  console.log('sale', this.consultaXML)
+                }
+                else {
+                  this.consultaXML.sort((n1, n2) => {
+                    if (n1.texto > n2.texto) {
+                      return 1;
+                    }
+      
+                    if (n1.texto < n2.texto) {
+                      return -1;
+                    }
+      
+                    return 0;
+                  });
+                }
+                console.log('despues', this.consultaXML)
                 if (regresar) {
                   console.log('regresar', regresar, this.consultaXML, element)
                   this.consultaXML = this.reducir(this.consultaXML, '/..', 'PADRE')
@@ -965,7 +1021,7 @@ export class Traduccion {
                 }
               });
             }
-
+      
             if (this.identificar('RETURN', nodo)) {
               nodo.hijos.forEach((element: any) => {
                 if (element instanceof Object) {
@@ -984,7 +1040,7 @@ export class Traduccion {
                 }
               });
             }
-
+      
             if (this.identificar('IF', nodo)) {
               nodo.hijos.forEach((element: any) => {
                 if (element instanceof Object) {
@@ -1003,7 +1059,7 @@ export class Traduccion {
                 }
               });
             }
-
+      
             if (this.identificar('THEN', nodo)) {
               nodo.hijos.forEach((element: any) => {
                 if (element instanceof Object) {
