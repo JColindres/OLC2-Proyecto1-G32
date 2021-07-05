@@ -2119,6 +2119,7 @@ export class Ejecucion {
   }
 
   estaEnFuncion: Boolean = false;
+  consParam: any;
 
   xqueryRec(nodo: any): any {
     if (nodo instanceof Object) {
@@ -2483,6 +2484,45 @@ export class Ejecucion {
       }
     }
 
+    if (this.identificar('RAIZ', nodo)) {
+      nodo.hijos.forEach((element: any) => {
+        if (typeof element === 'string') {
+          this.consParam = this.reducir(this.consultaXML, element, 'RAIZ');
+        }
+      });
+      //return this.consParam;
+    }
+
+    if (this.identificar('INSTRUCCIONES', nodo)) {
+      this.consParam = this.cuerpoXml;
+      nodo.hijos.forEach((element: any) => {
+        if (element instanceof Object) {
+          this.xqueryRec(element);
+        }
+        else if (typeof element === 'string') {
+          if (!(element === '[') && !(element === ']') && !(element === '(') && !(element === ')')) {
+            this.consParam = this.reducir(this.consParam, element, 'INSTRUCCIONES');
+          }
+        }
+      });
+      let texto = '';
+      let param;
+      if (this.consParam[0].texto.length > 0) {
+        for (var i = 0; i < this.consParam[0].texto.length; i++) {
+          texto += this.consParam[0].texto[i];
+        }
+          console.log(texto)
+        if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
+          param = new Primitivo(Number(texto), nodo.linea, 1);
+          return param;
+        } 
+        else {
+          param = new Primitivo(texto, nodo.linea, 1);
+          return param;
+        }
+      }
+    }
+
     if (this.identificar('LLAMADA_FUNCION', nodo)) {
       let parametros = this.xqueryRec(nodo.hijos[1]);
       let llamada = new llamfuc(nodo.linea, nodo.hijos[0], parametros);
@@ -2491,74 +2531,56 @@ export class Ejecucion {
     }
 
     if (this.identificar('F_UPPERCASE', nodo)) {
-      if (typeof nodo.hijos[0].hijos[0] == 'string'){
-        let valor = nodo.hijos[0].hijos[0];
-        let nativa = new funcion_nativa(nodo.linea,'F_UPPERCASE',valor);
+      if (typeof nodo.hijos[0].hijos[0] == 'string') {
+        let valor;
+        if (nodo.hijos[0].hijos[0].startsWith('$')) {
+          valor = new identificador(nodo.linea, nodo.hijos[0].hijos[0])
+        }
+        else {
+          valor = nodo.hijos[0].hijos[0];
+        }
+        let nativa = new funcion_nativa(nodo.linea, 'F_UPPERCASE', valor);
         return nativa
-      }else{
-
+      } else {
+        let valor = this.xqueryRec(nodo.hijos[0].hijos[0]);
+        let nativa = new funcion_nativa(nodo.linea, 'F_UPPERCASE', valor);
+        return nativa
       }
     }
 
     if (this.identificar('F_LOWERCASE', nodo)) {
-      if (typeof nodo.hijos[0].hijos[0] == 'string'){
-        let valor = nodo.hijos[0].hijos[0];
-        let nativa = new funcion_nativa(nodo.linea,'F_LOWERCASE',valor);
+      if (typeof nodo.hijos[0].hijos[0] == 'string') {
+        let valor;
+        if (nodo.hijos[0].hijos[0].startsWith('$')) {
+          valor = new identificador(nodo.linea, nodo.hijos[0].hijos[0])
+        }
+        else {
+          valor = nodo.hijos[0].hijos[0];
+        }
+        let nativa = new funcion_nativa(nodo.linea, 'F_LOWERCASE', valor);
         return nativa
-      }else{
-        //this.recorrido(nodo.hijos[0].hijos[0]);
+      } else {
+        let valor = this.xqueryRec(nodo.hijos[0].hijos[0]);
+        let nativa = new funcion_nativa(nodo.linea, 'F_LOWERCASE', valor);
+        return nativa
       }
     }
 
     if (this.identificar('F_STRING', nodo)) {
-      if (typeof nodo.hijos[0].hijos[0] == 'string'){
-        let valor = nodo.hijos[0].hijos[0];
-        let nativa = new funcion_nativa(nodo.linea,'F_STRING',valor);
+      if (typeof nodo.hijos[0].hijos[0] == 'string') {
+        let valor;
+        if (nodo.hijos[0].hijos[0].startsWith('$')) {
+          valor = new identificador(nodo.linea, nodo.hijos[0].hijos[0])
+        }
+        else {
+          valor = nodo.hijos[0].hijos[0];
+        }
+        let nativa = new funcion_nativa(nodo.linea, 'F_STRING', valor);
         return nativa
-      }else{
-        //this.recorrido(nodo.hijos[0].hijos[0]);
-        console.log('ayuda',nodo.hijos[0].hijos[0]);
-          this.esRaiz = true;
-          this.descendiente = false;
-          this.atributo = false;
-          this.atributoTexto = '';
-          this.atributoIdentificacion = [];
-          this.ejecXQuery = '';
-          this.indiceValor = null;
-          this.punto = '';
-          this.consultaXML = this.cuerpoXml;
-          this.pathh = this.consultaXML;
-          this.pathhCount = 0;
-          this.path(nodo.hijos[0].hijos[0]);
-          let texto = "";
-          let param;
-          if(this.pathh[0].texto.length > 0){
-            for (var i = 0; i < this.pathh[0].texto.length; i++) {
-              texto += this.pathh[0].texto[i];
-            }
-            if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
-              param = new Primitivo(Number(texto), nodo.linea, 1);
-              console.log('valor1', param);
-              return param;
-            } else {
-              param = new Primitivo(texto, nodo.linea, 1);
-              let params = param.valor.toString();
-              let nativa = new funcion_nativa(nodo.linea,'F_STRING',params);
-              return nativa
-            }
-          }
-          else{
-            param = new Primitivo(this.pathh[0], nodo.linea, 1);
-            let params:string = ''; 
-            param.valor.listaObjetos.forEach((element: any) => {
-              for(var i = 0; i< element.texto.length; i++){
-                params += element.texto[i] + ' ';
-              }
-            });
-            let valor = params.toString();
-            let nativa = new funcion_nativa(nodo.linea,'F_STRING',valor);
-            return nativa;
-          }
+      } else {
+        let valor = this.xqueryRec(nodo.hijos[0]);
+        let nativa = new funcion_nativa(nodo.linea, 'F_STRING', valor);
+        return nativa
       }
     }
 
@@ -2568,132 +2590,77 @@ export class Ejecucion {
         if (nodo.hijos[0] == 'true'){
           let nativa = new funcion_nativa(nodo.linea,'F_NUMBER',true);
           return nativa
-        }else if (nodo.hijos[0] == 'false'){
-          let nativa = new funcion_nativa(nodo.linea,'F_NUMBER',false);
+        } 
+        else if (nodo.hijos[0] == 'false') {
+          let nativa = new funcion_nativa(nodo.linea, 'F_NUMBER', false);
           return nativa
-        }else if(nodo.hijos[0].match(valoresAceptados)){
+        } 
+        else if (nodo.hijos[0].match(valoresAceptados)) {
           let valor = nodo.hijos[0];
           let nativa = new funcion_nativa(nodo.linea,'F_NUMBER',parseInt(valor));
           return nativa
-        }else{
-          let valor = nodo.hijos[0];
-          let nativa = new funcion_nativa(nodo.linea,'F_NUMBER',+valor);
+        } 
+        else {
+          let valor;
+          if (nodo.hijos[0].startsWith('$')) {
+            valor = new identificador(nodo.linea, nodo.hijos[0])
+            console.log(valor)
+          }
+          else if(nodo.hijos[0].includes('\'')){
+            valor = nodo.hijos[0].slice(1,-1);
+          }
+          else {
+            valor = nodo.hijos[0];
+          }
+          let nativa = new funcion_nativa(nodo.linea, 'F_NUMBER', valor);
           return nativa
         }
-      }else{
-        //this.recorrido(nodo.hijos[0]);
+      } else {
+        let valor = this.xqueryRec(nodo.hijos[0]);
+        let nativa = new funcion_nativa(nodo.linea, 'F_NUMBER', valor);
+        return nativa
       }
     }
 
     if (this.identificar('F_SUBSTRING', nodo)) {
-      if (typeof nodo.hijos[0].hijos[0] == 'string'){
-        let valor = nodo.hijos[0].hijos[0];
+      if (typeof nodo.hijos[0].hijos[0] == 'string') {
+        let valor;
+        if (nodo.hijos[0].hijos[0].startsWith('$')) {
+          valor = new identificador(nodo.linea, nodo.hijos[0].hijos[0])
+        }
+        else {
+          valor = nodo.hijos[0].hijos[0];
+        }
         let inicio = parseInt(nodo.hijos[1]);
         let nativa = new funcion_nativa(nodo.linea,'F_SUBSTRING',valor,inicio);
         return nativa
-      }else{
-        console.log('popo',nodo.hijos[0].hijos[0]);
-        //this.recorrido(nodo.hijos[0].hijos[0]);
+      } else {
+        let valor = this.xqueryRec(nodo.hijos[0].hijos[0]);
         let inicio = parseInt(nodo.hijos[1]);
-        this.esRaiz = true;
-        this.descendiente = false;
-        this.atributo = false;
-        this.atributoTexto = '';
-        this.atributoIdentificacion = [];
-        this.ejecXQuery = '';
-        this.indiceValor = null;
-        this.punto = '';
-        this.consultaXML = this.cuerpoXml;
-        this.pathh = this.consultaXML;
-        this.pathhCount = 0;
-        this.path(nodo.hijos[0].hijos[0]);
-        let texto = "";
-        let param;
-        if(this.pathh[0].texto.length > 0){
-          for (var i = 0; i < this.pathh[0].texto.length; i++) {
-            texto += this.pathh[0].texto[i];
-          }
-          if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
-            param = new Primitivo(Number(texto), nodo.linea, 1);
-            return param;
-          } else {
-            param = new Primitivo(texto, nodo.linea, 1);
-            let params = param.valor.toString();
-            let nativa = new funcion_nativa(nodo.linea,'F_SUBSTRING',params,inicio);
-            return nativa
-          }
-        }
-        else{
-          param = new Primitivo(this.pathh[0], nodo.linea, 1);
-          let params:string = ''; 
-          param.valor.listaObjetos.forEach((element: any) => {
-            element.listaObjetos.forEach((item: any) => {
-              for(var i=0; i < item.texto.length; i++){
-                params += item.texto[i] + ' ';
-              }
-            });
-          });
-          let valor = params.toString();
-          let nativa = new funcion_nativa(nodo.linea,'F_SUBSTRING',valor,inicio);
-          return nativa
-        }
-        
+        let nativa = new funcion_nativa(nodo.linea, 'F_SUBSTRING', valor, inicio);
+        return nativa
       }
     }
 
     if (this.identificar('F_SUBSTRING1', nodo)) {
-      if (typeof nodo.hijos[0].hijos[0] == 'string'){
-        let valor = nodo.hijos[0].hijos[0];
+      if (typeof nodo.hijos[0].hijos[0] == 'string') {
+        let valor;
+        if (nodo.hijos[0].hijos[0].startsWith('$')) {
+          valor = new identificador(nodo.linea, nodo.hijos[0].hijos[0])
+        }
+        else {
+          valor = nodo.hijos[0].hijos[0];
+        }
         let inicio = parseInt(nodo.hijos[1]);
         let fin = parseInt(nodo.hijos[2]); 
         let nativa = new funcion_nativa(nodo.linea,'F_SUBSTRING1',valor,inicio,fin);
         return nativa
-      }else{
-        //this.recorrido(nodo.hijos[0].hijos[0]);
+      } else {
+        let valor = this.xqueryRec(nodo.hijos[0].hijos[0]);
         let inicio = parseInt(nodo.hijos[1]);
-        let fin = parseInt(nodo.hijos[2]); 
-        this.esRaiz = true;
-        this.descendiente = false;
-        this.atributo = false;
-        this.atributoTexto = '';
-        this.atributoIdentificacion = [];
-        this.ejecXQuery = '';
-        this.indiceValor = null;
-        this.punto = '';
-        this.consultaXML = this.cuerpoXml;
-        this.pathh = this.consultaXML;
-        this.pathhCount = 0;
-        this.path(nodo.hijos[0].hijos[0]);
-        let texto = "";
-        let param;
-        if(this.pathh[0].texto.length > 0){
-          for (var i = 0; i < this.pathh[0].texto.length; i++) {
-            texto += this.pathh[0].texto[i];
-          }
-          if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
-            param = new Primitivo(Number(texto), nodo.linea, 1);
-            return param;
-          } else {
-            param = new Primitivo(texto, nodo.linea, 1);
-            let params = param.valor.toString();
-            let nativa = new funcion_nativa(nodo.linea,'F_SUBSTRING1',params,inicio,fin);
-            return nativa
-          }
-        }
-        else{
-          param = new Primitivo(this.pathh[0], nodo.linea, 1);
-          let params:string = ''; 
-          param.valor.listaObjetos.forEach((element: any) => {
-            element.listaObjetos.forEach((item: any) => {
-              for(var i=0; i < item.texto.length; i++){
-                params += item.texto[i] + ' ';
-              }
-            });
-          });
-          let valor = params.toString();
-          let nativa = new funcion_nativa(nodo.linea,'F_SUBSTRING1',valor,inicio,fin);
-          return nativa
-        }
+        let fin = parseInt(nodo.hijos[2]);
+        let nativa = new funcion_nativa(nodo.linea, 'F_SUBSTRING1', valor, inicio, fin);
+        return nativa
       }
     }
    

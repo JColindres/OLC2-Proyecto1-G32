@@ -170,7 +170,7 @@ FLWOR : FOR
             { $$ = new NodoAST({label: 'FLWOR', hijos: [$1], linea: yylineno}); }
         | LLAMADA_FUNCION
             { $$ = new NodoAST({label: 'FLWOR', hijos: [$1], linea: yylineno}); }
-        | FUNCIONES FOR
+        | FUNCIONES L_LET
             { $$ = new NodoAST({label: 'FLWOR', hijos: [$1,$2], linea: yylineno}); } 
         | FUNCIONES LLAMADA_FUNCION
             { $$ = new NodoAST({label: 'FLWOR', hijos: [$1,$2], linea: yylineno}); }

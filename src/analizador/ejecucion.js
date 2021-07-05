@@ -133,8 +133,6 @@ class Ejecucion {
             this.indiceValor = null;
             this.punto = '';
             this.consultaXML = this.cuerpoXml;
-            this.f_nativa_upper = false;
-            this.f_nativa_lower = false;
             //this.verObjetos();
             try {
                 if (this.raiz instanceof Object) {
@@ -2378,6 +2376,43 @@ class Ejecucion {
                 return param;
             }
         }
+        if (this.identificar('RAIZ', nodo)) {
+            nodo.hijos.forEach((element) => {
+                if (typeof element === 'string') {
+                    this.consParam = this.reducir(this.consultaXML, element, 'RAIZ');
+                }
+            });
+            //return this.consParam;
+        }
+        if (this.identificar('INSTRUCCIONES', nodo)) {
+            this.consParam = this.cuerpoXml;
+            nodo.hijos.forEach((element) => {
+                if (element instanceof Object) {
+                    this.xqueryRec(element);
+                }
+                else if (typeof element === 'string') {
+                    if (!(element === '[') && !(element === ']') && !(element === '(') && !(element === ')')) {
+                        this.consParam = this.reducir(this.consParam, element, 'INSTRUCCIONES');
+                    }
+                }
+            });
+            let texto = '';
+            let param;
+            if (this.consParam[0].texto.length > 0) {
+                for (var i = 0; i < this.consParam[0].texto.length; i++) {
+                    texto += this.consParam[0].texto[i];
+                }
+                console.log(texto);
+                if (Number.isInteger(parseInt(texto)) && !texto.includes("/") && !texto.includes("-")) {
+                    param = new primitivo_1.Primitivo(Number(texto), nodo.linea, 1);
+                    return param;
+                }
+                else {
+                    param = new primitivo_1.Primitivo(texto, nodo.linea, 1);
+                    return param;
+                }
+            }
+        }
         if (this.identificar('LLAMADA_FUNCION', nodo)) {
             let parametros = this.xqueryRec(nodo.hijos[1]);
             let llamada = new llamFunc_1.llamfuc(nodo.linea, nodo.hijos[0], parametros);
@@ -2386,34 +2421,56 @@ class Ejecucion {
         }
         if (this.identificar('F_UPPERCASE', nodo)) {
             if (typeof nodo.hijos[0].hijos[0] == 'string') {
-                let valor = nodo.hijos[0].hijos[0];
+                let valor;
+                if (nodo.hijos[0].hijos[0].startsWith('$')) {
+                    valor = new identificador_1.identificador(nodo.linea, nodo.hijos[0].hijos[0]);
+                }
+                else {
+                    valor = nodo.hijos[0].hijos[0];
+                }
                 let nativa = new funcion_nativa_1.funcion_nativa(nodo.linea, 'F_UPPERCASE', valor);
                 return nativa;
             }
             else {
-                this.f_nativa_upper = true;
-                //this.recorrido(nodo.hijos[0].hijos[0]);
+                let valor = this.xqueryRec(nodo.hijos[0].hijos[0]);
+                let nativa = new funcion_nativa_1.funcion_nativa(nodo.linea, 'F_UPPERCASE', valor);
+                return nativa;
             }
         }
         if (this.identificar('F_LOWERCASE', nodo)) {
             if (typeof nodo.hijos[0].hijos[0] == 'string') {
-                let valor = nodo.hijos[0].hijos[0];
+                let valor;
+                if (nodo.hijos[0].hijos[0].startsWith('$')) {
+                    valor = new identificador_1.identificador(nodo.linea, nodo.hijos[0].hijos[0]);
+                }
+                else {
+                    valor = nodo.hijos[0].hijos[0];
+                }
                 let nativa = new funcion_nativa_1.funcion_nativa(nodo.linea, 'F_LOWERCASE', valor);
                 return nativa;
             }
             else {
-                this.f_nativa_lower = true;
-                //this.recorrido(nodo.hijos[0].hijos[0]);
+                let valor = this.xqueryRec(nodo.hijos[0].hijos[0]);
+                let nativa = new funcion_nativa_1.funcion_nativa(nodo.linea, 'F_LOWERCASE', valor);
+                return nativa;
             }
         }
         if (this.identificar('F_STRING', nodo)) {
             if (typeof nodo.hijos[0].hijos[0] == 'string') {
-                let valor = nodo.hijos[0].hijos[0];
+                let valor;
+                if (nodo.hijos[0].hijos[0].startsWith('$')) {
+                    valor = new identificador_1.identificador(nodo.linea, nodo.hijos[0].hijos[0]);
+                }
+                else {
+                    valor = nodo.hijos[0].hijos[0];
+                }
                 let nativa = new funcion_nativa_1.funcion_nativa(nodo.linea, 'F_STRING', valor);
                 return nativa;
             }
             else {
-                //this.recorrido(nodo.hijos[0].hijos[0]);
+                let valor = this.xqueryRec(nodo.hijos[0]);
+                let nativa = new funcion_nativa_1.funcion_nativa(nodo.linea, 'F_STRING', valor);
+                return nativa;
             }
         }
         if (this.identificar('F_NUMBER', nodo)) {
@@ -2433,36 +2490,67 @@ class Ejecucion {
                     return nativa;
                 }
                 else {
-                    let valor = nodo.hijos[0];
-                    let nativa = new funcion_nativa_1.funcion_nativa(nodo.linea, 'F_NUMBER', +valor);
+                    let valor;
+                    if (nodo.hijos[0].startsWith('$')) {
+                        valor = new identificador_1.identificador(nodo.linea, nodo.hijos[0]);
+                        console.log(valor);
+                    }
+                    else if (nodo.hijos[0].includes('\'')) {
+                        valor = nodo.hijos[0].slice(1, -1);
+                    }
+                    else {
+                        valor = nodo.hijos[0];
+                    }
+                    let nativa = new funcion_nativa_1.funcion_nativa(nodo.linea, 'F_NUMBER', valor);
                     return nativa;
                 }
             }
             else {
-                //this.recorrido(nodo.hijos[0]);
+                let valor = this.xqueryRec(nodo.hijos[0]);
+                let nativa = new funcion_nativa_1.funcion_nativa(nodo.linea, 'F_NUMBER', valor);
+                return nativa;
             }
         }
         if (this.identificar('F_SUBSTRING', nodo)) {
             if (typeof nodo.hijos[0].hijos[0] == 'string') {
-                let valor = nodo.hijos[0].hijos[0];
+                let valor;
+                if (nodo.hijos[0].hijos[0].startsWith('$')) {
+                    valor = new identificador_1.identificador(nodo.linea, nodo.hijos[0].hijos[0]);
+                }
+                else {
+                    valor = nodo.hijos[0].hijos[0];
+                }
                 let inicio = parseInt(nodo.hijos[1]);
                 let nativa = new funcion_nativa_1.funcion_nativa(nodo.linea, 'F_SUBSTRING', valor, inicio);
                 return nativa;
             }
             else {
-                //this.recorrido(nodo.hijos[0].hijos[0]);
+                let valor = this.xqueryRec(nodo.hijos[0].hijos[0]);
+                let inicio = parseInt(nodo.hijos[1]);
+                let nativa = new funcion_nativa_1.funcion_nativa(nodo.linea, 'F_SUBSTRING', valor, inicio);
+                return nativa;
             }
         }
         if (this.identificar('F_SUBSTRING1', nodo)) {
             if (typeof nodo.hijos[0].hijos[0] == 'string') {
-                let valor = nodo.hijos[0].hijos[0];
+                let valor;
+                if (nodo.hijos[0].hijos[0].startsWith('$')) {
+                    valor = new identificador_1.identificador(nodo.linea, nodo.hijos[0].hijos[0]);
+                }
+                else {
+                    valor = nodo.hijos[0].hijos[0];
+                }
                 let inicio = parseInt(nodo.hijos[1]);
                 let fin = parseInt(nodo.hijos[2]);
                 let nativa = new funcion_nativa_1.funcion_nativa(nodo.linea, 'F_SUBSTRING1', valor, inicio, fin);
                 return nativa;
             }
             else {
-                //this.recorrido(nodo.hijos[0].hijos[0]);
+                let valor = this.xqueryRec(nodo.hijos[0].hijos[0]);
+                let inicio = parseInt(nodo.hijos[1]);
+                let fin = parseInt(nodo.hijos[2]);
+                let nativa = new funcion_nativa_1.funcion_nativa(nodo.linea, 'F_SUBSTRING1', valor, inicio, fin);
+                return nativa;
             }
         }
     }

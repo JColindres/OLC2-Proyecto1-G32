@@ -27,34 +27,8 @@ export class Entorno {
     return null;
   }
 
-  hasVariable(id: string): boolean {
-    for (let e: Entorno = this; e != null; e = e.padre) {
-      if (e.variables.has(id)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  updateValorVariable(id: string, valor: any) {
-    const variable = this.getVariable(id);
-    if (variable) {
-      variable.valor = valor;
-    }
-  }
-
-
   setFuncion(funcion: Funcion) {
     this.funciones.set(funcion.id, funcion);
-  }
-
-  hasFuncion(id: string): boolean {
-    for (let e: Entorno = this; e != null; e = e.padre) {
-      if (e.funciones.has(id)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   getFuncion(id: string): Funcion {
@@ -66,28 +40,10 @@ export class Entorno {
     return null;
   }
 
-  //Utilizado para saber si debo ir a una funcion a buscar la variable
-  deboBuscarEnFunciones(id: string): boolean {
-    const ids = id.split("_");
-    if (ids.length < 3) return false;
-    if (ids[0] != 'nv') return false;
-    return true;
-  }
-
-  //Utilizado para obtener el id de la funcion en la cual debo ir a buscar
-  getIdFuncionABuscar(id: string): string {
-    const ids = id.split("_", 2);
-    return ids[1] ?? '';
-  }
-
   getEntornoGlobal(): Entorno {
     for (let e: Entorno = this; e != null; e = e.padre) {
       if (e.padre == null) return e;
     }
-  }
-
-  getVariables() : Array<Variable>{
-    return Array.from(this.variables.values());
   }
 
 }

@@ -1,6 +1,8 @@
 import _ = require("lodash");
 import { Entorno } from "../interfaces/entorno";
 import { Instruccion } from "../interfaces/instruccion";
+import { identificador } from "./identificador";
+import { Primitivo } from "./primitivo";
 
 export class funcion_nativa extends Instruccion {
   id: string;
@@ -16,6 +18,14 @@ export class funcion_nativa extends Instruccion {
 
   //falta retorno si es INST y se manda a llamar desde una variable, path 
   ejecutar(e: Entorno) {
+
+    if(this.valor instanceof identificador){
+      this.valor = this.valor.ejecutar(e);
+    }
+
+    if(this.valor instanceof Primitivo){
+      this.valor = this.valor.ejecutar(e);
+    }
 
     if(this.id == 'F_UPPERCASE'){
         let cadena = this.valor.toUpperCase()
