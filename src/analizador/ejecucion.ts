@@ -2466,7 +2466,7 @@ export class Ejecucion {
       this.path(nodo);
       let texto = "";
       let param;
-      if (this.pathh[0].texto.length > 0) {
+      if (!(this.pathh[1]) && this.pathh[0].texto.length > 0) {
         for (var i = 0; i < this.pathh[0].texto.length; i++) {
           texto += this.pathh[0].texto[i];
         }
