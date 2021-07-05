@@ -3,8 +3,16 @@
 
 %options case-sensitive
 
+BSL                         "\\".
+%s                          comment
 %%
+
+"(:"                      this.begin('comment');
+<comment>":)"              this.popState();
+<comment>.                  /* skip commentario content*/
+
 \s+                                         /* skip whitespace */
+
 //Palabras reservadas
 'for' return 'for';
 'where' return 'where';
@@ -339,7 +347,8 @@ LET :  let dolar id doble_pto igual EXPR RETURN
 
 FUNCION : declare function id doble_pto id par_izq PARAMETROS par_der  as xs doble_pto TIPO llave_izq SENTENCIAS llave_der pto_coma 
          { $$ = new NodoAST({label: 'FUNCION', hijos: [$3,$5,$7,$12,$14], linea: yylineno}); } 
-         | declare function id doble_pto id par_izq PARAMETROS par_der  SENTENCIAS llave_der pto_coma 
+         | declare function id doble_pto id par_izq PARAMETROS par_der llave_izq SENTENCIAS llave_der pto_coma 
+         { $$ = new NodoAST({label: 'FUNCION_SIN_TIPO', hijos: [$3,$5,$7,$10], linea: yylineno}); }
 ;
 
 SENTENCIAS : FLWOR { $$ = new NodoAST({label: 'FLWOR', hijos: [...$1.hijos], linea: yylineno}); }
