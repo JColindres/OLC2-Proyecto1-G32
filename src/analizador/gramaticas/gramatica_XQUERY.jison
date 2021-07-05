@@ -84,6 +84,7 @@ BSL                         "\\".
 '$' return 'dolar';
 ',' return 'coma';
 ';' return 'pto_coma';
+'?' return 'interrogacion';
 
 '[' return 'cor_izq';
 "]" return 'cor_der';
@@ -349,6 +350,8 @@ FUNCION : declare function id doble_pto id par_izq PARAMETROS par_der  as xs dob
          { $$ = new NodoAST({label: 'FUNCION', hijos: [$3,$5,$7,$12,$14], linea: yylineno}); } 
          | declare function id doble_pto id par_izq PARAMETROS par_der llave_izq SENTENCIAS llave_der pto_coma 
          { $$ = new NodoAST({label: 'FUNCION_SIN_TIPO', hijos: [$3,$5,$7,$10], linea: yylineno}); }
+         | declare function id doble_pto id par_izq PARAMETROS par_der  as xs doble_pto TIPO interrogacion llave_izq SENTENCIAS llave_der pto_coma 
+         { $$ = new NodoAST({label: 'FUNCION', hijos: [$3,$5,$7,$12,$15], linea: yylineno}); } 
 ;
 
 SENTENCIAS : FLWOR { $$ = new NodoAST({label: 'FLWOR', hijos: [...$1.hijos], linea: yylineno}); }
@@ -363,7 +366,9 @@ PARAMETROS: PARAMETROS coma PARAM
             { $$ = new NodoAST({label: 'PARAMETROS', hijos: [...$1.hijos], linea: yylineno}); }   
         ;
 
-PARAM : dolar id as xs doble_pto TIPO
+PARAM : dolar id as xs doble_pto TIPO 
+        { $$ = new NodoAST({label: 'PARAMETRO', hijos: [($1+$2),$4,...$6.hijos], linea: yylineno}); }   
+        | dolar id as xs doble_pto TIPO interrogacion 
         { $$ = new NodoAST({label: 'PARAMETRO', hijos: [($1+$2),$4,...$6.hijos], linea: yylineno}); }    ;
 
 TIPO : id
@@ -376,6 +381,8 @@ TIPO : id
                  $$ = new NodoAST({label: 'TIPO', hijos: [$1], linea: yylineno}); }  
             else if ($1 == 'double'){
                  $$ = new NodoAST({label: 'TIPO', hijos: [$1], linea: yylineno}); }  
+            else if ($1 == 'decimal'){
+                 $$ = new NodoAST({label: 'TIPO', hijos: ['integer'], linea: yylineno}); } 
             else{
                  tablaErrores.Errores.getInstance().push(new errorGram.Error({ tipo: 'Semántico', linea: `${yylineno + 1}`, descripcion: `No es un tipo valido "${$1}"  Columna: ${this._$.first_column + 1}.`}));
              }
